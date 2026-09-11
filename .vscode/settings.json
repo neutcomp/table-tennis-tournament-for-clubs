@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^php -n -l table-tennis-tournament-for-clubs\\.php$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
