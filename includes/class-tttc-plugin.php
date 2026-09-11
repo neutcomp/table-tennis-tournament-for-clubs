@@ -31,11 +31,20 @@ final class TTTC_Plugin {
 	}
 
 	private function __construct() {
+		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 		add_action( 'init', array( $this, 'register_post_types' ) );
 		add_action( 'before_delete_post', array( $this, 'delete_assignments' ) );
 		add_action( 'admin_init', array( $this, 'maybe_upgrade' ) );
 		new TTTC_Admin();
 		new TTTC_Public();
+	}
+
+	public function load_textdomain() {
+		load_plugin_textdomain(
+			'table-tennis-tournament-for-clubs',
+			false,
+			dirname( plugin_basename( TTTC_FILE ) ) . '/languages'
+		);
 	}
 
 	public static function activate() {
