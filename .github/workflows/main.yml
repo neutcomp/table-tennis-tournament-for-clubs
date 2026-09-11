@@ -1,0 +1,35 @@
+on: push
+name: 🚀 Deploy website on push
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v6
+
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+      with:
+        server: ftp.thevictory.nl
+        username: ${{secrets.FTP_USERNAME}}
+        password: ${{secrets.FTP_PASSWORD}}
+        port: 21
+        timeout: 60000
+        protocol: ftps
+        local-dir: ./
+        server-dir: ./httpdocs/wp-content/plugins/table-tennis-tournament-for-clubs/
+        exclude: |
+          **/.git
+          **/.git/**
+          **/.github
+          **/.github/**
+          **/node_modules
+          **/node_modules/**
+          **/scss
+          **/scss/**
+          package.json
+          package-lock.json
+          .gitignore
+          LICENSE
+          README.md
