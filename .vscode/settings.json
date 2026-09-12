@@ -3,6 +3,10 @@
         "/^php -n -l table-tennis-tournament-for-clubs\\.php$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^php -l includes/class-tttc-plugin\\.php && php -l includes/class-tttc-admin\\.php$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

@@ -70,9 +70,15 @@ final class TTTC_Admin {
 		$rating = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_RATING, true );
 		$email  = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_EMAIL, true );
 		$active = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_ACTIVE, true );
+		$gender = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_GENDER, true );
+		$type   = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_TYPE, true );
+		$gender = $gender ? $gender : 'male';
+		$type   = $type ? $type : 'senior';
 		?>
 		<p><label for="tttc-rating"><strong><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input class="small-text" type="number" min="0" step="1" id="tttc-rating" name="tttc_rating" value="<?php echo esc_attr( $rating ); ?>" required></p>
 		<p><label for="tttc-email"><strong><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input class="regular-text" type="email" id="tttc-email" name="tttc_email" value="<?php echo esc_attr( $email ); ?>"></p>
+		<p><label for="tttc-gender"><strong><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-gender" name="tttc_gender"><option value="male" <?php selected( $gender, 'male' ); ?>><?php esc_html_e( 'Male', 'table-tennis-tournament-for-clubs' ); ?></option><option value="female" <?php selected( $gender, 'female' ); ?>><?php esc_html_e( 'Female', 'table-tennis-tournament-for-clubs' ); ?></option></select></p>
+		<p><label for="tttc-type"><strong><?php esc_html_e( 'Type', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-type" name="tttc_type"><option value="senior" <?php selected( $type, 'senior' ); ?>><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></option><option value="youth" <?php selected( $type, 'youth' ); ?>><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></option></select></p>
 		<p><label><input type="checkbox" name="tttc_active" value="1" <?php checked( '1', $active ? $active : '1' ); ?>> <?php esc_html_e( 'Player is active and available for new tournament assignments', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 		<?php
 	}
@@ -100,8 +106,14 @@ final class TTTC_Admin {
 		}
 		$rating = isset( $_POST['tttc_rating'] ) ? max( 0, absint( $_POST['tttc_rating'] ) ) : 0;
 		$email  = isset( $_POST['tttc_email'] ) ? sanitize_email( wp_unslash( $_POST['tttc_email'] ) ) : '';
+		$gender = isset( $_POST['tttc_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_gender'] ) ) : 'male';
+		$type   = isset( $_POST['tttc_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_type'] ) ) : 'senior';
+		$gender = in_array( $gender, array( 'male', 'female' ), true ) ? $gender : 'male';
+		$type   = in_array( $type, array( 'senior', 'youth' ), true ) ? $type : 'senior';
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_RATING, $rating );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_EMAIL, $email );
+		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_GENDER, $gender );
+		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_TYPE, $type );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_ACTIVE, isset( $_POST['tttc_active'] ) ? '1' : '0' );
 	}
 
@@ -144,12 +156,18 @@ final class TTTC_Admin {
 	}
 
 	public function player_columns( $columns ) {
-		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_rating' => __( 'Rating', 'table-tennis-tournament-for-clubs' ), 'tttc_email' => __( 'Email', 'table-tennis-tournament-for-clubs' ), 'tttc_active' => __( 'Active', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
+		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_gender' => __( 'Gender', 'table-tennis-tournament-for-clubs' ), 'tttc_type' => __( 'Type', 'table-tennis-tournament-for-clubs' ), 'tttc_rating' => __( 'Rating', 'table-tennis-tournament-for-clubs' ), 'tttc_email' => __( 'Email', 'table-tennis-tournament-for-clubs' ), 'tttc_active' => __( 'Active', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
 	}
 
 	public function player_column( $column, $post_id ) {
 		if ( 'tttc_rating' === $column ) {
 			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_RATING, true ) );
+		} elseif ( 'tttc_gender' === $column ) {
+			$gender = get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_GENDER, true );
+			echo esc_html( 'female' === $gender ? __( 'Female', 'table-tennis-tournament-for-clubs' ) : __( 'Male', 'table-tennis-tournament-for-clubs' ) );
+		} elseif ( 'tttc_type' === $column ) {
+			$type = get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_TYPE, true );
+			echo esc_html( 'youth' === $type ? __( 'Youth', 'table-tennis-tournament-for-clubs' ) : __( 'Senior', 'table-tennis-tournament-for-clubs' ) );
 		} elseif ( 'tttc_email' === $column ) {
 			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_EMAIL, true ) );
 		} elseif ( 'tttc_active' === $column ) {

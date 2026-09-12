@@ -16,6 +16,8 @@ final class TTTC_Plugin {
 	const PLAYER_META_RATING = '_tttc_rating';
 	const PLAYER_META_EMAIL = '_tttc_email';
 	const PLAYER_META_ACTIVE = '_tttc_active';
+	const PLAYER_META_GENDER = '_tttc_gender';
+	const PLAYER_META_TYPE = '_tttc_type';
 	const TOURNAMENT_META_DATE = '_tttc_date';
 	const TOURNAMENT_META_GAMES = '_tttc_games';
 	const TOURNAMENT_META_STATUS = '_tttc_status';
