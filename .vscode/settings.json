@@ -1,6 +1,10 @@
 {
     "chat.tools.terminal.autoApprove": {
-        "/^php -n -l *.*$/": {
+        "/^php -n(?: .*)?$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^php -l(?: .*)?$/": {
             "approve": true,
             "matchCommandLine": true
         }
