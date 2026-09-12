@@ -10,6 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Admin {
+	private $score_error = '';
+	private $score_form_scores = null;
+
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
@@ -222,12 +225,12 @@ final class TTTC_Admin {
 		return $date_object ? home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $post_id ) . '/' . $date_object->format( 'd-m-Y' ) ) ) : '';
 	}
 
-	public function scores_page() {
+	public function scores_page( $submitted_tournament_id = 0 ) {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
-		$tournament_id = isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0;
+		$tournament_id = $submitted_tournament_id ? absint( $submitted_tournament_id ) : ( isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0 );
 		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
 			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
 		}
@@ -235,10 +238,11 @@ final class TTTC_Admin {
 		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
 		$schedule    = TTTC_Public::instance()->tournament_schedule( $tournament_id );
-		$saved_scores = $this->saved_scores( $tournament_id );
+		$saved_scores = null !== $this->score_form_scores ? $this->score_form_scores : $this->saved_scores( $tournament_id );
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_the_title( $tournament_id ) . ' - ' . __( 'Scores', 'table-tennis-tournament-for-clubs' ) ); ?></h1>
+			<?php if ( $this->score_error ) : ?><div class="notice notice-error"><p><?php echo esc_html( $this->score_error ); ?></p></div><?php endif; ?>
 			<?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Tournament scores updated.', 'table-tennis-tournament-for-clubs' ); ?></p></div><?php endif; ?>
 			<?php if ( empty( $schedule ) ) : ?>
 				<p><?php esc_html_e( 'A score sheet is available when the tournament has 4 to 28 assigned active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
@@ -276,6 +280,27 @@ final class TTTC_Admin {
 		$games         = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
 		$schedule      = TTTC_Public::instance()->tournament_schedule( $tournament_id );
 		$submitted     = isset( $_POST['scores'] ) && is_array( $_POST['scores'] ) ? wp_unslash( $_POST['scores'] ) : array();
+		$validated     = array();
+
+		foreach ( $schedule as $group_schedule ) {
+			foreach ( $group_schedule['rounds'] as $round_number => $round ) {
+				foreach ( $round as $match_number => $match ) {
+					$match_key    = $this->match_key( $match[0]->ID, $match[1]->ID );
+					$match_scores = isset( $submitted[ $match_key ] ) && is_array( $submitted[ $match_key ] ) ? $submitted[ $match_key ] : array();
+					$match_result = $this->validate_match_scores( $match_scores, $games );
+
+					if ( is_wp_error( $match_result ) ) {
+						$this->score_error       = $match_result->get_error_message();
+						$this->score_form_scores = $this->form_scores( $submitted, $schedule, $games );
+						$this->scores_page( $tournament_id );
+						exit;
+					}
+
+					$validated[ $match_key ] = $match_result;
+				}
+			}
+		}
+
 		global $wpdb;
 		$table = TTTC_Plugin::scores_table_name();
 		$wpdb->delete( $table, array( 'tournament_id' => $tournament_id ), array( '%d' ) );
@@ -284,15 +309,7 @@ final class TTTC_Admin {
 			foreach ( $group_schedule['rounds'] as $round_number => $round ) {
 				foreach ( $round as $match_number => $match ) {
 					$match_key    = $this->match_key( $match[0]->ID, $match[1]->ID );
-					$match_scores = isset( $submitted[ $match_key ] ) && is_array( $submitted[ $match_key ] ) ? $submitted[ $match_key ] : array();
-					$scores       = array();
-					for ( $game = 0; $game < $games; $game++ ) {
-						$game_score = isset( $match_scores[ $game ] ) && is_array( $match_scores[ $game ] ) ? $match_scores[ $game ] : array();
-						$scores[]   = array(
-							isset( $game_score[0] ) ? preg_replace( '/[^0-9]/', '', sanitize_text_field( $game_score[0] ) ) : '',
-							isset( $game_score[1] ) ? preg_replace( '/[^0-9]/', '', sanitize_text_field( $game_score[1] ) ) : '',
-						);
-					}
+					$scores       = $validated[ $match_key ];
 					$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'match_key' => $match_key, 'player_one_id' => min( $match[0]->ID, $match[1]->ID ), 'player_two_id' => max( $match[0]->ID, $match[1]->ID ), 'round_number' => $round_number + 1, 'match_number' => $match_number + 1, 'scores' => wp_json_encode( $scores ), 'updated_at' => current_time( 'mysql', true ) ), array( '%d', '%s', '%d', '%d', '%d', '%d', '%s', '%s' ) );
 				}
 			}
@@ -300,6 +317,68 @@ final class TTTC_Admin {
 
 		wp_safe_redirect( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&updated=1' ) );
 		exit;
+	}
+
+	private function validate_match_scores( $match_scores, $games ) {
+		$validated = array();
+		$wins      = array( 0, 0 );
+		$has_score = false;
+		$required  = (int) ceil( $games / 2 );
+
+		for ( $game = 0; $game < $games; $game++ ) {
+			$game_score = isset( $match_scores[ $game ] ) && is_array( $match_scores[ $game ] ) ? $match_scores[ $game ] : array();
+			$first      = isset( $game_score[0] ) ? trim( (string) $game_score[0] ) : '';
+			$second     = isset( $game_score[1] ) ? trim( (string) $game_score[1] ) : '';
+
+			if ( '' === $first && '' === $second ) {
+				$validated[] = array( '', '' );
+				continue;
+			}
+
+			if ( '' === $first || '' === $second || ! preg_match( '/^[0-9]+$/', $first ) || ! preg_match( '/^[0-9]+$/', $second ) ) {
+				return new WP_Error( 'invalid_score', __( 'Each entered game must contain two nonnegative whole-number scores.', 'table-tennis-tournament-for-clubs' ) );
+			}
+
+			$first_score  = (int) $first;
+			$second_score = (int) $second;
+			$has_score    = true;
+
+			if ( $first_score === $second_score || abs( $first_score - $second_score ) < 2 || max( $first_score, $second_score ) < 11 ) {
+				return new WP_Error( 'invalid_game', __( 'A game must be won with at least 11 points and a two-point margin.', 'table-tennis-tournament-for-clubs' ) );
+			}
+
+			$wins[ $first_score > $second_score ? 0 : 1 ]++;
+			$validated[] = array( (string) $first_score, (string) $second_score );
+		}
+
+		if ( $has_score && max( $wins ) < $required ) {
+			return new WP_Error( 'incomplete_match', sprintf( __( 'A Best of %d match must have a winner with at least %d games won.', 'table-tennis-tournament-for-clubs' ), $games, $required ) );
+		}
+
+		return $validated;
+	}
+
+	private function form_scores( $submitted, $schedule, $games ) {
+		$scores = array();
+
+		foreach ( $schedule as $group_schedule ) {
+			foreach ( $group_schedule['rounds'] as $round ) {
+				foreach ( $round as $match ) {
+					$match_key    = $this->match_key( $match[0]->ID, $match[1]->ID );
+					$match_scores = isset( $submitted[ $match_key ] ) && is_array( $submitted[ $match_key ] ) ? $submitted[ $match_key ] : array();
+					$scores[ $match_key ] = array();
+					for ( $game = 0; $game < $games; $game++ ) {
+						$game_score              = isset( $match_scores[ $game ] ) && is_array( $match_scores[ $game ] ) ? $match_scores[ $game ] : array();
+						$scores[ $match_key ][] = array(
+							isset( $game_score[0] ) && is_scalar( $game_score[0] ) ? sanitize_text_field( $game_score[0] ) : '',
+							isset( $game_score[1] ) && is_scalar( $game_score[1] ) ? sanitize_text_field( $game_score[1] ) : '',
+						);
+					}
+				}
+			}
+		}
+
+		return $scores;
 	}
 
 	private function saved_scores( $tournament_id ) {
