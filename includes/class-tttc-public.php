@@ -88,6 +88,7 @@ final class TTTC_Public {
 		}
 
 		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
+		wp_enqueue_script( 'tttc-public', TTTC_URL . 'assets/public.js', array(), TTTC_VERSION, true );
 		get_header();
 		$this->render_tournament_detail( $tournament_id );
 		get_footer();
@@ -148,9 +149,14 @@ final class TTTC_Public {
 				<?php if ( ! empty( $schedule ) ) : ?>
 					<section class="tttc-public-groups" aria-labelledby="tttc-groups-heading">
 						<h2 id="tttc-groups-heading"><?php esc_html_e( 'Groups and matches', 'table-tennis-tournament-for-clubs' ); ?></h2>
+						<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?>">
+							<?php foreach ( $schedule as $index => $group_schedule ) : $tab_id = 'tttc-group-tab-' . ( $index + 1 ); $panel_id = 'tttc-group-panel-' . ( $index + 1 ); ?>
+								<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab<?php echo 0 === $index ? ' is-active' : ''; ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="<?php echo 0 === $index ? 'true' : 'false'; ?>" tabindex="<?php echo 0 === $index ? '0' : '-1'; ?>"><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $index + 1 ) ); ?></button>
+			<?php endforeach; ?>
+						</div>
 						<div class="tttc-public-group-grid">
 							<?php foreach ( $schedule as $index => $group_schedule ) : ?>
-								<section class="tttc-public-group">
+								<section id="<?php echo esc_attr( 'tttc-group-panel-' . ( $index + 1 ) ); ?>" class="tttc-public-group<?php echo 0 === $index ? ' is-active' : ''; ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( 'tttc-group-tab-' . ( $index + 1 ) ); ?>"<?php echo 0 === $index ? '' : ' hidden'; ?>>
 									<h3><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $index + 1 ) ); ?></h3>
 									<ul class="tttc-public-group__players">
 										<?php foreach ( $group_schedule['players'] as $player ) : ?><li><?php echo esc_html( $player->post_title ); ?></li><?php endforeach; ?>

@@ -106,6 +106,37 @@
   gap: 20px;
 }
 
+.tttc-public-group-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.tttc-public-group-tab {
+  background: #f0f0f1;
+  border: 1px solid #c3c4c7;
+  color: #1d2327;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.tttc-public-group-tab:hover,
+.tttc-public-group-tab:focus-visible,
+.tttc-public-group-tab.is-active {
+  background: #2271b1;
+  border-color: #2271b1;
+  color: #fff;
+}
+
+.tttc-public-group[hidden] {
+  display: none;
+}
+
 .tttc-public-group {
   border: 1px solid #c3c4c7;
   box-sizing: border-box;
@@ -230,6 +261,14 @@
 
   .tttc-public-group-grid {
     display: block !important;
+  }
+
+  .tttc-public-group-tabs {
+    display: none;
+  }
+
+  .tttc-public-group[hidden] {
+    display: block;
   }
 
   .tttc-public-round-grid {

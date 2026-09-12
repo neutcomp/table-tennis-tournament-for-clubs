@@ -7,6 +7,10 @@
         "/^php -l(?: .*)?$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^node --check assets/public\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
