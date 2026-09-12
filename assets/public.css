@@ -94,6 +94,13 @@
   font-weight: 600;
 }
 
+.tttc-public-round-title {
+  border-top: 1px solid #dcdcde;
+  color: #646970;
+  margin: 18px 0 8px;
+  padding-top: 12px;
+}
+
 .tttc-public-matches {
   border-collapse: collapse;
   width: 100%;

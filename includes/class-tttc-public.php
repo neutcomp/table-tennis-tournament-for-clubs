@@ -130,9 +130,12 @@ final class TTTC_Public {
 									<ul class="tttc-public-group__players">
 										<?php foreach ( $group as $player ) : ?><li><?php echo esc_html( $player->post_title ); ?></li><?php endforeach; ?>
 									</ul>
-									<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
-									<?php foreach ( $this->group_matches( $group ) as $match_number => $match ) : ?><tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td></tr><?php endforeach; ?>
-									</tbody></table>
+									<?php foreach ( $this->group_matches( $group ) as $round_number => $round ) : ?>
+										<h4 class="tttc-public-round-title"><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></h4>
+										<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
+										<?php foreach ( $round as $match_number => $match ) : ?><tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td></tr><?php endforeach; ?>
+										</tbody></table>
+									<?php endforeach; ?>
 								</section>
 							<?php endforeach; ?>
 						</div>
@@ -211,15 +214,28 @@ final class TTTC_Public {
 	}
 
 	private function group_matches( $group ) {
-		$matches = array();
-		$player_count = count( $group );
-		for ( $first = 0; $first < $player_count; $first++ ) {
-			for ( $second = $first + 1; $second < $player_count; $second++ ) {
-				$matches[] = array( $group[ $first ], $group[ $second ] );
-			}
+		$players = array_values( $group );
+		if ( count( $players ) % 2 ) {
+			$players[] = null;
 		}
 
-		return $matches;
+		$rounds      = array();
+		$player_count = count( $players );
+		for ( $round_number = 0; $round_number < $player_count - 1; $round_number++ ) {
+			$round = array();
+			for ( $match_number = 0; $match_number < $player_count / 2; $match_number++ ) {
+				$first  = $players[ $match_number ];
+				$second = $players[ $player_count - 1 - $match_number ];
+				if ( $first && $second ) {
+					$round[] = array( $first, $second );
+				}
+			}
+			$rounds[] = $round;
+			$rotating_player = array_pop( $players );
+			array_splice( $players, 1, 0, array( $rotating_player ) );
+		}
+
+		return $rounds;
 	}
 
 	private function display_date( $date ) {
