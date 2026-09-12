@@ -65,13 +65,12 @@
 }
 
 .tttc-public-group-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
+  display: block;
 }
 
 .tttc-public-group {
   border: 1px solid #c3c4c7;
+  margin-bottom: 20px;
   padding: 18px;
   break-inside: avoid;
 }
