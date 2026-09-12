@@ -18,6 +18,35 @@
   margin-bottom: 24px;
 }
 
+.tttc-public-tournament__players summary {
+  color: #1d2327;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: 700;
+  list-style: none;
+}
+
+.tttc-public-tournament__players summary::-webkit-details-marker {
+  display: none;
+}
+
+.tttc-public-tournament__players summary::after {
+  color: #2271b1;
+  content: '+';
+  float: right;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.tttc-public-tournament__players[open] summary::after {
+  content: '\2212';
+}
+
+.tttc-public-tournament__players[open] .tttc-public-player-list,
+.tttc-public-tournament__players[open] > p {
+  margin-top: 20px;
+}
+
 .tttc-public-tournament__eyebrow {
   color: #646970;
   font-size: 12px;

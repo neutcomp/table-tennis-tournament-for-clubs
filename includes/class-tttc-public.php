@@ -108,8 +108,8 @@ final class TTTC_Public {
 					<h1><?php echo esc_html( $title ); ?></h1>
 					<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date( $stored_date ) ); ?></p>
 				</header>
-				<section class="tttc-public-tournament__players" aria-labelledby="tttc-players-heading">
-					<h2 id="tttc-players-heading"><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?></h2>
+				<details class="tttc-public-tournament__players">
+					<summary><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?></summary>
 					<?php if ( empty( $players ) ) : ?>
 						<p><?php esc_html_e( 'Players will be announced soon.', 'table-tennis-tournament-for-clubs' ); ?></p>
 					<?php else : ?>
@@ -119,7 +119,7 @@ final class TTTC_Public {
 							<?php endforeach; ?>
 						</ol>
 					<?php endif; ?>
-				</section>
+				</details>
 				<?php if ( $group_count ) : ?>
 					<section class="tttc-public-groups" aria-labelledby="tttc-groups-heading">
 						<h2 id="tttc-groups-heading"><?php esc_html_e( 'Groups and matches', 'table-tennis-tournament-for-clubs' ); ?></h2>
