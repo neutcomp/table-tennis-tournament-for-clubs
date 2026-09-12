@@ -238,6 +238,12 @@ final class TTTC_Admin {
 		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
 		$schedule    = TTTC_Public::instance()->tournament_schedule( $tournament_id );
+		$error_data  = get_transient( $this->score_error_transient_key( $tournament_id ) );
+		if ( is_array( $error_data ) ) {
+			delete_transient( $this->score_error_transient_key( $tournament_id ) );
+			$this->score_error       = isset( $error_data['message'] ) ? $error_data['message'] : '';
+			$this->score_form_scores = isset( $error_data['scores'] ) ? $error_data['scores'] : null;
+		}
 		$saved_scores = null !== $this->score_form_scores ? $this->score_form_scores : $this->saved_scores( $tournament_id );
 		?>
 		<div class="wrap">
@@ -290,9 +296,15 @@ final class TTTC_Admin {
 					$match_result = $this->validate_match_scores( $match_scores, $games );
 
 					if ( is_wp_error( $match_result ) ) {
-						$this->score_error       = $match_result->get_error_message();
-						$this->score_form_scores = $this->form_scores( $submitted, $schedule, $games );
-						$this->scores_page( $tournament_id );
+						set_transient(
+							$this->score_error_transient_key( $tournament_id ),
+							array(
+								'message' => $match_result->get_error_message(),
+								'scores'  => $this->form_scores( $submitted, $schedule, $games ),
+							),
+							MINUTE_IN_SECONDS
+						);
+						wp_safe_redirect( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&error=1' ) );
 						exit;
 					}
 
@@ -356,6 +368,10 @@ final class TTTC_Admin {
 		}
 
 		return $validated;
+	}
+
+	private function score_error_transient_key( $tournament_id ) {
+		return 'tttc_score_error_' . get_current_user_id() . '_' . absint( $tournament_id );
 	}
 
 	private function form_scores( $submitted, $schedule, $games ) {
