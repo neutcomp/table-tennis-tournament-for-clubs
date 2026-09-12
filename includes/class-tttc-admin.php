@@ -50,8 +50,52 @@ final class TTTC_Admin {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
-		$player_count     = wp_count_posts( TTTC_Plugin::PLAYER_POST_TYPE )->publish;
-		$tournament_count = wp_count_posts( TTTC_Plugin::TOURNAMENT_POST_TYPE )->publish;
+		$players = get_posts( array( 'post_type' => TTTC_Plugin::PLAYER_POST_TYPE, 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
+		$players = array_filter( $players, function ( $player ) {
+			return '1' === get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_ACTIVE, true );
+		} );
+		$player_stats = array( 'male' => 0, 'female' => 0, 'senior' => 0, 'youth' => 0 );
+		foreach ( $players as $player ) {
+			$gender = get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_GENDER, true );
+			$type   = get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_TYPE, true );
+			$gender = in_array( $gender, array( 'male', 'female' ), true ) ? $gender : 'male';
+			$type   = in_array( $type, array( 'senior', 'youth' ), true ) ? $type : 'senior';
+			$player_stats[ $gender ]++;
+			$player_stats[ $type ]++;
+		}
+		$top_players = $players;
+		usort( $top_players, function ( $first, $second ) {
+			$rating_difference = absint( get_post_meta( $second->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ) - absint( get_post_meta( $first->ID, TTTC_Plugin::PLAYER_META_RATING, true ) );
+			if ( 0 !== $rating_difference ) {
+				return $rating_difference;
+			}
+
+			$title_difference = strcasecmp( $first->post_title, $second->post_title );
+			return 0 !== $title_difference ? $title_difference : $first->ID - $second->ID;
+		} );
+		$top_players = array_slice( $top_players, 0, 3 );
+
+		$tournaments        = get_posts( array( 'post_type' => TTTC_Plugin::TOURNAMENT_POST_TYPE, 'post_status' => 'publish', 'numberposts' => -1 ) );
+		$tournament_types    = array( 'senior' => 0, 'youth' => 0, 'both' => 0 );
+		$tournament_statuses = array_fill_keys( array_keys( TTTC_Plugin::statuses() ), 0 );
+		$participant_total   = 0;
+		$participating_count = 0;
+		foreach ( $tournaments as $tournament ) {
+			$type   = get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
+			$status = get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+			$type   = in_array( $type, array( 'senior', 'youth', 'both' ), true ) ? $type : 'both';
+			$status = array_key_exists( $status, $tournament_statuses ) ? $status : 'draft';
+			$tournament_types[ $type ]++;
+			$tournament_statuses[ $status ]++;
+			$participant_count = count( $this->assigned_player_ids( $tournament->ID ) );
+			if ( $participant_count ) {
+				$participant_total += $participant_count;
+				$participating_count++;
+			}
+		}
+		$average_participants = $participating_count ? round( $participant_total / $participating_count, 1 ) : 0;
+		$player_count         = count( $players );
+		$tournament_count     = count( $tournaments );
 		?>
 		<div class="wrap tttc-dashboard">
 			<h1><?php esc_html_e( 'Table Tennis Tournament for Clubs', 'table-tennis-tournament-for-clubs' ); ?></h1>
@@ -59,6 +103,42 @@ final class TTTC_Admin {
 			<div class="tttc-summary-grid">
 				<div class="tttc-summary-card"><span class="dashicons dashicons-groups"></span><strong><?php echo esc_html( $player_count ); ?></strong><span><?php esc_html_e( 'Published players', 'table-tennis-tournament-for-clubs' ); ?></span></div>
 				<div class="tttc-summary-card"><span class="dashicons dashicons-awards"></span><strong><?php echo esc_html( $tournament_count ); ?></strong><span><?php esc_html_e( 'Published tournaments', 'table-tennis-tournament-for-clubs' ); ?></span></div>
+			</div>
+			<div class="tttc-dashboard-grid">
+				<section class="tttc-dashboard-section">
+					<h2><?php esc_html_e( 'Published players', 'table-tennis-tournament-for-clubs' ); ?></h2>
+					<div class="tttc-stat-list">
+						<div><span><?php esc_html_e( 'Male', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $player_stats['male'] ); ?></strong></div>
+						<div><span><?php esc_html_e( 'Female', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $player_stats['female'] ); ?></strong></div>
+						<div><span><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $player_stats['senior'] ); ?></strong></div>
+						<div><span><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $player_stats['youth'] ); ?></strong></div>
+					</div>
+					<h3><?php esc_html_e( 'Top 3 players by rating', 'table-tennis-tournament-for-clubs' ); ?></h3>
+					<?php if ( empty( $top_players ) ) : ?>
+						<p><?php esc_html_e( 'No active published players found.', 'table-tennis-tournament-for-clubs' ); ?></p>
+					<?php else : ?>
+						<ol class="tttc-top-players">
+							<?php foreach ( $top_players as $player ) : ?>
+								<li><span><?php echo esc_html( $player->post_title ); ?></span><strong><?php echo esc_html( absint( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ) ); ?></strong></li>
+							<?php endforeach; ?>
+						</ol>
+					<?php endif; ?>
+				</section>
+				<section class="tttc-dashboard-section">
+					<h2><?php esc_html_e( 'Published tournaments', 'table-tennis-tournament-for-clubs' ); ?></h2>
+					<div class="tttc-stat-list">
+						<div><span><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $tournament_types['senior'] ); ?></strong></div>
+						<div><span><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $tournament_types['youth'] ); ?></strong></div>
+						<div><span><?php esc_html_e( 'Both', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $tournament_types['both'] ); ?></strong></div>
+						<div><span><?php esc_html_e( 'Average players per tournament', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $average_participants ); ?></strong></div>
+					</div>
+					<h3><?php esc_html_e( 'Tournament statuses', 'table-tennis-tournament-for-clubs' ); ?></h3>
+					<div class="tttc-stat-list">
+						<?php foreach ( TTTC_Plugin::statuses() as $status_key => $status_label ) : ?>
+							<div><span><?php echo esc_html( $status_label ); ?></span><strong><?php echo esc_html( $tournament_statuses[ $status_key ] ); ?></strong></div>
+						<?php endforeach; ?>
+					</div>
+				</section>
 			</div>
 			<p><a class="button button-primary" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE ) ); ?>"><?php esc_html_e( 'Add player', 'table-tennis-tournament-for-clubs' ); ?></a> <a class="button" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE ) ); ?>"><?php esc_html_e( 'Add tournament', 'table-tennis-tournament-for-clubs' ); ?></a></p>
 		</div>

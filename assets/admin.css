@@ -28,6 +28,52 @@
   line-height: 1;
 }
 
+.tttc-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  max-width: 980px;
+  margin: 24px 0;
+}
+
+.tttc-dashboard-section {
+  padding: 20px;
+  border: 1px solid #dcdcde;
+  background: #fff;
+}
+
+.tttc-dashboard-section h2 {
+  margin: 0 0 16px;
+}
+
+.tttc-dashboard-section h3 {
+  margin: 24px 0 8px;
+}
+
+.tttc-stat-list {
+  display: grid;
+  gap: 8px;
+}
+
+.tttc-stat-list > div,
+.tttc-top-players li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.tttc-stat-list strong,
+.tttc-top-players strong {
+  white-space: nowrap;
+}
+
+.tttc-top-players {
+  margin: 0;
+  padding-left: 28px;
+}
+
 .tttc-add-player .dashicons {
   font-size: 16px;
   width: 16px;
