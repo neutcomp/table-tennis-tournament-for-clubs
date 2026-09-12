@@ -34,15 +34,15 @@
 }
 
 .tttc-players-collapse-label {
-  display: none;
+  display: none !important;
 }
 
 .tttc-public-tournament__players[open] .tttc-players-expand-label {
-  display: none;
+  display: none !important;
 }
 
 .tttc-public-tournament__players[open] .tttc-players-collapse-label {
-  display: inline;
+  display: inline !important;
 }
 
 .tttc-public-tournament__players summary::-webkit-details-marker {
