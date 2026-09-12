@@ -141,9 +141,7 @@
 }
 
 .tttc-public-round-grid {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 0 18px;
+  display: block !important;
 }
 
 .tttc-public-round {
