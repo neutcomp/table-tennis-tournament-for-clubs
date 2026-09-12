@@ -65,13 +65,17 @@
 }
 
 .tttc-public-group-grid {
-  display: block;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px;
 }
 
 .tttc-public-group {
   border: 1px solid #c3c4c7;
-  margin-bottom: 20px;
+  box-sizing: border-box;
+  margin: 0;
   padding: 18px;
+  width: 100% !important;
   break-inside: avoid;
 }
 
@@ -101,8 +105,8 @@
 }
 
 .tttc-public-round-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 0 18px;
 }
 
@@ -112,6 +116,7 @@
 
 .tttc-public-matches {
   border-collapse: collapse;
+  box-sizing: border-box;
   width: 100%;
 }
 
@@ -156,7 +161,7 @@
   }
 
   .tttc-public-round-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .tttc-public-matches {
@@ -187,11 +192,11 @@
   }
 
   .tttc-public-group-grid {
-    display: block;
+    display: block !important;
   }
 
   .tttc-public-round-grid {
-    display: block;
+    display: block !important;
   }
 
   .tttc-public-group {
