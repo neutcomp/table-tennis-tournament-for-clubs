@@ -122,6 +122,9 @@ final class TTTC_Public {
 		$stored_date = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
 		$players     = $this->assigned_players( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
+		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
+		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$scores      = $this->saved_scores( $tournament_id );
 		?>
 		<main class="tttc-public-tournament">
 			<div class="tttc-public-tournament__inner">
@@ -156,8 +159,8 @@ final class TTTC_Public {
 									<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
 										<div class="tttc-public-round">
 											<h4 class="tttc-public-round-title"><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></h4>
-											<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
-											<?php foreach ( $round as $match_number => $match ) : ?><tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td></tr><?php endforeach; ?>
+											<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
+											<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); $match_scores = isset( $scores[ $match_key ] ) ? $scores[ $match_key ] : array(); $games_won = $this->games_won( $match_scores, $games ); ?><tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?><td><?php echo esc_html( (string) $game_score[0] . '-' . (string) $game_score[1] ); ?></td><?php endfor; ?><td><?php echo esc_html( $games_won[0] . '-' . $games_won[1] ); ?></td></tr><?php endforeach; ?>
 											</tbody></table>
 										</div>
 									<?php endforeach; ?>
@@ -195,6 +198,54 @@ final class TTTC_Public {
 		} );
 
 		return $players;
+	}
+
+	private function saved_scores( $tournament_id ) {
+		global $wpdb;
+		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT match_key, scores FROM ' . TTTC_Plugin::scores_table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$scores = array();
+		foreach ( $rows as $row ) {
+			$decoded = json_decode( $row->scores, true );
+			if ( ! is_array( $decoded ) ) {
+				continue;
+			}
+			$scores[ $row->match_key ] = array();
+			foreach ( $decoded as $game_score ) {
+				if ( is_array( $game_score ) ) {
+					$scores[ $row->match_key ][] = array( isset( $game_score[0] ) ? $game_score[0] : '', isset( $game_score[1] ) ? $game_score[1] : '' );
+					continue;
+				}
+				$parts = explode( '-', (string) $game_score, 2 );
+				$scores[ $row->match_key ][] = array( $parts[0], isset( $parts[1] ) ? $parts[1] : '' );
+			}
+		}
+
+		return $scores;
+	}
+
+	private function games_won( $match_scores, $games ) {
+		$won = array( 0, 0 );
+		for ( $game = 0; $game < $games; $game++ ) {
+			if ( ! isset( $match_scores[ $game ] ) || ! is_array( $match_scores[ $game ] ) || '' === $match_scores[ $game ][0] || '' === $match_scores[ $game ][1] ) {
+				continue;
+			}
+			$first_score  = absint( $match_scores[ $game ][0] );
+			$second_score = absint( $match_scores[ $game ][1] );
+			if ( $first_score > $second_score ) {
+				$won[0]++;
+			} elseif ( $second_score > $first_score ) {
+				$won[1]++;
+			}
+		}
+
+		return $won;
+	}
+
+	private function match_key( $player_one_id, $player_two_id ) {
+		$player_ids = array( absint( $player_one_id ), absint( $player_two_id ) );
+		sort( $player_ids, SORT_NUMERIC );
+
+		return $player_ids[0] . '-' . $player_ids[1];
 	}
 
 	private function assigned_player_ids( $tournament_id ) {

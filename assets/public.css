@@ -153,6 +153,9 @@
 .tttc-public-matches {
   border-collapse: collapse;
   box-sizing: border-box;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
   width: 100%;
 }
 
