@@ -21,6 +21,7 @@ final class TTTC_Admin {
 		add_action( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_custom_column', array( $this, 'tournament_column' ), 10, 2 );
 		add_action( 'admin_post_tttc_update_players', array( $this, 'update_players' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_filter( 'redirect_post_location', array( $this, 'redirect_after_new_post' ), 10, 2 );
 	}
 
 	public function register_menu() {
@@ -121,6 +122,15 @@ final class TTTC_Admin {
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, $date );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GAMES, $games );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
+	}
+
+	public function redirect_after_new_post( $location, $post_id ) {
+		$post_type = get_post_type( $post_id );
+		if ( ! in_array( $post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) || ! isset( $_POST['original_post_status'] ) || 'auto-draft' !== sanitize_key( wp_unslash( $_POST['original_post_status'] ) ) ) {
+			return $location;
+		}
+
+		return admin_url( 'post-new.php?post_type=' . $post_type );
 	}
 
 	private function can_save( $post_id, $nonce_name, $nonce_action ) {
