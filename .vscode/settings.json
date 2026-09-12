@@ -8,7 +8,7 @@
             "approve": true,
             "matchCommandLine": true
         },
-        "/^node --check assets/public\\.js$/": {
+        "/^node --check assets/public(?: .*)?$/": {
             "approve": true,
             "matchCommandLine": true
         }

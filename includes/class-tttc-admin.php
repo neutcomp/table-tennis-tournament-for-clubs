@@ -336,7 +336,13 @@ final class TTTC_Admin {
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form">
 					<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
 					<?php wp_nonce_field( 'tttc_save_scores', 'tttc_scores_nonce' ); ?>
+					<div class="tttc-public-group-tabs tttc-admin-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?>">
+						<?php foreach ( $schedule as $group_index => $group_schedule ) : $tab_id = 'tttc-score-group-tab-' . ( $group_index + 1 ); $panel_id = 'tttc-score-group-panel-' . ( $group_index + 1 ); ?>
+							<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-admin-group-tab<?php echo 0 === $group_index ? ' is-active' : ''; ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="<?php echo 0 === $group_index ? 'true' : 'false'; ?>" tabindex="<?php echo 0 === $group_index ? '0' : '-1'; ?>"><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 ) ); ?></button>
+						<?php endforeach; ?>
+					</div>
 					<?php foreach ( $schedule as $group_index => $group_schedule ) : ?>
+						<section id="<?php echo esc_attr( 'tttc-score-group-panel-' . ( $group_index + 1 ) ); ?>" class="tttc-public-group tttc-admin-group<?php echo 0 === $group_index ? ' is-active' : ''; ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( 'tttc-score-group-tab-' . ( $group_index + 1 ) ); ?>"<?php echo 0 === $group_index ? '' : ' hidden'; ?>>
 						<h2><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 ) ); ?></h2>
 						<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Round', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?></tr></thead><tbody>
 						<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
@@ -344,6 +350,7 @@ final class TTTC_Admin {
 								<tr><td><?php echo esc_html( $round_number + 1 ); ?></td><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][0] ) ? $saved_scores[ $match_key ][ $game ][0] : '' ); ?>"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][1] ) ? $saved_scores[ $match_key ][ $game ][1] : '' ); ?>"></span></td><?php endfor; ?></tr>
 							<?php endforeach; ?>
 						<?php endforeach; ?></tbody></table></div>
+						</section>
 					<?php endforeach; ?>
 					<p><button class="button button-primary"><?php esc_html_e( 'Save scores', 'table-tennis-tournament-for-clubs' ); ?></button></p>
 				</form>
@@ -580,6 +587,9 @@ final class TTTC_Admin {
 		if ( false !== strpos( $hook, 'tttc-' ) || ( isset( $_GET['post_type'] ) && in_array( $_GET['post_type'], array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) ) {
 			wp_enqueue_style( 'tttc-admin', TTTC_URL . 'assets/admin.css', array(), TTTC_VERSION );
 			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery' ), TTTC_VERSION, true );
+			if ( false !== strpos( $hook, 'tttc-scores' ) ) {
+				wp_enqueue_script( 'tttc-public', TTTC_URL . 'assets/public.js', array(), TTTC_VERSION, true );
+			}
 		}
 	}
 }
