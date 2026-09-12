@@ -101,8 +101,8 @@
 }
 
 .tttc-public-group-grid {
-  display: flex !important;
-  flex-direction: column !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
   gap: 20px;
 }
 
