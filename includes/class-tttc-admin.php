@@ -91,7 +91,7 @@ final class TTTC_Admin {
 		$status = $status ? $status : 'draft';
 		?>
 		<p><label for="tttc-date"><strong><?php esc_html_e( 'Date', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input type="date" id="tttc-date" name="tttc_date" value="<?php echo esc_attr( $date ); ?>" required></p>
-		<p><label for="tttc-games"><strong><?php esc_html_e( 'Amount of games', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input class="small-text" type="number" min="1" step="1" id="tttc-games" name="tttc_games" value="<?php echo esc_attr( $games ); ?>" required></p>
+		<p><label for="tttc-games"><strong><?php esc_html_e( 'Best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input class="small-text" type="number" min="1" step="1" id="tttc-games" name="tttc_games" value="<?php echo esc_attr( $games ); ?>" required></p>
 		<p><label for="tttc-status"><strong><?php esc_html_e( 'Status', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-status" name="tttc_status">
 			<?php foreach ( TTTC_Plugin::statuses() as $key => $label ) : ?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $status, $key ); ?>><?php echo esc_html( $label ); ?></option>
@@ -176,7 +176,7 @@ final class TTTC_Admin {
 	}
 
 	public function tournament_columns( $columns ) {
-		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Games', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => __( 'Status', 'table-tennis-tournament-for-clubs' ), 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
+		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => __( 'Status', 'table-tennis-tournament-for-clubs' ), 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
 	}
 
 	public function tournament_column( $column, $post_id ) {
