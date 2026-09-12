@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Plugin {
-	const DB_VERSION = '1.0.0';
+	const DB_VERSION = '1.1.0';
 	const PLAYER_POST_TYPE = 'tttc_player';
 	const TOURNAMENT_POST_TYPE = 'tttc_tournament';
 	const PLAYER_META_RATING = '_tttc_rating';
@@ -53,6 +53,7 @@ final class TTTC_Plugin {
 	public static function activate() {
 		self::instance()->register_post_types();
 		self::create_relationship_table();
+		TTTC_Public::register_rewrite();
 		flush_rewrite_rules();
 	}
 
@@ -63,6 +64,8 @@ final class TTTC_Plugin {
 	public function maybe_upgrade() {
 		if ( get_option( 'tttc_db_version' ) !== self::DB_VERSION ) {
 			self::create_relationship_table();
+			TTTC_Public::register_rewrite();
+			flush_rewrite_rules();
 		}
 	}
 

@@ -1,0 +1,177 @@
+.tttc-public-tournament {
+  color: #1d2327;
+  background: #f0f0f1;
+  padding: 32px 20px 56px;
+}
+
+.tttc-public-tournament__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.tttc-public-tournament__header,
+.tttc-public-tournament__players,
+.tttc-public-groups {
+  background: #fff;
+  border: 1px solid #dcdcde;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.tttc-public-tournament__eyebrow {
+  color: #646970;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.tttc-public-tournament h1,
+.tttc-public-tournament h2,
+.tttc-public-tournament h3 {
+  color: #1d2327;
+  margin-top: 0;
+}
+
+.tttc-public-tournament h1 {
+  font-size: clamp(28px, 5vw, 48px);
+  margin-bottom: 8px;
+}
+
+.tttc-public-tournament__date {
+  color: #2271b1;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.tttc-public-player-list {
+  columns: 2;
+  margin: 0;
+  padding-left: 28px;
+}
+
+.tttc-public-player-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #f0f0f1;
+  padding: 8px 8px 8px 0;
+}
+
+.tttc-public-player-list strong {
+  color: #2271b1;
+}
+
+.tttc-public-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.tttc-public-group {
+  border: 1px solid #c3c4c7;
+  padding: 18px;
+  break-inside: avoid;
+}
+
+.tttc-public-group h3 {
+  border-bottom: 3px solid #2271b1;
+  padding-bottom: 8px;
+}
+
+.tttc-public-group__players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+}
+
+.tttc-public-group__players li {
+  font-weight: 600;
+}
+
+.tttc-public-matches {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.tttc-public-matches th,
+.tttc-public-matches td {
+  border: 1px solid #dcdcde;
+  padding: 8px;
+  text-align: left;
+}
+
+.tttc-public-matches th {
+  background: #dcdcde;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.tttc-public-matches th:first-child,
+.tttc-public-matches td:first-child {
+  text-align: center;
+  width: 48px;
+}
+
+.tttc-public-notice {
+  background: #fff;
+  border-left: 4px solid #dba617;
+  padding: 14px 18px;
+}
+
+@media (max-width: 640px) {
+  .tttc-public-tournament {
+    padding: 20px 12px 36px;
+  }
+
+  .tttc-public-tournament__header,
+  .tttc-public-tournament__players,
+  .tttc-public-groups {
+    padding: 20px;
+  }
+
+  .tttc-public-player-list {
+    columns: 1;
+  }
+
+  .tttc-public-matches {
+    font-size: 14px;
+  }
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .site-navigation,
+  nav,
+  footer,
+  header nav {
+    display: none !important;
+  }
+
+  .tttc-public-tournament {
+    background: #fff;
+    padding: 0;
+  }
+
+  .tttc-public-tournament__header,
+  .tttc-public-tournament__players,
+  .tttc-public-groups {
+    border: 0;
+    padding: 0;
+  }
+
+  .tttc-public-group-grid {
+    display: block;
+  }
+
+  .tttc-public-group {
+    border: 1px solid #999;
+    margin-bottom: 20px;
+  }
+}

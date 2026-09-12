@@ -17,9 +17,10 @@ Player emails are stored for club administration and are not shown in public sho
 == Features ==
 
 * Player records with name, rating, email, and active status.
-* Tournament records with name, date, amount of games, and status.
+* Tournament records with name, date, best of, player type, and status.
 * Tournament Players screen for adding and removing participants.
 * Inactive players cannot be assigned to new tournaments.
+* Public tournament pages with groups and round-robin match schedules.
 * Public shortcodes for tournament and active player lists.
 
 == Installation ==
@@ -32,6 +33,8 @@ Player emails are stored for club administration and are not shown in public sho
 == Shortcodes ==
 
 `[tttc_tournaments]` displays published tournaments and their assigned players.
+
+Each published tournament title links to `/toernooi/{tournament-name}/{DD-MM-YYYY}`. The public tournament page lists active assigned players by rating, distributes them into groups using the tournament group rules, and shows every round-robin match in each group. Schedules are available for 4 to 28 players.
 
 Optional attributes:
 
