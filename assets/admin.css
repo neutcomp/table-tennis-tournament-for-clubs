@@ -64,5 +64,10 @@
 }
 
 .tttc-scores-table input {
-  width: 64px;
+  width: 44px;
+}
+
+.tttc-score-pair {
+  display: inline-flex;
+  gap: 4px;
 }

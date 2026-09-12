@@ -251,7 +251,7 @@ final class TTTC_Admin {
 						<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Round', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?></tr></thead><tbody>
 						<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
 							<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); ?>
-								<tr><td><?php echo esc_html( $round_number + 1 ); ?></td><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><input class="small-text" type="text" inputmode="numeric" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ] ) ? $saved_scores[ $match_key ][ $game ] : '' ); ?>" placeholder="11-9"></td><?php endfor; ?></tr>
+								<tr><td><?php echo esc_html( $round_number + 1 ); ?></td><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][0] ) ? $saved_scores[ $match_key ][ $game ][0] : '' ); ?>"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][1] ) ? $saved_scores[ $match_key ][ $game ][1] : '' ); ?>"></span></td><?php endfor; ?></tr>
 							<?php endforeach; ?>
 						<?php endforeach; ?></tbody></table></div>
 					<?php endforeach; ?>
@@ -287,8 +287,11 @@ final class TTTC_Admin {
 					$match_scores = isset( $submitted[ $match_key ] ) && is_array( $submitted[ $match_key ] ) ? $submitted[ $match_key ] : array();
 					$scores       = array();
 					for ( $game = 0; $game < $games; $game++ ) {
-						$value     = isset( $match_scores[ $game ] ) ? sanitize_text_field( $match_scores[ $game ] ) : '';
-						$scores[]  = preg_replace( '/[^0-9-]/', '', $value );
+						$game_score = isset( $match_scores[ $game ] ) && is_array( $match_scores[ $game ] ) ? $match_scores[ $game ] : array();
+						$scores[]   = array(
+							isset( $game_score[0] ) ? preg_replace( '/[^0-9]/', '', sanitize_text_field( $game_score[0] ) ) : '',
+							isset( $game_score[1] ) ? preg_replace( '/[^0-9]/', '', sanitize_text_field( $game_score[1] ) ) : '',
+						);
 					}
 					$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'match_key' => $match_key, 'player_one_id' => min( $match[0]->ID, $match[1]->ID ), 'player_two_id' => max( $match[0]->ID, $match[1]->ID ), 'round_number' => $round_number + 1, 'match_number' => $match_number + 1, 'scores' => wp_json_encode( $scores ), 'updated_at' => current_time( 'mysql', true ) ), array( '%d', '%s', '%d', '%d', '%d', '%d', '%s', '%s' ) );
 				}
@@ -305,7 +308,18 @@ final class TTTC_Admin {
 		$scores = array();
 		foreach ( $rows as $row ) {
 			$decoded = json_decode( $row->scores, true );
-			$scores[ $row->match_key ] = is_array( $decoded ) ? $decoded : array();
+			$scores[ $row->match_key ] = array();
+			if ( ! is_array( $decoded ) ) {
+				continue;
+			}
+			foreach ( $decoded as $game_score ) {
+				if ( is_array( $game_score ) ) {
+					$scores[ $row->match_key ][] = array( isset( $game_score[0] ) ? $game_score[0] : '', isset( $game_score[1] ) ? $game_score[1] : '' );
+					continue;
+				}
+				$parts = explode( '-', (string) $game_score, 2 );
+				$scores[ $row->match_key ][] = array( $parts[0], isset( $parts[1] ) ? $parts[1] : '' );
+			}
 		}
 
 		return $scores;
