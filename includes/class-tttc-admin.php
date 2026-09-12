@@ -198,7 +198,16 @@ final class TTTC_Admin {
 			echo esc_html( isset( TTTC_Plugin::statuses()[ $status ] ) ? TTTC_Plugin::statuses()[ $status ] : $status );
 		} elseif ( 'tttc_players' === $column ) {
 			$count = $this->assigned_player_ids( $post_id );
+			$website_url = '';
+			$date        = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
+			$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
+			if ( $date_object ) {
+				$website_url = home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $post_id ) . '/' . $date_object->format( 'd-m-Y' ) ) );
+			}
 			echo esc_html( count( $count ) ) . ' <a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Manage players', 'table-tennis-tournament-for-clubs' ) . '</a>';
+			if ( $website_url ) {
+				echo ' <a class="button-link" href="' . esc_url( $website_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Website', 'table-tennis-tournament-for-clubs' ) . '</a>';
+			}
 		}
 	}
 
