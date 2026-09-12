@@ -325,6 +325,7 @@ final class TTTC_Admin {
 			$this->score_form_scores = isset( $error_data['scores'] ) ? $error_data['scores'] : null;
 		}
 		$saved_scores = null !== $this->score_form_scores ? $this->score_form_scores : $this->saved_scores( $tournament_id );
+		$competition  = TTTC_Competition::calculate( $schedule, $saved_scores, $games );
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_the_title( $tournament_id ) . ' - ' . __( 'Scores', 'table-tennis-tournament-for-clubs' ) ); ?></h1>
@@ -350,6 +351,15 @@ final class TTTC_Admin {
 								<tr><td><?php echo esc_html( $round_number + 1 ); ?></td><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][0] ) ? $saved_scores[ $match_key ][ $game ][0] : '' ); ?>"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][1] ) ? $saved_scores[ $match_key ][ $game ][1] : '' ); ?>"></span></td><?php endfor; ?></tr>
 							<?php endforeach; ?>
 						<?php endforeach; ?></tbody></table></div>
+						</section>
+					<?php endforeach; ?>
+					<?php foreach ( $competition['stages'] as $stage ) : ?>
+						<section class="tttc-crossover-stage">
+							<h2><?php echo esc_html( $stage['label'] ); ?></h2>
+							<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?></tr></thead><tbody>
+							<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $score_key = $match['score_key']; ?>
+								<tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( isset( $saved_scores[ $score_key ][ $game ][0] ) ? $saved_scores[ $score_key ][ $game ][0] : '' ); ?>"<?php disabled( ! $available ); ?>><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( isset( $saved_scores[ $score_key ][ $game ][1] ) ? $saved_scores[ $score_key ][ $game ][1] : '' ); ?>"<?php disabled( ! $available ); ?>></span></td><?php endfor; ?></tr>
+							<?php endforeach; ?></tbody></table></div>
 						</section>
 					<?php endforeach; ?>
 					<p><button class="button button-primary"><?php esc_html_e( 'Save scores', 'table-tennis-tournament-for-clubs' ); ?></button></p>
@@ -399,6 +409,22 @@ final class TTTC_Admin {
 				}
 			}
 		}
+		$competition = TTTC_Competition::calculate( $schedule, $validated, $games );
+		foreach ( $competition['stages'] as $stage ) {
+			foreach ( $stage['matches'] as $match ) {
+				if ( ! $match['players'][0] || ! $match['players'][1] ) {
+					continue;
+				}
+				$match_scores = isset( $submitted[ $match['score_key'] ] ) && is_array( $submitted[ $match['score_key'] ] ) ? $submitted[ $match['score_key'] ] : array();
+				$match_result = $this->validate_match_scores( $match_scores, $games );
+				if ( is_wp_error( $match_result ) ) {
+					set_transient( $this->score_error_transient_key( $tournament_id ), array( 'message' => $match_result->get_error_message(), 'scores' => $this->form_scores( $submitted, $schedule, $games ) ), MINUTE_IN_SECONDS );
+					wp_safe_redirect( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&error=1' ) );
+					exit;
+				}
+				$validated[ $match['score_key'] ] = $match_result;
+			}
+		}
 
 		global $wpdb;
 		$table = TTTC_Plugin::scores_table_name();
@@ -411,6 +437,14 @@ final class TTTC_Admin {
 					$scores       = $validated[ $match_key ];
 					$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'match_key' => $match_key, 'player_one_id' => min( $match[0]->ID, $match[1]->ID ), 'player_two_id' => max( $match[0]->ID, $match[1]->ID ), 'round_number' => $round_number + 1, 'match_number' => $match_number + 1, 'scores' => wp_json_encode( $scores ), 'updated_at' => current_time( 'mysql', true ) ), array( '%d', '%s', '%d', '%d', '%d', '%d', '%s', '%s' ) );
 				}
+			}
+		}
+		foreach ( $competition['stages'] as $stage ) {
+			foreach ( $stage['matches'] as $match_number => $match ) {
+				if ( ! $match['players'][0] || ! $match['players'][1] ) {
+					continue;
+				}
+				$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'match_key' => $match['score_key'], 'player_one_id' => min( $match['players'][0]->ID, $match['players'][1]->ID ), 'player_two_id' => max( $match['players'][0]->ID, $match['players'][1]->ID ), 'round_number' => 0, 'match_number' => $match_number + 1, 'scores' => wp_json_encode( $validated[ $match['score_key'] ] ), 'updated_at' => current_time( 'mysql', true ) ), array( '%d', '%s', '%d', '%d', '%d', '%d', '%s', '%s' ) );
 			}
 		}
 

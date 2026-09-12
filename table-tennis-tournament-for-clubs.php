@@ -20,6 +20,7 @@ define( 'TTTC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'TTTC_URL', plugin_dir_url( __FILE__ ) );
 
 require_once TTTC_PATH . 'includes/class-tttc-plugin.php';
+require_once TTTC_PATH . 'includes/class-tttc-competition.php';
 require_once TTTC_PATH . 'includes/class-tttc-admin.php';
 require_once TTTC_PATH . 'includes/class-tttc-public.php';
 

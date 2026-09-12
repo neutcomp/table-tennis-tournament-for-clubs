@@ -126,6 +126,7 @@ final class TTTC_Public {
 		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
 		$scores      = $this->saved_scores( $tournament_id );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
 		?>
 		<main class="tttc-public-tournament">
 			<div class="tttc-public-tournament__inner">
@@ -174,6 +175,21 @@ final class TTTC_Public {
 								</section>
 							<?php endforeach; ?>
 						</div>
+						<?php if ( count( $schedule ) > 1 ) : ?>
+							<section class="tttc-public-crossover" aria-labelledby="tttc-crossover-heading">
+								<h2 id="tttc-crossover-heading"><?php esc_html_e( 'Crossover rounds', 'table-tennis-tournament-for-clubs' ); ?></h2>
+								<?php foreach ( $competition['stages'] as $stage ) : ?>
+									<section class="tttc-public-crossover-stage">
+										<h3><?php echo esc_html( $stage['label'] ); ?></h3>
+										<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
+										<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $match_scores = isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array(); $games_won = $this->games_won( $match_scores, $games ); ?>
+											<tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?><td><?php echo esc_html( (string) $game_score[0] . '-' . (string) $game_score[1] ); ?></td><?php endfor; ?><td><?php echo esc_html( $games_won[0] . '-' . $games_won[1] ); ?></td></tr>
+										<?php endforeach; ?></tbody></table>
+									</section>
+								<?php endforeach; ?>
+								<?php if ( ! empty( $competition['places'] ) ) : ?><h3><?php esc_html_e( 'Final places', 'table-tennis-tournament-for-clubs' ); ?></h3><ol class="tttc-public-places"><?php foreach ( $competition['places'] as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol><?php endif; ?>
+							</section>
+						<?php endif; ?>
 					</section>
 				<?php elseif ( count( $players ) ) : ?>
 					<p class="tttc-public-notice"><?php esc_html_e( 'A match schedule is available for tournaments with 4 to 28 active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
