@@ -150,10 +150,15 @@ final class TTTC_Public {
 				<?php if ( ! empty( $schedule ) ) : ?>
 					<section class="tttc-public-groups" aria-labelledby="tttc-groups-heading">
 						<h2 id="tttc-groups-heading"><?php esc_html_e( 'Groups and matches', 'table-tennis-tournament-for-clubs' ); ?></h2>
-						<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?>">
+						<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Groups and crossover rounds', 'table-tennis-tournament-for-clubs' ); ?>">
 							<?php foreach ( $schedule as $index => $group_schedule ) : $tab_id = 'tttc-group-tab-' . ( $index + 1 ); $panel_id = 'tttc-group-panel-' . ( $index + 1 ); ?>
 								<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab<?php echo 0 === $index ? ' is-active' : ''; ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="<?php echo 0 === $index ? 'true' : 'false'; ?>" tabindex="<?php echo 0 === $index ? '0' : '-1'; ?>"><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $index + 1 ) ); ?></button>
 			<?php endforeach; ?>
+							<?php if ( count( $schedule ) > 1 ) : ?>
+								<?php foreach ( $competition['stages'] as $stage ) : $tab_id = 'tttc-crossover-tab-' . $stage['id']; $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
+									<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false" tabindex="-1"><?php echo esc_html( $stage['label'] ); ?></button>
+								<?php endforeach; ?>
+							<?php endif; ?>
 						</div>
 						<div class="tttc-public-group-grid">
 							<?php foreach ( $schedule as $index => $group_schedule ) : ?>
@@ -176,10 +181,9 @@ final class TTTC_Public {
 							<?php endforeach; ?>
 						</div>
 						<?php if ( count( $schedule ) > 1 ) : ?>
-							<section class="tttc-public-crossover" aria-labelledby="tttc-crossover-heading">
-								<h2 id="tttc-crossover-heading"><?php esc_html_e( 'Crossover rounds', 'table-tennis-tournament-for-clubs' ); ?></h2>
-								<?php foreach ( $competition['stages'] as $stage ) : ?>
-									<section class="tttc-public-crossover-stage">
+							<div class="tttc-public-crossover" aria-label="<?php esc_attr_e( 'Crossover rounds', 'table-tennis-tournament-for-clubs' ); ?>">
+								<?php foreach ( $competition['stages'] as $stage ) : $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
+									<section id="<?php echo esc_attr( $panel_id ); ?>" class="tttc-public-group tttc-public-crossover-stage" role="tabpanel" aria-labelledby="<?php echo esc_attr( 'tttc-crossover-tab-' . $stage['id'] ); ?>" hidden>
 										<h3><?php echo esc_html( $stage['label'] ); ?></h3>
 										<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
 										<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $match_scores = isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array(); $games_won = $this->games_won( $match_scores, $games ); ?>
@@ -188,7 +192,7 @@ final class TTTC_Public {
 									</section>
 								<?php endforeach; ?>
 								<?php if ( ! empty( $competition['places'] ) ) : ?><h3><?php esc_html_e( 'Final places', 'table-tennis-tournament-for-clubs' ); ?></h3><ol class="tttc-public-places"><?php foreach ( $competition['places'] as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol><?php endif; ?>
-							</section>
+							</div>
 						<?php endif; ?>
 					</section>
 				<?php elseif ( count( $players ) ) : ?>
