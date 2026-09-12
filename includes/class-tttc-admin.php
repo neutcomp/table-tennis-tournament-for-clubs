@@ -36,7 +36,7 @@ final class TTTC_Admin {
 		add_submenu_page( 'tttc-dashboard', __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-dashboard', array( $this, 'dashboard' ) );
 		add_submenu_page( 'tttc-dashboard', __( 'Players', 'table-tennis-tournament-for-clubs' ), __( 'Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE );
 		add_submenu_page( 'tttc-dashboard', __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE );
-		add_submenu_page( 'tttc-dashboard', __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-assignments', array( $this, 'assignments_page' ) );
+		add_submenu_page( null, __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-assignments', array( $this, 'assignments_page' ) );
 	}
 
 	public function dashboard() {
@@ -161,7 +161,7 @@ final class TTTC_Admin {
 			echo esc_html( isset( TTTC_Plugin::statuses()[ $status ] ) ? TTTC_Plugin::statuses()[ $status ] : $status );
 		} elseif ( 'tttc_players' === $column ) {
 			$count = $this->assigned_player_ids( $post_id );
-			echo esc_html( count( $count ) ) . ' <a class="tttc-add-player" title="' . esc_attr__( 'Add players', 'table-tennis-tournament-for-clubs' ) . '" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '"><span class="dashicons dashicons-plus-alt2"></span><span class="screen-reader-text">' . esc_html__( 'Add players', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
+			echo esc_html( count( $count ) ) . ' <a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Manage players', 'table-tennis-tournament-for-clubs' ) . '</a>';
 		}
 	}
 
@@ -170,14 +170,12 @@ final class TTTC_Admin {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 		$tournament_id = isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0;
-		$tournaments   = get_posts( array( 'post_type' => TTTC_Plugin::TOURNAMENT_POST_TYPE, 'post_status' => array( 'publish', 'draft', 'future', 'private' ), 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
 		$players       = get_posts( array( 'post_type' => TTTC_Plugin::PLAYER_POST_TYPE, 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
 		$assigned      = $tournament_id ? $this->assigned_player_ids( $tournament_id ) : array();
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Tournament Players', 'table-tennis-tournament-for-clubs' ); ?></h1>
 			<?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Tournament players updated.', 'table-tennis-tournament-for-clubs' ); ?></p></div><?php endif; ?>
-			<form method="get"><input type="hidden" name="page" value="tttc-assignments"><label for="tttc-tournament-select"><strong><?php esc_html_e( 'Select tournament', 'table-tennis-tournament-for-clubs' ); ?></strong></label> <select id="tttc-tournament-select" name="tournament_id"><option value="0"><?php esc_html_e( 'Choose a tournament', 'table-tennis-tournament-for-clubs' ); ?></option><?php foreach ( $tournaments as $tournament ) : ?><option value="<?php echo esc_attr( $tournament->ID ); ?>" <?php selected( $tournament_id, $tournament->ID ); ?>><?php echo esc_html( $tournament->post_title ); ?></option><?php endforeach; ?></select> <button class="button"><?php esc_html_e( 'Load players', 'table-tennis-tournament-for-clubs' ); ?></button></form>
 			<?php if ( $tournament_id ) : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-assignment-form">
 					<input type="hidden" name="action" value="tttc_update_players"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
