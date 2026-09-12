@@ -20,6 +20,8 @@ Player emails are stored for club administration and are not shown in public sho
 * Tournament records with name, date, best of, player type, and status.
 * Tournament Players screen for adding and removing participants.
 * Inactive players cannot be assigned to new tournaments.
+* Tournament Scores screen with three or five score fields per generated match.
+* Match scores are stored for administrators and are not shown on public tournament pages.
 * Public tournament pages with groups and round-robin match schedules.
 * Public shortcodes for tournament and active player lists.
 
@@ -29,6 +31,7 @@ Player emails are stored for club administration and are not shown in public sho
 2. Activate the plugin from Plugins in WordPress.
 3. Use the Table Tennis menu to create players and tournaments.
 4. Open Tournament Players, select a tournament, and save its participants.
+5. Select Best of 3 or Best of 5 when creating a tournament, then use Scores in the tournament overview to enter match scores.
 
 == Shortcodes ==
 

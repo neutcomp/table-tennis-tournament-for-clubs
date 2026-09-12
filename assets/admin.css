@@ -43,3 +43,26 @@
   max-width: 980px;
   margin-top: 28px;
 }
+
+.tttc-scores-form {
+  margin-top: 28px;
+}
+
+.tttc-scores-table-wrap {
+  margin: 12px 0 28px;
+  overflow-x: auto;
+}
+
+.tttc-scores-table {
+  min-width: 760px;
+}
+
+.tttc-scores-table th,
+.tttc-scores-table td {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.tttc-scores-table input {
+  width: 64px;
+}

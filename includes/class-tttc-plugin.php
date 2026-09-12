@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Plugin {
-	const DB_VERSION = '1.1.0';
+	const DB_VERSION = '1.2.0';
 	const PLAYER_POST_TYPE = 'tttc_player';
 	const TOURNAMENT_POST_TYPE = 'tttc_tournament';
 	const PLAYER_META_RATING = '_tttc_rating';
@@ -75,6 +75,12 @@ final class TTTC_Plugin {
 		return $wpdb->prefix . 'tttc_tournament_players';
 	}
 
+	public static function scores_table_name() {
+		global $wpdb;
+
+		return $wpdb->prefix . 'tttc_tournament_scores';
+	}
+
 	private static function create_relationship_table() {
 		global $wpdb;
 
@@ -90,9 +96,25 @@ final class TTTC_Plugin {
 			KEY tournament_id (tournament_id),
 			KEY player_id (player_id)
 		) {$charset_collate};";
+		$scores_table = self::scores_table_name();
+		$scores_sql   = "CREATE TABLE {$scores_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			tournament_id bigint(20) unsigned NOT NULL,
+			match_key varchar(32) NOT NULL,
+			player_one_id bigint(20) unsigned NOT NULL,
+			player_two_id bigint(20) unsigned NOT NULL,
+			round_number smallint(5) unsigned NOT NULL,
+			match_number smallint(5) unsigned NOT NULL,
+			scores longtext NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY tournament_match (tournament_id, match_key),
+			KEY tournament_id (tournament_id)
+		) {$charset_collate};";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
+		dbDelta( $scores_sql );
 		update_option( 'tttc_db_version', self::DB_VERSION );
 	}
 
@@ -106,6 +128,9 @@ final class TTTC_Plugin {
 		global $wpdb;
 		$column = self::PLAYER_POST_TYPE === $post_type ? 'player_id' : 'tournament_id';
 		$wpdb->delete( self::table_name(), array( $column => absint( $post_id ) ), array( '%d' ) );
+		if ( self::TOURNAMENT_POST_TYPE === $post_type ) {
+			$wpdb->delete( self::scores_table_name(), array( 'tournament_id' => absint( $post_id ) ), array( '%d' ) );
+		}
 	}
 
 	public function register_post_types() {

@@ -20,6 +20,7 @@ final class TTTC_Admin {
 		add_filter( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_columns', array( $this, 'tournament_columns' ) );
 		add_action( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_custom_column', array( $this, 'tournament_column' ), 10, 2 );
 		add_action( 'admin_post_tttc_update_players', array( $this, 'update_players' ) );
+		add_action( 'admin_post_tttc_save_scores', array( $this, 'save_scores' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'redirect_post_location', array( $this, 'redirect_after_post_save' ), 10, 2 );
 	}
@@ -38,6 +39,7 @@ final class TTTC_Admin {
 		add_submenu_page( 'tttc-dashboard', __( 'Players', 'table-tennis-tournament-for-clubs' ), __( 'Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE );
 		add_submenu_page( 'tttc-dashboard', __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE );
 		add_submenu_page( null, __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-assignments', array( $this, 'assignments_page' ) );
+		add_submenu_page( null, __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-scores', array( $this, 'scores_page' ) );
 	}
 
 	public function dashboard() {
@@ -92,9 +94,10 @@ final class TTTC_Admin {
 		$type   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
 		$status = $status ? $status : 'draft';
 		$type   = $type ? $type : 'both';
+		$games  = in_array( (string) $games, array( '3', '5' ), true ) ? (string) $games : '3';
 		?>
 		<p><label for="tttc-date"><strong><?php esc_html_e( 'Date', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input type="date" id="tttc-date" name="tttc_date" value="<?php echo esc_attr( $date ); ?>" required></p>
-		<p><label for="tttc-games"><strong><?php esc_html_e( 'Best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input class="small-text" type="number" min="1" step="1" id="tttc-games" name="tttc_games" value="<?php echo esc_attr( $games ); ?>" required></p>
+		<p><label for="tttc-games"><strong><?php esc_html_e( 'Best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-games" name="tttc_games" required><option value="3" <?php selected( $games, '3' ); ?>>3</option><option value="5" <?php selected( $games, '5' ); ?>>5</option></select></p>
 		<p><label for="tttc-type"><strong><?php esc_html_e( 'Player type', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-type" name="tttc_type"><option value="senior" <?php selected( $type, 'senior' ); ?>><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></option><option value="youth" <?php selected( $type, 'youth' ); ?>><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></option><option value="both" <?php selected( $type, 'both' ); ?>><?php esc_html_e( 'Both', 'table-tennis-tournament-for-clubs' ); ?></option></select></p>
 		<p><label for="tttc-status"><strong><?php esc_html_e( 'Status', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-status" name="tttc_status">
 			<?php foreach ( TTTC_Plugin::statuses() as $key => $label ) : ?>
@@ -130,11 +133,14 @@ final class TTTC_Admin {
 		if ( ! $date_object || $date_object->format( 'Y-m-d' ) !== $date ) {
 			$date = '';
 		}
-		$games  = isset( $_POST['tttc_games'] ) ? max( 1, absint( $_POST['tttc_games'] ) ) : 1;
+		$games  = isset( $_POST['tttc_games'] ) ? sanitize_key( wp_unslash( $_POST['tttc_games'] ) ) : '3';
 		$type   = isset( $_POST['tttc_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_type'] ) ) : 'both';
 		$status = isset( $_POST['tttc_status'] ) ? sanitize_key( $_POST['tttc_status'] ) : 'draft';
 		if ( ! in_array( $type, array( 'senior', 'youth', 'both' ), true ) ) {
 			$type = 'both';
+		}
+		if ( ! in_array( $games, array( '3', '5' ), true ) ) {
+			$games = '3';
 		}
 		if ( ! array_key_exists( $status, TTTC_Plugin::statuses() ) ) {
 			$status = 'draft';
@@ -185,7 +191,7 @@ final class TTTC_Admin {
 	}
 
 	public function tournament_columns( $columns ) {
-		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => __( 'Status', 'table-tennis-tournament-for-clubs' ), 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
+		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => __( 'Status', 'table-tennis-tournament-for-clubs' ), 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'tttc_scores' => __( 'Scores', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
 	}
 
 	public function tournament_column( $column, $post_id ) {
@@ -198,17 +204,118 @@ final class TTTC_Admin {
 			echo esc_html( isset( TTTC_Plugin::statuses()[ $status ] ) ? TTTC_Plugin::statuses()[ $status ] : $status );
 		} elseif ( 'tttc_players' === $column ) {
 			$count = $this->assigned_player_ids( $post_id );
-			$website_url = '';
-			$date        = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
-			$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
-			if ( $date_object ) {
-				$website_url = home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $post_id ) . '/' . $date_object->format( 'd-m-Y' ) ) );
-			}
 			echo esc_html( count( $count ) ) . ' <a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Manage players', 'table-tennis-tournament-for-clubs' ) . '</a>';
+		} elseif ( 'tttc_url' === $column ) {
+			$website_url = $this->tournament_url( $post_id );
 			if ( $website_url ) {
-				echo ' <a class="button-link" href="' . esc_url( $website_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Website', 'table-tennis-tournament-for-clubs' ) . '</a>';
+				echo '<a class="button-link" href="' . esc_url( $website_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Website', 'table-tennis-tournament-for-clubs' ) . '</a>';
+			}
+		} elseif ( 'tttc_scores' === $column ) {
+			echo '<a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Enter scores', 'table-tennis-tournament-for-clubs' ) . '</a>';
+		}
+	}
+
+	private function tournament_url( $post_id ) {
+		$date        = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
+		$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
+
+		return $date_object ? home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $post_id ) . '/' . $date_object->format( 'd-m-Y' ) ) ) : '';
+	}
+
+	public function scores_page() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$tournament_id = isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0;
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
+		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$schedule    = TTTC_Public::instance()->tournament_schedule( $tournament_id );
+		$saved_scores = $this->saved_scores( $tournament_id );
+		?>
+		<div class="wrap">
+			<h1><?php echo esc_html( get_the_title( $tournament_id ) . ' - ' . __( 'Scores', 'table-tennis-tournament-for-clubs' ) ); ?></h1>
+			<?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Tournament scores updated.', 'table-tennis-tournament-for-clubs' ); ?></p></div><?php endif; ?>
+			<?php if ( empty( $schedule ) ) : ?>
+				<p><?php esc_html_e( 'A score sheet is available when the tournament has 4 to 28 assigned active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			<?php else : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form">
+					<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
+					<?php wp_nonce_field( 'tttc_save_scores', 'tttc_scores_nonce' ); ?>
+					<?php foreach ( $schedule as $group_index => $group_schedule ) : ?>
+						<h2><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 ) ); ?></h2>
+						<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Round', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?></tr></thead><tbody>
+						<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
+							<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); ?>
+								<tr><td><?php echo esc_html( $round_number + 1 ); ?></td><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><input class="small-text" type="text" inputmode="numeric" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ] ) ? $saved_scores[ $match_key ][ $game ] : '' ); ?>" placeholder="11-9"></td><?php endfor; ?></tr>
+							<?php endforeach; ?>
+						<?php endforeach; ?></tbody></table></div>
+					<?php endforeach; ?>
+					<p><button class="button button-primary"><?php esc_html_e( 'Save scores', 'table-tennis-tournament-for-clubs' ); ?></button></p>
+				</form>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	public function save_scores() {
+		if ( ! current_user_can( 'edit_posts' ) || ! isset( $_POST['tttc_scores_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_scores_nonce'] ) ), 'tttc_save_scores' ) ) {
+			wp_die( esc_html__( 'The security check failed.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$tournament_id = isset( $_POST['tournament_id'] ) ? absint( $_POST['tournament_id'] ) : 0;
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) || ! current_user_can( 'edit_post', $tournament_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$games         = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
+		$games         = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$schedule      = TTTC_Public::instance()->tournament_schedule( $tournament_id );
+		$submitted     = isset( $_POST['scores'] ) && is_array( $_POST['scores'] ) ? wp_unslash( $_POST['scores'] ) : array();
+		global $wpdb;
+		$table = TTTC_Plugin::scores_table_name();
+		$wpdb->delete( $table, array( 'tournament_id' => $tournament_id ), array( '%d' ) );
+
+		foreach ( $schedule as $group_schedule ) {
+			foreach ( $group_schedule['rounds'] as $round_number => $round ) {
+				foreach ( $round as $match_number => $match ) {
+					$match_key    = $this->match_key( $match[0]->ID, $match[1]->ID );
+					$match_scores = isset( $submitted[ $match_key ] ) && is_array( $submitted[ $match_key ] ) ? $submitted[ $match_key ] : array();
+					$scores       = array();
+					for ( $game = 0; $game < $games; $game++ ) {
+						$value     = isset( $match_scores[ $game ] ) ? sanitize_text_field( $match_scores[ $game ] ) : '';
+						$scores[]  = preg_replace( '/[^0-9-]/', '', $value );
+					}
+					$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'match_key' => $match_key, 'player_one_id' => min( $match[0]->ID, $match[1]->ID ), 'player_two_id' => max( $match[0]->ID, $match[1]->ID ), 'round_number' => $round_number + 1, 'match_number' => $match_number + 1, 'scores' => wp_json_encode( $scores ), 'updated_at' => current_time( 'mysql', true ) ), array( '%d', '%s', '%d', '%d', '%d', '%d', '%s', '%s' ) );
+				}
 			}
 		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&updated=1' ) );
+		exit;
+	}
+
+	private function saved_scores( $tournament_id ) {
+		global $wpdb;
+		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT match_key, scores FROM ' . TTTC_Plugin::scores_table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$scores = array();
+		foreach ( $rows as $row ) {
+			$decoded = json_decode( $row->scores, true );
+			$scores[ $row->match_key ] = is_array( $decoded ) ? $decoded : array();
+		}
+
+		return $scores;
+	}
+
+	private function match_key( $player_one_id, $player_two_id ) {
+		$player_ids = array( absint( $player_one_id ), absint( $player_two_id ) );
+		sort( $player_ids, SORT_NUMERIC );
+
+		return $player_ids[0] . '-' . $player_ids[1];
 	}
 
 	public function assignments_page() {
@@ -267,6 +374,7 @@ final class TTTC_Admin {
 		global $wpdb;
 		$table = TTTC_Plugin::table_name();
 		$wpdb->delete( $table, array( 'tournament_id' => $tournament_id ), array( '%d' ) );
+		$wpdb->delete( TTTC_Plugin::scores_table_name(), array( 'tournament_id' => $tournament_id ), array( '%d' ) );
 		foreach ( array_unique( $active_ids ) as $player_id ) {
 			$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player_id, 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%s' ) );
 		}

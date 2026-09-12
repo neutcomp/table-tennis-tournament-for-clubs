@@ -10,12 +10,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Public {
+	private static $instance;
+
 	public function __construct() {
+		self::$instance = $this;
 		add_shortcode( 'tttc_tournaments', array( $this, 'tournaments_shortcode' ) );
 		add_shortcode( 'tttc_players', array( $this, 'players_shortcode' ) );
 		add_action( 'init', array( $this, 'register_rewrite' ) );
 		add_filter( 'query_vars', array( $this, 'query_vars' ) );
 		add_action( 'template_redirect', array( $this, 'render_tournament_page' ) );
+	}
+
+	public static function instance() {
+		return self::$instance;
 	}
 
 	public static function register_rewrite() {
@@ -41,6 +48,21 @@ final class TTTC_Public {
 		}
 
 		return home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $tournament_id ) . '/' . $date_object->format( 'd-m-Y' ) ) );
+	}
+
+	public function tournament_schedule( $tournament_id ) {
+		$players     = $this->assigned_players( $tournament_id );
+		$group_count = $this->group_count( count( $players ) );
+		$schedule    = array();
+
+		foreach ( $this->build_groups( $players, $group_count ) as $group ) {
+			$schedule[] = array(
+				'players' => $group,
+				'rounds'  => $this->group_matches( $group ),
+			);
+		}
+
+		return $schedule;
 	}
 
 	public function render_tournament_page() {
@@ -99,7 +121,7 @@ final class TTTC_Public {
 		$title       = get_the_title( $tournament_id );
 		$stored_date = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
 		$players     = $this->assigned_players( $tournament_id );
-		$group_count = $this->group_count( count( $players ) );
+		$schedule    = $this->tournament_schedule( $tournament_id );
 		?>
 		<main class="tttc-public-tournament">
 			<div class="tttc-public-tournament__inner">
@@ -120,18 +142,18 @@ final class TTTC_Public {
 						</ol>
 					<?php endif; ?>
 				</details>
-				<?php if ( $group_count ) : ?>
+				<?php if ( ! empty( $schedule ) ) : ?>
 					<section class="tttc-public-groups" aria-labelledby="tttc-groups-heading">
 						<h2 id="tttc-groups-heading"><?php esc_html_e( 'Groups and matches', 'table-tennis-tournament-for-clubs' ); ?></h2>
 						<div class="tttc-public-group-grid">
-							<?php foreach ( $this->build_groups( $players, $group_count ) as $index => $group ) : ?>
+							<?php foreach ( $schedule as $index => $group_schedule ) : ?>
 								<section class="tttc-public-group">
 									<h3><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $index + 1 ) ); ?></h3>
 									<ul class="tttc-public-group__players">
-										<?php foreach ( $group as $player ) : ?><li><?php echo esc_html( $player->post_title ); ?></li><?php endforeach; ?>
+										<?php foreach ( $group_schedule['players'] as $player ) : ?><li><?php echo esc_html( $player->post_title ); ?></li><?php endforeach; ?>
 									</ul>
 									<div class="tttc-public-round-grid">
-									<?php foreach ( $this->group_matches( $group ) as $round_number => $round ) : ?>
+									<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
 										<div class="tttc-public-round">
 											<h4 class="tttc-public-round-title"><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></h4>
 											<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
