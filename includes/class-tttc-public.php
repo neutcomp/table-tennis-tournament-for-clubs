@@ -155,8 +155,15 @@ final class TTTC_Public {
 								<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab<?php echo 0 === $index ? ' is-active' : ''; ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="<?php echo 0 === $index ? 'true' : 'false'; ?>" tabindex="<?php echo 0 === $index ? '0' : '-1'; ?>"><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $index + 1 ) ); ?></button>
 			<?php endforeach; ?>
 							<?php if ( count( $schedule ) > 1 ) : ?>
-								<?php foreach ( $competition['stages'] as $stage ) : $tab_id = 'tttc-crossover-tab-' . $stage['id']; $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
-									<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false" tabindex="-1"><?php echo esc_html( $stage['label'] ); ?></button>
+								<?php foreach ( $competition['stages'] as $stage ) : ?>
+									<?php if ( 'final' !== $stage['id'] ) : $tab_id = 'tttc-crossover-tab-' . $stage['id']; $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
+										<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false" tabindex="-1"><?php echo esc_html( $stage['label'] ); ?></button>
+									<?php endif; ?>
+								<?php endforeach; ?>
+								<?php foreach ( $competition['stages'] as $stage ) : ?>
+									<?php if ( 'final' === $stage['id'] ) : $tab_id = 'tttc-crossover-tab-' . $stage['id']; $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
+										<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false" tabindex="-1"><?php echo esc_html( $stage['label'] ); ?></button>
+									<?php endif; ?>
 								<?php endforeach; ?>
 							<?php endif; ?>
 						</div>

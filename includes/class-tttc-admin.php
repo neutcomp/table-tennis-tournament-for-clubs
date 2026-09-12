@@ -326,6 +326,17 @@ final class TTTC_Admin {
 		}
 		$saved_scores = null !== $this->score_form_scores ? $this->score_form_scores : $this->saved_scores( $tournament_id );
 		$competition  = TTTC_Competition::calculate( $schedule, $saved_scores, $games );
+		$ordered_stages = array();
+		foreach ( $competition['stages'] as $stage ) {
+			if ( 'final' !== $stage['id'] ) {
+				$ordered_stages[] = $stage;
+			}
+		}
+		foreach ( $competition['stages'] as $stage ) {
+			if ( 'final' === $stage['id'] ) {
+				$ordered_stages[] = $stage;
+			}
+		}
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_the_title( $tournament_id ) . ' - ' . __( 'Scores', 'table-tennis-tournament-for-clubs' ) ); ?></h1>
@@ -353,7 +364,7 @@ final class TTTC_Admin {
 						<?php endforeach; ?></tbody></table></div>
 						</section>
 					<?php endforeach; ?>
-					<?php foreach ( $competition['stages'] as $stage ) : ?>
+					<?php foreach ( $ordered_stages as $stage ) : ?>
 						<section class="tttc-crossover-stage">
 							<h2><?php echo esc_html( $stage['label'] ); ?></h2>
 							<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?></tr></thead><tbody>
