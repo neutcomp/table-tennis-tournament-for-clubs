@@ -32,14 +32,14 @@
 
 .tttc-public-tournament__players summary::after {
   color: #2271b1;
-  content: '+';
+  content: "+";
   float: right;
   font-size: 28px;
   line-height: 1;
 }
 
 .tttc-public-tournament__players[open] summary::after {
-  content: '\2212';
+  content: "\2212";
 }
 
 .tttc-public-tournament__players[open] .tttc-public-player-list,
