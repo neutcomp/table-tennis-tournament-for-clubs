@@ -47,7 +47,7 @@
 }
 
 .tttc-public-player-list {
-  columns: 2;
+  columns: 3;
   margin: 0;
   padding-left: 28px;
 }
@@ -101,6 +101,16 @@
   padding-top: 12px;
 }
 
+.tttc-public-round-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+}
+
+.tttc-public-round {
+  align-self: start;
+}
+
 .tttc-public-matches {
   border-collapse: collapse;
   width: 100%;
@@ -146,6 +156,10 @@
     columns: 1;
   }
 
+  .tttc-public-round-grid {
+    grid-template-columns: 1fr;
+  }
+
   .tttc-public-matches {
     font-size: 14px;
   }
@@ -174,6 +188,10 @@
   }
 
   .tttc-public-group-grid {
+    display: block;
+  }
+
+  .tttc-public-round-grid {
     display: block;
   }
 

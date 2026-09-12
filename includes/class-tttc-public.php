@@ -130,12 +130,16 @@ final class TTTC_Public {
 									<ul class="tttc-public-group__players">
 										<?php foreach ( $group as $player ) : ?><li><?php echo esc_html( $player->post_title ); ?></li><?php endforeach; ?>
 									</ul>
+									<div class="tttc-public-round-grid">
 									<?php foreach ( $this->group_matches( $group ) as $round_number => $round ) : ?>
-										<h4 class="tttc-public-round-title"><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></h4>
-										<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
-										<?php foreach ( $round as $match_number => $match ) : ?><tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td></tr><?php endforeach; ?>
-										</tbody></table>
+										<div class="tttc-public-round">
+											<h4 class="tttc-public-round-title"><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></h4>
+											<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
+											<?php foreach ( $round as $match_number => $match ) : ?><tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td></tr><?php endforeach; ?>
+											</tbody></table>
+										</div>
 									<?php endforeach; ?>
+									</div>
 								</section>
 							<?php endforeach; ?>
 						</div>
