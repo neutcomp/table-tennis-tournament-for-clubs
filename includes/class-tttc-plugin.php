@@ -21,6 +21,7 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_DATE = '_tttc_date';
 	const TOURNAMENT_META_GAMES = '_tttc_games';
 	const TOURNAMENT_META_STATUS = '_tttc_status';
+	const TOURNAMENT_META_TYPE = '_tttc_tournament_type';
 
 	private static $instance;
 
