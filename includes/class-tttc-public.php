@@ -109,7 +109,7 @@ final class TTTC_Public {
 					<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date( $stored_date ) ); ?></p>
 				</header>
 				<details class="tttc-public-tournament__players">
-					<summary><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?></summary>
+					<summary><span><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?></span> <span class="tttc-players-expand-label"><?php esc_html_e( 'expand', 'table-tennis-tournament-for-clubs' ); ?></span><span class="tttc-players-collapse-label"><?php esc_html_e( 'collapse', 'table-tennis-tournament-for-clubs' ); ?></span></summary>
 					<?php if ( empty( $players ) ) : ?>
 						<p><?php esc_html_e( 'Players will be announced soon.', 'table-tennis-tournament-for-clubs' ); ?></p>
 					<?php else : ?>

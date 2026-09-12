@@ -26,20 +26,27 @@
   list-style: none;
 }
 
-.tttc-public-tournament__players summary::-webkit-details-marker {
+.tttc-players-expand-label,
+.tttc-players-collapse-label {
+  color: #2271b1;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.tttc-players-collapse-label {
   display: none;
 }
 
-.tttc-public-tournament__players summary::after {
-  color: #2271b1;
-  content: "+";
-  float: right;
-  font-size: 28px;
-  line-height: 1;
+.tttc-public-tournament__players[open] .tttc-players-expand-label {
+  display: none;
 }
 
-.tttc-public-tournament__players[open] summary::after {
-  content: "\2212";
+.tttc-public-tournament__players[open] .tttc-players-collapse-label {
+  display: inline;
+}
+
+.tttc-public-tournament__players summary::-webkit-details-marker {
+  display: none;
 }
 
 .tttc-public-tournament__players[open] .tttc-public-player-list,
