@@ -142,7 +142,7 @@ final class TTTC_Admin {
 			return $location;
 		}
 
-		return admin_url( 'post-new.php?post_type=' . $post_type );
+		return admin_url( 'edit.php?post_type=' . $post_type );
 	}
 
 	private function can_save( $post_id, $nonce_name, $nonce_action ) {
