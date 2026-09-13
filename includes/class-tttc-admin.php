@@ -140,7 +140,6 @@ final class TTTC_Admin {
 					</div>
 				</section>
 			</div>
-			<p><a class="button button-primary" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE ) ); ?>"><?php esc_html_e( 'Add player', 'table-tennis-tournament-for-clubs' ); ?></a> <a class="button" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE ) ); ?>"><?php esc_html_e( 'Add tournament', 'table-tennis-tournament-for-clubs' ); ?></a></p>
 		</div>
 		<?php
 	}
