@@ -328,6 +328,7 @@
   border: 1px solid #c3c4c7;
   box-sizing: border-box;
   margin: 0;
+  min-width: 0;
   padding: 18px;
   width: 100% !important;
   break-inside: avoid;
@@ -448,6 +449,8 @@
     overflow-x: auto;
     padding-bottom: 4px;
     scroll-snap-type: x proximity;
+    min-width: 0;
+    width: 100%;
   }
 
   .tttc-public-round {
