@@ -94,6 +94,68 @@
   font-size: 14px;
 }
 
+.tttc-tournaments {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin: 24px auto;
+  max-width: 1180px;
+}
+
+.tttc-tournament {
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(29, 35, 39, 0.06);
+  padding: 24px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.tttc-tournament:hover {
+  border-color: #8c8f94;
+  box-shadow: 0 8px 20px rgba(29, 35, 39, 0.1);
+  transform: translateY(-2px);
+}
+
+.tttc-tournament h3 {
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 0 0 20px;
+}
+
+.tttc-tournament h3 a {
+  color: #1d2327;
+  text-decoration: none;
+}
+
+.tttc-tournament h3 a:hover,
+.tttc-tournament h3 a:focus-visible {
+  color: #2271b1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tttc-tournament dl {
+  border-top: 1px solid #f0f0f1;
+  margin: 0;
+  padding-top: 16px;
+}
+
+.tttc-tournament dt {
+  color: #646970;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tttc-tournament dd {
+  color: #2271b1;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+
 .tttc-public-tournament__players summary {
   color: #1d2327;
   cursor: pointer;
@@ -424,6 +486,15 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .tttc-tournaments {
+    grid-template-columns: 1fr;
+    margin: 20px 0;
+  }
+
+  .tttc-tournament {
+    padding: 20px;
   }
 
   .tttc-public-player-list {

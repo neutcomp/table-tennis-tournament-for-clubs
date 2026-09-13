@@ -183,10 +183,8 @@ final class TTTC_Public {
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$post_id = get_the_ID();
-			$status  = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
-			$label   = isset( TTTC_Plugin::statuses()[ $status ] ) ? TTTC_Plugin::statuses()[ $status ] : $status;
 			$title = '<a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html( get_the_title() ) . '</a>';
-			$output .= '<article class="tttc-tournament"><h3>' . $title . '</h3><dl><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) . '</dd><dt>' . esc_html__( 'Best of', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true ) ) . '</dd><dt>' . esc_html__( 'Status', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $label ) . '</dd></dl>' . $this->assigned_players_markup( $post_id ) . '</article>';
+			$output .= '<article class="tttc-tournament"><h3>' . $title . '</h3><dl><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) . '</dd></dl></article>';
 		}
 		wp_reset_postdata();
 		return $output . '</div>';
