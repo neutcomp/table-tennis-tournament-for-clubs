@@ -27,8 +27,12 @@ final class TTTC_Admin {
 		add_action( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_custom_column', array( $this, 'tournament_column' ), 10, 2 );
 		add_action( 'admin_post_tttc_update_players', array( $this, 'update_players' ) );
 		add_action( 'admin_post_tttc_save_scores', array( $this, 'save_scores' ) );
+		add_action( 'admin_post_tttc_merge_players', array( $this, 'merge_players' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'redirect_post_location', array( $this, 'redirect_after_post_save' ), 10, 2 );
+		add_filter( 'bulk_actions-edit-' . TTTC_Plugin::PLAYER_POST_TYPE, array( $this, 'player_bulk_actions' ) );
+		add_filter( 'handle_bulk_actions-edit-' . TTTC_Plugin::PLAYER_POST_TYPE, array( $this, 'handle_player_merge_bulk_action' ), 10, 3 );
+		add_action( 'admin_notices', array( $this, 'merge_admin_notices' ) );
 	}
 
 	public function register_menu() {
@@ -47,6 +51,7 @@ final class TTTC_Admin {
 		add_submenu_page( 'tttc-dashboard', __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE );
 		add_submenu_page( null, __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-assignments', array( $this, 'assignments_page' ) );
 		add_submenu_page( null, __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-scores', array( $this, 'scores_page' ) );
+		add_submenu_page( null, __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-merge-players', array( $this, 'merge_page' ) );
 	}
 
 	public function register_settings() {
@@ -723,6 +728,188 @@ final class TTTC_Admin {
 	private function assigned_player_ids( $tournament_id ) {
 		global $wpdb;
 		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) ) );
+	}
+
+	public function player_bulk_actions( $actions ) {
+		$actions['tttc_merge_players'] = __( 'Merge selected players', 'table-tennis-tournament-for-clubs' );
+
+		return $actions;
+	}
+
+	public function handle_player_merge_bulk_action( $redirect_to, $action, $post_ids ) {
+		if ( 'tttc_merge_players' !== $action ) {
+			return $redirect_to;
+		}
+
+		$post_ids = array_map( 'absint', $post_ids );
+		$valid    = count( $post_ids ) === 2;
+		foreach ( $post_ids as $post_id ) {
+			if ( TTTC_Plugin::PLAYER_POST_TYPE !== get_post_type( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
+				$valid = false;
+			}
+		}
+
+		if ( ! $valid ) {
+			return add_query_arg( array( 'tttc_merge_error' => 'count' ), $redirect_to );
+		}
+
+		return add_query_arg(
+			array(
+				'page'       => 'tttc-merge-players',
+				'player_ids' => $post_ids,
+			),
+			admin_url( 'admin.php' )
+		);
+	}
+
+	public function merge_page() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$player_ids = isset( $_GET['player_ids'] ) ? array_map( 'absint', (array) $_GET['player_ids'] ) : array();
+		$player_ids = array_values( array_unique( $player_ids ) );
+
+		if ( 2 !== count( $player_ids ) ) {
+			wp_die( esc_html__( 'Select exactly two players to merge.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		foreach ( $player_ids as $player_id ) {
+			if ( TTTC_Plugin::PLAYER_POST_TYPE !== get_post_type( $player_id ) ) {
+				wp_die( esc_html__( 'The selected players could not be found.', 'table-tennis-tournament-for-clubs' ) );
+			}
+		}
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Merge Players', 'table-tennis-tournament-for-clubs' ); ?></h1>
+			<?php if ( isset( $_GET['tttc_merge_error'] ) ) : ?>
+				<div class="notice notice-error"><p><?php esc_html_e( 'Select exactly two players to merge.', 'table-tennis-tournament-for-clubs' ); ?></p></div>
+			<?php endif; ?>
+			<p><?php esc_html_e( 'Choose which player record to keep. The other player will be permanently deleted and its tournament assignments and scores will be transferred to the player you keep.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="tttc_merge_players">
+				<?php foreach ( $player_ids as $player_id ) : ?>
+					<input type="hidden" name="player_ids[]" value="<?php echo esc_attr( $player_id ); ?>">
+				<?php endforeach; ?>
+				<?php wp_nonce_field( 'tttc_merge_players', 'tttc_merge_nonce' ); ?>
+				<table class="widefat striped">
+					<thead><tr><th class="check-column"><?php esc_html_e( 'Keep', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Type', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Active', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Tournaments', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead>
+					<tbody>
+					<?php foreach ( $player_ids as $index => $player_id ) : ?>
+						<tr>
+							<th class="check-column"><input type="radio" name="keep_player_id" value="<?php echo esc_attr( $player_id ); ?>" <?php checked( 0 === $index ); ?> required></th>
+							<td><?php echo esc_html( get_the_title( $player_id ) ); ?></td>
+							<td><?php echo esc_html( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></td>
+							<td><?php echo esc_html( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_EMAIL, true ) ); ?></td>
+							<td><?php echo esc_html( 'female' === get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_GENDER, true ) ? __( 'Female', 'table-tennis-tournament-for-clubs' ) : __( 'Male', 'table-tennis-tournament-for-clubs' ) ); ?></td>
+							<td><?php echo esc_html( 'youth' === get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_TYPE, true ) ? __( 'Youth', 'table-tennis-tournament-for-clubs' ) : __( 'Senior', 'table-tennis-tournament-for-clubs' ) ); ?></td>
+							<td><?php echo '1' === get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, true ) ? esc_html__( 'Yes', 'table-tennis-tournament-for-clubs' ) : esc_html__( 'No', 'table-tennis-tournament-for-clubs' ); ?></td>
+							<td><?php echo esc_html( count( $this->assigned_player_ids_for_player( $player_id ) ) ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+				<p><button class="button button-primary"><?php esc_html_e( 'Merge players', 'table-tennis-tournament-for-clubs' ); ?></button></p>
+			</form>
+		</div>
+		<?php
+	}
+
+	public function merge_players() {
+		if ( ! isset( $_POST['tttc_merge_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_merge_nonce'] ) ), 'tttc_merge_players' ) ) {
+			wp_die( esc_html__( 'The security check failed.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$player_ids = isset( $_POST['player_ids'] ) ? array_map( 'absint', (array) $_POST['player_ids'] ) : array();
+		$player_ids = array_values( array_unique( $player_ids ) );
+		$keep_id    = isset( $_POST['keep_player_id'] ) ? absint( $_POST['keep_player_id'] ) : 0;
+
+		if ( 2 !== count( $player_ids ) || ! in_array( $keep_id, $player_ids, true ) ) {
+			wp_die( esc_html__( 'The selected players could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		foreach ( $player_ids as $player_id ) {
+			if ( TTTC_Plugin::PLAYER_POST_TYPE !== get_post_type( $player_id ) ) {
+				wp_die( esc_html__( 'The selected players could not be found.', 'table-tennis-tournament-for-clubs' ) );
+			}
+		}
+
+		$source_id = (int) $player_ids[0] === $keep_id ? (int) $player_ids[1] : (int) $player_ids[0];
+
+		if ( ! current_user_can( 'edit_post', $keep_id ) || ! current_user_can( 'delete_post', $source_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to merge these players.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$this->merge_player_data( $keep_id, $source_id );
+		wp_delete_post( $source_id, true );
+
+		wp_safe_redirect( admin_url( 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE . '&tttc_merged=1' ) );
+		exit;
+	}
+
+	private function merge_player_data( $keep_id, $source_id ) {
+		global $wpdb;
+		$assign_table = TTTC_Plugin::table_name();
+		$scores_table = TTTC_Plugin::scores_table_name();
+
+		$tournament_ids = $wpdb->get_col( $wpdb->prepare( "SELECT tournament_id FROM {$assign_table} WHERE player_id = %d", $source_id ) );
+		foreach ( $tournament_ids as $tournament_id ) {
+			$already_assigned = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$assign_table} WHERE tournament_id = %d AND player_id = %d", $tournament_id, $keep_id ) );
+			if ( $already_assigned ) {
+				$wpdb->delete( $assign_table, array( 'tournament_id' => $tournament_id, 'player_id' => $source_id ), array( '%d', '%d' ) );
+			} else {
+				$wpdb->update( $assign_table, array( 'player_id' => $keep_id ), array( 'tournament_id' => $tournament_id, 'player_id' => $source_id ), array( '%d' ), array( '%d', '%d' ) );
+			}
+		}
+
+		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$scores_table} WHERE player_one_id = %d OR player_two_id = %d", $source_id, $source_id ) );
+		foreach ( $rows as $row ) {
+			$opponent_id = (int) $row->player_one_id === (int) $source_id ? (int) $row->player_two_id : (int) $row->player_one_id;
+
+			// The merged pair played each other, so this match no longer makes sense.
+			if ( $opponent_id === (int) $keep_id ) {
+				$wpdb->delete( $scores_table, array( 'id' => $row->id ), array( '%d' ) );
+				continue;
+			}
+
+			$new_match_key = $this->match_key( $keep_id, $opponent_id );
+			$existing      = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$scores_table} WHERE tournament_id = %d AND match_key = %s AND id != %d", $row->tournament_id, $new_match_key, $row->id ) );
+
+			if ( $existing ) {
+				$wpdb->delete( $scores_table, array( 'id' => $row->id ), array( '%d' ) );
+				continue;
+			}
+
+			$wpdb->update(
+				$scores_table,
+				array(
+					'player_one_id' => min( $keep_id, $opponent_id ),
+					'player_two_id' => max( $keep_id, $opponent_id ),
+					'match_key'     => $new_match_key,
+				),
+				array( 'id' => $row->id ),
+				array( '%d', '%d', '%s' ),
+				array( '%d' )
+			);
+		}
+	}
+
+	public function merge_admin_notices() {
+		$screen = get_current_screen();
+		if ( ! $screen || 'edit-' . TTTC_Plugin::PLAYER_POST_TYPE !== $screen->id ) {
+			return;
+		}
+
+		if ( isset( $_GET['tttc_merged'] ) ) {
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Players merged. The duplicate player has been deleted and its tournaments and scores were transferred.', 'table-tennis-tournament-for-clubs' ) . '</p></div>';
+		} elseif ( isset( $_GET['tttc_merge_error'] ) ) {
+			echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Select exactly two players to merge.', 'table-tennis-tournament-for-clubs' ) . '</p></div>';
+		}
+	}
+
+	private function assigned_player_ids_for_player( $player_id ) {
+		global $wpdb;
+		return $wpdb->get_col( $wpdb->prepare( 'SELECT tournament_id FROM ' . TTTC_Plugin::table_name() . ' WHERE player_id = %d', $player_id ) );
 	}
 
 	public function enqueue_assets( $hook ) {
