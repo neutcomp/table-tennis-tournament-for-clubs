@@ -160,24 +160,37 @@
 
 .tttc-public-tournament__signup h2 {
   color: #1d2327;
+  font-size: 28px;
+  margin-bottom: 22px;
   margin-top: 0;
 }
 
+.tttc-public-tournament__signup {
+  background: #f8fbfe;
+  border-color: #b8d7ee;
+}
+
 .tttc-public-signup-form__grid {
+  align-items: start;
   display: grid;
   gap: 0 24px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .tttc-public-signup-form p {
+  display: flex;
+  flex-direction: column;
   margin: 0 0 18px;
+  min-width: 0;
 }
 
 .tttc-public-signup-form label {
   color: #1d2327;
   display: block;
   font-weight: 600;
-  margin-bottom: 6px;
+  line-height: 1.35;
+  margin-bottom: 7px;
+  min-height: 19px;
 }
 
 .tttc-public-signup-form label span {
@@ -189,9 +202,17 @@
   border: 1px solid #8c8f94;
   box-sizing: border-box;
   font: inherit;
+  height: 44px;
   max-width: 100%;
   padding: 9px 10px;
   width: 100%;
+}
+
+.tttc-public-signup-form input:focus,
+.tttc-public-signup-form select:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.18);
+  outline: 0;
 }
 
 .tttc-public-signup-form button {
@@ -201,6 +222,7 @@
   cursor: pointer;
   font: inherit;
   font-weight: 600;
+  margin-top: 2px;
   padding: 10px 18px;
 }
 
