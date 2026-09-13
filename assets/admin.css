@@ -173,6 +173,10 @@
   display: none;
 }
 
+.tttc-admin-group .tttc-public-round {
+  margin-bottom: 20px;
+}
+
 .tttc-scores-table-wrap {
   margin: 12px 0 28px;
   overflow-x: auto;
@@ -260,6 +264,24 @@
     font-size: 30px;
     margin: 0 0 20px;
     padding-bottom: 10px;
+  }
+
+  .tttc-public-round-grid {
+    display: block !important;
+  }
+
+  .tttc-public-round {
+    break-inside: avoid;
+    margin-bottom: 28px;
+    page-break-inside: avoid;
+  }
+
+  .tttc-public-round-title {
+    border-top: 0;
+    color: #000;
+    font-size: 20px;
+    margin: 0 0 12px;
+    padding-top: 0;
   }
 
   .tttc-scores-table-wrap {

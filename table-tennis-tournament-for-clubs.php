@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Table Tennis Tournament for Clubs
  * Description: Manage club table tennis players, tournaments, and tournament player assignments.
- * Version: 1.0.6
+ * Version: 1.0.7
  * Requires at least: 6.3
  * Requires PHP: 7.4
  * Author: Club Tools
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TTTC_VERSION', '1.0.6' );
+define( 'TTTC_VERSION', '1.0.7' );
 define( 'TTTC_FILE', __FILE__ );
 define( 'TTTC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'TTTC_URL', plugin_dir_url( __FILE__ ) );
