@@ -28,6 +28,27 @@
   line-height: 1;
 }
 
+.tttc-summary-card span a,
+.tttc-top-players li span a {
+  color: #2271b1;
+  text-decoration: none;
+}
+
+.tttc-dashboard-section h2 a {
+  color: #1d2327;
+  text-decoration: none;
+}
+
+.tttc-summary-card span a:hover,
+.tttc-summary-card span a:focus,
+.tttc-dashboard-section h2 a:hover,
+.tttc-dashboard-section h2 a:focus,
+.tttc-top-players li span a:hover,
+.tttc-top-players li span a:focus {
+  color: #2271b1;
+  text-decoration: underline;
+}
+
 .tttc-dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));

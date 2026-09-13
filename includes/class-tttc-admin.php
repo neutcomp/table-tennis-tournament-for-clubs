@@ -241,17 +241,19 @@ final class TTTC_Admin {
 		$average_participants = $participating_count ? round( $participant_total / $participating_count, 1 ) : 0;
 		$player_count         = count( $players );
 		$tournament_count     = count( $tournaments );
+		$players_url          = admin_url( 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE );
+		$tournaments_url      = admin_url( 'edit.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE );
 		?>
 		<div class="wrap tttc-dashboard">
 			<h1><?php esc_html_e( 'Table Tennis Tournament for Clubs', 'table-tennis-tournament-for-clubs' ); ?></h1>
 			<p><?php esc_html_e( 'Manage your club players and tournaments from one place.', 'table-tennis-tournament-for-clubs' ); ?></p>
 			<div class="tttc-dashboard-grid">
-				<div class="tttc-summary-card"><span class="dashicons dashicons-groups"></span><strong><?php echo esc_html( $player_count ); ?></strong><span><?php esc_html_e( 'Published players', 'table-tennis-tournament-for-clubs' ); ?></span></div>
-				<div class="tttc-summary-card"><span class="dashicons dashicons-awards"></span><strong><?php echo esc_html( $tournament_count ); ?></strong><span><?php esc_html_e( 'Published tournaments', 'table-tennis-tournament-for-clubs' ); ?></span></div>
+				<div class="tttc-summary-card"><span class="dashicons dashicons-groups"></span><strong><?php echo esc_html( $player_count ); ?></strong><span><a href="<?php echo esc_url( $players_url ); ?>"><?php esc_html_e( 'Published players', 'table-tennis-tournament-for-clubs' ); ?></a></span></div>
+				<div class="tttc-summary-card"><span class="dashicons dashicons-awards"></span><strong><?php echo esc_html( $tournament_count ); ?></strong><span><a href="<?php echo esc_url( $tournaments_url ); ?>"><?php esc_html_e( 'Published tournaments', 'table-tennis-tournament-for-clubs' ); ?></a></span></div>
 			</div>
 			<div class="tttc-dashboard-grid">
 				<section class="tttc-dashboard-section">
-					<h2><?php esc_html_e( 'Published players', 'table-tennis-tournament-for-clubs' ); ?></h2>
+					<h2><a href="<?php echo esc_url( $players_url ); ?>"><?php esc_html_e( 'Published players', 'table-tennis-tournament-for-clubs' ); ?></a></h2>
 					<div class="tttc-stat-list">
 						<div><span><?php esc_html_e( 'Male', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $player_stats['male'] ); ?></strong></div>
 						<div><span><?php esc_html_e( 'Female', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $player_stats['female'] ); ?></strong></div>
@@ -263,14 +265,16 @@ final class TTTC_Admin {
 						<p><?php esc_html_e( 'No active published players found.', 'table-tennis-tournament-for-clubs' ); ?></p>
 					<?php else : ?>
 						<ol class="tttc-top-players">
-							<?php foreach ( $top_players as $player ) : ?>
-								<li><span><?php echo esc_html( $player->post_title ); ?></span><strong><?php echo esc_html( absint( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ) ); ?></strong></li>
+							<?php foreach ( $top_players as $player ) :
+								$player_url = TTTC_Public::instance() ? TTTC_Public::instance()->player_url( $player->ID ) : '';
+								?>
+								<li><span><?php if ( $player_url ) : ?><a href="<?php echo esc_url( $player_url ); ?>"><?php echo esc_html( $player->post_title ); ?></a><?php else : ?><?php echo esc_html( $player->post_title ); ?><?php endif; ?></span><strong><?php echo esc_html( absint( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ) ); ?></strong></li>
 							<?php endforeach; ?>
 						</ol>
 					<?php endif; ?>
 				</section>
 				<section class="tttc-dashboard-section">
-					<h2><?php esc_html_e( 'Published tournaments', 'table-tennis-tournament-for-clubs' ); ?></h2>
+					<h2><a href="<?php echo esc_url( $tournaments_url ); ?>"><?php esc_html_e( 'Published tournaments', 'table-tennis-tournament-for-clubs' ); ?></a></h2>
 					<div class="tttc-stat-list">
 						<div><span><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $tournament_types['senior'] ); ?></strong></div>
 						<div><span><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></span><strong><?php echo esc_html( $tournament_types['youth'] ); ?></strong></div>
