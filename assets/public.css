@@ -274,37 +274,6 @@
   gap: 20px;
 }
 
-.tttc-public-groups__toolbar {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.tttc-public-groups__toolbar h2 {
-  margin: 0;
-}
-
-.tttc-print-button {
-  background: #2271b1;
-  border: 1px solid #2271b1;
-  border-radius: 3px;
-  color: #fff;
-  cursor: pointer;
-  flex: 0 0 auto;
-  font: inherit;
-  font-weight: 600;
-  padding: 8px 16px;
-}
-
-.tttc-print-button:hover,
-.tttc-print-button:focus-visible {
-  background: #135e96;
-  border-color: #135e96;
-}
-
 .tttc-public-group-tabs {
   display: flex;
   gap: 8px;
@@ -455,22 +424,12 @@
 }
 
 @media print {
-  @page {
-    margin: 15mm;
-    size: A4;
-  }
-
   .site-header,
   .site-footer,
   .site-navigation,
   nav,
   footer,
-  header nav,
-  .tttc-public-groups__toolbar,
-  .tttc-public-group-tabs,
-  .tttc-public-tournament__players,
-  .tttc-public-tournament__signup,
-  .tttc-public-tournament__eyebrow {
+  header nav {
     display: none !important;
   }
 
@@ -483,82 +442,31 @@
   .tttc-public-player__header,
   .tttc-public-player__tournaments,
   .tttc-public-tournament__header,
+  .tttc-public-tournament__signup,
+  .tttc-public-tournament__players,
   .tttc-public-groups {
     border: 0;
-    margin: 0 0 20px;
     padding: 0;
-  }
-
-  .tttc-public-tournament__header h1 {
-    font-size: 26px;
-    margin-bottom: 6px;
-  }
-
-  .tttc-public-tournament__date {
-    font-size: 15px;
-    margin-bottom: 0;
   }
 
   .tttc-public-group-grid {
     display: block !important;
   }
 
-  /* Only the group whose tab is active should print. */
+  .tttc-public-group-tabs {
+    display: none;
+  }
+
   .tttc-public-group[hidden] {
-    display: none !important;
-  }
-
-  .tttc-public-group {
-    border: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  .tttc-public-group h3 {
-    border-bottom: 3px solid #000;
-    font-size: 30px;
-    margin: 0 0 18px;
-    padding-bottom: 10px;
-  }
-
-  .tttc-public-group__players {
-    font-size: 17px;
-    gap: 8px 28px;
-    margin-bottom: 28px;
+    display: block;
   }
 
   .tttc-public-round-grid {
     display: block !important;
   }
 
-  .tttc-public-round {
-    break-inside: avoid;
-    margin-bottom: 32px;
-    page-break-inside: avoid;
-  }
-
-  .tttc-public-round-title {
-    border-top: 0;
-    font-size: 20px;
-    margin: 0 0 12px;
-    padding-top: 0;
-  }
-
-  .tttc-public-matches {
-    display: table;
-    font-size: 16px;
-    width: 100%;
-  }
-
-  .tttc-public-matches th,
-  .tttc-public-matches td {
-    border: 1px solid #000;
-    padding: 12px 14px;
-  }
-
-  .tttc-public-matches th {
-    background: #eaeaea !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  .tttc-public-group {
+    border: 1px solid #999;
+    margin-bottom: 20px;
   }
 }

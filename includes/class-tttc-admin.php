@@ -620,6 +620,9 @@ final class TTTC_Admin {
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form">
 					<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
 					<?php wp_nonce_field( 'tttc_save_scores', 'tttc_scores_nonce' ); ?>
+					<div class="tttc-scores-toolbar">
+						<button type="button" class="button tttc-print-button" data-tttc-print-groups><?php esc_html_e( 'Print current group', 'table-tennis-tournament-for-clubs' ); ?></button>
+					</div>
 					<div class="tttc-public-group-tabs tttc-admin-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?>">
 						<?php foreach ( $schedule as $group_index => $group_schedule ) : $tab_id = 'tttc-score-group-tab-' . ( $group_index + 1 ); $panel_id = 'tttc-score-group-panel-' . ( $group_index + 1 ); ?>
 							<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-admin-group-tab<?php echo 0 === $group_index ? ' is-active' : ''; ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="<?php echo 0 === $group_index ? 'true' : 'false'; ?>" tabindex="<?php echo 0 === $group_index ? '0' : '-1'; ?>"><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 ) ); ?></button>

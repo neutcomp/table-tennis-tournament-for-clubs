@@ -138,6 +138,10 @@
   margin-top: 28px;
 }
 
+.tttc-scores-toolbar {
+  margin-bottom: 16px;
+}
+
 .tttc-admin-group-tabs {
   display: flex;
   gap: 8px;
@@ -210,4 +214,82 @@
 
 .tttc-tournament-format-section {
   max-width: 600px;
+}
+
+@media print {
+  @page {
+    margin: 15mm;
+    size: A4;
+  }
+
+  #adminmenumain,
+  #wpadminbar,
+  #wpfooter,
+  #wpcontent .notice,
+  .wrap > h1,
+  .tttc-scores-toolbar,
+  .tttc-admin-group-tabs,
+  .tttc-crossover-stage,
+  .tttc-scores-form > p {
+    display: none !important;
+  }
+
+  #wpcontent,
+  #wpbody-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .tttc-scores-form {
+    margin-top: 0;
+  }
+
+  /* Only the group whose tab is active should print. */
+  .tttc-admin-group[hidden] {
+    display: none !important;
+  }
+
+  .tttc-admin-group {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .tttc-admin-group h2 {
+    border-bottom: 3px solid #000;
+    font-size: 30px;
+    margin: 0 0 20px;
+    padding-bottom: 10px;
+  }
+
+  .tttc-scores-table-wrap {
+    margin: 0;
+    overflow: visible;
+  }
+
+  .tttc-scores-table {
+    font-size: 16px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .tttc-scores-table th,
+  .tttc-scores-table td {
+    border: 1px solid #000 !important;
+    padding: 12px 14px;
+    white-space: normal;
+  }
+
+  .tttc-scores-table th {
+    background: #eaeaea !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .tttc-scores-table input {
+    background: transparent;
+    border: 0;
+    font-size: 16px;
+    width: 36px;
+  }
 }
