@@ -443,7 +443,17 @@
   }
 
   .tttc-public-round-grid {
-    grid-template-columns: 1fr !important;
+    display: flex !important;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+  }
+
+  .tttc-public-round {
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: start;
   }
 
   .tttc-public-matches {
