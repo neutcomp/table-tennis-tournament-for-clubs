@@ -53,4 +53,10 @@
 	}
 
 	document.querySelectorAll('.tttc-public-group-tabs').forEach(initializeGroupTabs);
+
+	document.querySelectorAll('[data-tttc-print-groups]').forEach(function (button) {
+		button.addEventListener('click', function () {
+			window.print();
+		});
+	});
 }());
