@@ -11,6 +11,51 @@
   margin: 0 auto;
 }
 
+.tttc-breadcrumbs {
+  margin-bottom: 16px;
+}
+
+.tttc-breadcrumbs__list {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.tttc-breadcrumbs__item {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.tttc-breadcrumbs__link {
+  color: #2271b1;
+  text-decoration: none;
+  transition: color 140ms ease;
+}
+
+.tttc-breadcrumbs__link:hover,
+.tttc-breadcrumbs__link:focus-visible {
+  color: #135e96;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tttc-breadcrumbs__separator {
+  color: #8c8f94;
+  user-select: none;
+}
+
+.tttc-breadcrumbs__current {
+  color: #646970;
+  font-weight: 500;
+}
+
 .tttc-public-player__header,
 .tttc-public-player__tournaments,
 .tttc-public-tournament__header,
@@ -544,7 +589,8 @@
   .site-navigation,
   nav,
   footer,
-  header nav {
+  header nav,
+  .tttc-breadcrumbs {
     display: none !important;
   }
 

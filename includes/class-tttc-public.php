@@ -64,6 +64,60 @@ final class TTTC_Public {
 		return home_url( user_trailingslashit( 'speler/' . get_post_field( 'post_name', $player_id ) . '/' . absint( $player_id ) ) );
 	}
 
+	public function tournaments_page_url() {
+		global $wpdb;
+		$page_id = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE %s ORDER BY ID ASC LIMIT 1",
+				'%' . $wpdb->esc_like( '[tttc_tournaments' ) . '%'
+			)
+		);
+
+		$url = $page_id ? get_permalink( $page_id ) : home_url( '/' );
+
+		return apply_filters( 'tttc_tournaments_page_url', $url, $page_id );
+	}
+
+	public function players_page_url() {
+		global $wpdb;
+		$page_id = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE %s ORDER BY ID ASC LIMIT 1",
+				'%' . $wpdb->esc_like( '[tttc_players' ) . '%'
+			)
+		);
+
+		$url = $page_id ? get_permalink( $page_id ) : home_url( '/' );
+
+		return apply_filters( 'tttc_players_page_url', $url, $page_id );
+	}
+
+	private function render_breadcrumbs( $items ) {
+		if ( empty( $items ) ) {
+			return;
+		}
+		?>
+		<nav class="tttc-breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumbs', 'table-tennis-tournament-for-clubs' ); ?>">
+			<ol class="tttc-breadcrumbs__list" itemscope itemtype="https://schema.org/BreadcrumbList">
+				<?php foreach ( $items as $index => $item ) :
+					$position = $index + 1;
+					$is_last  = $position === count( $items );
+					?>
+					<li class="tttc-breadcrumbs__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+						<?php if ( ! empty( $item['url'] ) && ! $is_last ) : ?>
+							<a class="tttc-breadcrumbs__link" href="<?php echo esc_url( $item['url'] ); ?>" itemprop="item"><span itemprop="name"><?php echo esc_html( $item['label'] ); ?></span></a>
+							<span class="tttc-breadcrumbs__separator" aria-hidden="true">&#8250;</span>
+						<?php else : ?>
+							<span class="tttc-breadcrumbs__current" aria-current="page" itemprop="name"><?php echo esc_html( $item['label'] ); ?></span>
+						<?php endif; ?>
+						<meta itemprop="position" content="<?php echo esc_attr( $position ); ?>">
+					</li>
+				<?php endforeach; ?>
+			</ol>
+		</nav>
+		<?php
+	}
+
 	public function tournament_schedule( $tournament_id ) {
 		$players     = $this->assigned_players( $tournament_id );
 		$group_count = $this->group_count( count( $players ), $tournament_id );
@@ -137,9 +191,24 @@ final class TTTC_Public {
 		$gender_abbreviation = 'female' === $gender ? _x( 'F', 'female gender abbreviation', 'table-tennis-tournament-for-clubs' ) : _x( 'M', 'male gender abbreviation', 'table-tennis-tournament-for-clubs' );
 		$type         = 'youth' === $type ? __( 'Youth', 'table-tennis-tournament-for-clubs' ) : __( 'Senior', 'table-tennis-tournament-for-clubs' );
 		$tournaments  = $this->player_tournaments( $player_id );
+		$breadcrumbs  = array(
+			array(
+				'label' => __( 'Home', 'table-tennis-tournament-for-clubs' ),
+				'url'   => home_url( '/' ),
+			),
+			array(
+				'label' => __( 'Players', 'table-tennis-tournament-for-clubs' ),
+				'url'   => $this->players_page_url(),
+			),
+			array(
+				'label' => $player_name,
+				'url'   => '',
+			),
+		);
 		?>
 		<main class="tttc-public-player">
 			<div class="tttc-public-player__inner">
+				<?php $this->render_breadcrumbs( $breadcrumbs ); ?>
 				<header class="tttc-public-player__header">
 					<p class="tttc-public-player__eyebrow"><?php esc_html_e( 'Table tennis player', 'table-tennis-tournament-for-clubs' ); ?></p>
 					<h1><?php echo esc_html( $player_name . ' (' . $gender_abbreviation . ')' ); ?></h1>
@@ -202,9 +271,24 @@ final class TTTC_Public {
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
 		$page_url    = $this->tournament_url( $tournament_id );
 		$qr_url      = $page_url ? 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . rawurlencode( $page_url ) : '';
+		$breadcrumbs = array(
+			array(
+				'label' => __( 'Home', 'table-tennis-tournament-for-clubs' ),
+				'url'   => home_url( '/' ),
+			),
+			array(
+				'label' => __( 'Tournaments', 'table-tennis-tournament-for-clubs' ),
+				'url'   => $this->tournaments_page_url(),
+			),
+			array(
+				'label' => $title,
+				'url'   => '',
+			),
+		);
 		?>
 		<main class="tttc-public-tournament">
 			<div class="tttc-public-tournament__inner">
+				<?php $this->render_breadcrumbs( $breadcrumbs ); ?>
 				<header class="tttc-public-tournament__header">
 					<div class="tttc-public-tournament__header-text">
 						<p class="tttc-public-tournament__eyebrow"><?php esc_html_e( 'Table tennis tournament', 'table-tennis-tournament-for-clubs' ); ?></p>

@@ -462,3 +462,9 @@ msgstr "Spelers samengevoegd. De dubbele speler is verwijderd en diens toernooie
 
 msgid "A match schedule is available for tournaments with %1$d to %2$d active players."
 msgstr "Er is een wedstrijdschema beschikbaar voor toernooien met %1$d tot %2$d actieve spelers."
+
+msgid "Breadcrumbs"
+msgstr "Kruimelpad"
+
+msgid "Home"
+msgstr "Home"
