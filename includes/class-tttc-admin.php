@@ -20,6 +20,8 @@ final class TTTC_Admin {
 		add_action( 'save_post_' . TTTC_Plugin::TOURNAMENT_POST_TYPE, array( $this, 'save_tournament' ) );
 		add_filter( 'manage_' . TTTC_Plugin::PLAYER_POST_TYPE . '_posts_columns', array( $this, 'player_columns' ) );
 		add_action( 'manage_' . TTTC_Plugin::PLAYER_POST_TYPE . '_posts_custom_column', array( $this, 'player_column' ), 10, 2 );
+		add_action( 'restrict_manage_posts', array( $this, 'player_filters' ) );
+		add_action( 'pre_get_posts', array( $this, 'filter_players' ) );
 		add_filter( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_columns', array( $this, 'tournament_columns' ) );
 		add_action( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_custom_column', array( $this, 'tournament_column' ), 10, 2 );
 		add_action( 'admin_post_tttc_update_players', array( $this, 'update_players' ) );
@@ -269,6 +271,50 @@ final class TTTC_Admin {
 			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_EMAIL, true ) );
 		} elseif ( 'tttc_active' === $column ) {
 			echo '1' === get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_ACTIVE, true ) ? esc_html__( 'Yes', 'table-tennis-tournament-for-clubs' ) : esc_html__( 'No', 'table-tennis-tournament-for-clubs' );
+		}
+	}
+
+	public function player_filters( $post_type ) {
+		if ( TTTC_Plugin::PLAYER_POST_TYPE !== $post_type ) {
+			return;
+		}
+
+		$gender = isset( $_GET['tttc_gender'] ) ? sanitize_key( wp_unslash( $_GET['tttc_gender'] ) ) : '';
+		$type   = isset( $_GET['tttc_type'] ) ? sanitize_key( wp_unslash( $_GET['tttc_type'] ) ) : '';
+		?>
+		<select name="tttc_gender">
+			<option value=""><?php esc_html_e( 'All genders', 'table-tennis-tournament-for-clubs' ); ?></option>
+			<option value="male" <?php selected( $gender, 'male' ); ?>><?php esc_html_e( 'Male', 'table-tennis-tournament-for-clubs' ); ?></option>
+			<option value="female" <?php selected( $gender, 'female' ); ?>><?php esc_html_e( 'Female', 'table-tennis-tournament-for-clubs' ); ?></option>
+		</select>
+		<select name="tttc_type">
+			<option value=""><?php esc_html_e( 'All types', 'table-tennis-tournament-for-clubs' ); ?></option>
+			<option value="senior" <?php selected( $type, 'senior' ); ?>><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></option>
+			<option value="youth" <?php selected( $type, 'youth' ); ?>><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></option>
+		</select>
+		<?php
+	}
+
+	public function filter_players( $query ) {
+		if ( ! is_admin() || ! $query->is_main_query() || TTTC_Plugin::PLAYER_POST_TYPE !== $query->get( 'post_type' ) ) {
+			return;
+		}
+
+		$meta_query = (array) $query->get( 'meta_query' );
+		$filters    = array(
+			array( 'key' => TTTC_Plugin::PLAYER_META_GENDER, 'query_var' => 'tttc_gender', 'values' => array( 'male', 'female' ) ),
+			array( 'key' => TTTC_Plugin::PLAYER_META_TYPE, 'query_var' => 'tttc_type', 'values' => array( 'senior', 'youth' ) ),
+		);
+
+		foreach ( $filters as $filter ) {
+			$value = isset( $_GET[ $filter['query_var'] ] ) ? sanitize_key( wp_unslash( $_GET[ $filter['query_var'] ] ) ) : '';
+			if ( in_array( $value, $filter['values'], true ) ) {
+				$meta_query[] = array( 'key' => $filter['key'], 'value' => $value );
+			}
+		}
+
+		if ( count( $meta_query ) > 0 ) {
+			$query->set( 'meta_query', $meta_query );
 		}
 	}
 

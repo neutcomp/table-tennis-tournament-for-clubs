@@ -11,6 +11,10 @@
         "/^node --check assets/public(?: .*)?$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^git status --short && php -l (?: .*)?$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
