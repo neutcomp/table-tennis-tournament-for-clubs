@@ -219,7 +219,7 @@ final class TTTC_Public {
 						<div class="tttc-public-player-list-header" aria-hidden="true"><span><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?></span><span><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></span></div>
 						<ol class="tttc-public-player-list">
 							<?php foreach ( $players as $player ) : ?>
-								<li><span><?php echo esc_html( $player->post_title ); ?></span><strong><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></strong></li>
+								<li><span><a href="<?php echo esc_url( $this->player_url( $player->ID ) ); ?>"><?php echo esc_html( $player->post_title ); ?></a></span><strong><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></strong></li>
 							<?php endforeach; ?>
 						</ol>
 					<?php endif; ?>
