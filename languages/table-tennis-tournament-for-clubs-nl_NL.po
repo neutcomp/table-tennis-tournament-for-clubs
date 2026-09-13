@@ -361,3 +361,104 @@ msgstr "Inhoud"
 
 msgid "Available merge fields: [tournament-name] and [tournament-date]."
 msgstr "Beschikbare samenvoegvelden: [tournament-name] en [tournament-date]."
+
+msgid "Merge Players"
+msgstr "Spelers samenvoegen"
+
+msgid "Tournament Formats"
+msgstr "Toernooiformaten"
+
+msgid "Configure default tournament options and player count brackets for group distribution."
+msgstr "Configureer de standaardopties voor toernooien en de spelersaantallen voor groepsindeling."
+
+msgid "Default Best of"
+msgstr "Standaard best-of"
+
+msgid "Default match format for newly created tournaments."
+msgstr "Standaard wedstrijdformaat voor nieuw aangemaakte toernooien."
+
+msgid "Default player type"
+msgstr "Standaard spelertype"
+
+msgid "Default player type restriction for newly created tournaments."
+msgstr "Standaardbeperking voor het spelertype bij nieuw aangemaakte toernooien."
+
+msgid "Group player brackets"
+msgstr "Spelersaantallen per groep"
+
+msgid "Set the minimum and maximum active player thresholds for distributing players into 1 to 4 groups."
+msgstr "Stel de minimale en maximale aantallen actieve spelers in voor het verdelen van spelers over 1 tot 4 groepen."
+
+msgid "Min players"
+msgstr "Min. spelers"
+
+msgid "Max players"
+msgstr "Max. spelers"
+
+msgid "Crossover format"
+msgstr "Kruisfinaleformaat"
+
+msgid "Single group round-robin"
+msgstr "Enkele groep, iedereen tegen iedereen"
+
+msgid "Final and 3rd place match"
+msgstr "Finale en wedstrijd om de 3e plaats"
+
+msgid "Winner round-robin"
+msgstr "Winnaarsgroep, iedereen tegen iedereen"
+
+msgid "Semi-finals, final, 3rd place"
+msgstr "Halve finales, finale, 3e plaats"
+
+msgid "%d Group"
+msgid_plural "%d Groups"
+msgstr[0] "%d groep"
+msgstr[1] "%d groepen"
+
+msgid "Note:"
+msgstr "Let op:"
+
+msgid "Match scores have already been recorded for this tournament. Format settings (Best of and group player brackets) cannot be changed."
+msgstr "Er zijn al wedstrijdscores voor dit toernooi vastgelegd. De formaatinstellingen (best-of en spelersaantallen per groep) kunnen niet worden gewijzigd."
+
+msgid "Group player brackets (format)"
+msgstr "Spelersaantallen per groep (formaat)"
+
+msgid "Customize player count brackets for this tournament or leave default."
+msgstr "Pas de spelersaantallen per groep voor dit toernooi aan of laat de standaardwaarden staan."
+
+msgid "Min"
+msgstr "Min."
+
+msgid "Max"
+msgstr "Max."
+
+msgid "A score sheet is available when the tournament has %1$d to %2$d assigned active players."
+msgstr "Er is een wedstrijdformulier beschikbaar wanneer het toernooi %1$d tot %2$d toegewezen actieve spelers heeft."
+
+msgid "Merge selected players"
+msgstr "Geselecteerde spelers samenvoegen"
+
+msgid "Select exactly two players to merge."
+msgstr "Selecteer precies twee spelers om samen te voegen."
+
+msgid "The selected players could not be found."
+msgstr "De geselecteerde spelers konden niet worden gevonden."
+
+msgid "Choose which player record to keep. The other player will be permanently deleted and its tournament assignments and scores will be transferred to the player you keep."
+msgstr "Kies welk spelersrecord u wilt behouden. De andere speler wordt permanent verwijderd en diens toewijzingen aan toernooien en scores worden overgezet naar de speler die u behoudt."
+
+msgid "Keep"
+msgstr "Behouden"
+
+msgid "Merge players"
+msgstr "Spelers samenvoegen"
+
+msgid "You do not have permission to merge these players."
+msgstr "Je hebt geen toestemming om deze spelers samen te voegen."
+
+msgid "Players merged. The duplicate player has been deleted and its tournaments and scores were transferred."
+msgstr "Spelers samengevoegd. De dubbele speler is verwijderd en diens toernooien en scores zijn overgezet."
+
+msgid "A match schedule is available for tournaments with %1$d to %2$d active players."
+msgstr "Er is een wedstrijdschema beschikbaar voor toernooien met %1$d tot %2$d actieve spelers."

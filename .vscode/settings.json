@@ -15,6 +15,11 @@
         "/^git status --short && php -l (?: .*)?$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "printf": true,
+        "/^cd (?: .*)?$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
