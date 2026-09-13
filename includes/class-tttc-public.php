@@ -275,9 +275,9 @@ final class TTTC_Public {
 										<?php endforeach; ?></tbody></table>
 									</section>
 								<?php endforeach; ?>
-								<?php if ( ! empty( $competition['places'] ) ) : ?><h3><?php esc_html_e( 'Final places', 'table-tennis-tournament-for-clubs' ); ?></h3><ol class="tttc-public-places"><?php foreach ( $competition['places'] as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol><?php endif; ?>
 							</div>
 						<?php endif; ?>
+						<?php if ( ! empty( $competition['places'] ) ) : ?><h3><?php esc_html_e( 'Final places', 'table-tennis-tournament-for-clubs' ); ?></h3><ol class="tttc-public-places"><?php foreach ( $competition['places'] as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol><?php endif; ?>
 					</section>
 				<?php elseif ( in_array( $status, array( 'active', 'completed' ), true ) && count( $players ) ) : ?>
 					<p class="tttc-public-notice"><?php esc_html_e( 'A match schedule is available for tournaments with 4 to 28 active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
