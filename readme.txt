@@ -21,7 +21,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Tournament Players screen for adding and removing participants.
 * Inactive players cannot be assigned to new tournaments.
 * Tournament Scores screen with three or five score fields per generated match.
-* Score validation requiring at least 11 points and a two-point winning margin per game, plus a completed Best of 3 or Best of 5 match.
+* Score validation requiring 11 points (with a 2+ point margin) or a deuce win with exactly two points lead, plus a completed Best of 3 or Best of 5 match without superfluous or skipped games.
 * Automatic crossover rounds after all group matches are complete. Two groups produce a final and third-place match, three groups produce a round-robin among the group winners, and four groups produce semi-finals followed by a final and third-place match.
 * Group and crossover standings are ordered by match wins, game difference, point difference, and then a stable player-order fallback.
 * Match scores are stored for administrators and are not shown on public tournament pages.

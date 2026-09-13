@@ -143,8 +143,14 @@ msgstr "De beveiligingscontrole is mislukt."
 msgid "Each entered game must contain two nonnegative whole-number scores."
 msgstr "Elke ingevoerde game moet twee niet-negatieve gehele scores bevatten."
 
-msgid "A game must be won with at least 11 points and a two-point margin."
-msgstr "Een game moet worden gewonnen met minstens 11 punten en een voorsprong van twee punten."
+msgid "Scores cannot be entered for games after the match has been decided."
+msgstr "Er kunnen geen scores worden ingevoerd voor games nadat de wedstrijd al is beslist."
+
+msgid "Games must be entered in order without skipping games."
+msgstr "Games moeten op volgorde worden ingevoerd zonder games over te slaan."
+
+msgid "A game must be won with 11 points (and at least a two-point margin) or beyond 10-10 with a lead of exactly two points."
+msgstr "Een game moet worden gewonnen met 11 punten (en minstens twee punten voorsprong) of boven 10-10 met precies twee punten voorsprong."
 
 msgid "A Best of %d match must have a winner with at least %d games won."
 msgstr "Een Best of %d-wedstrijd moet een winnaar hebben met minstens %d gewonnen games."

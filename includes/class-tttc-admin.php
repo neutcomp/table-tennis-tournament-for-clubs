@@ -551,6 +551,7 @@ final class TTTC_Admin {
 		$wins      = array( 0, 0 );
 		$has_score = false;
 		$required  = (int) ceil( $games / 2 );
+		$has_blank = false;
 
 		for ( $game = 0; $game < $games; $game++ ) {
 			$game_score = isset( $match_scores[ $game ] ) && is_array( $match_scores[ $game ] ) ? $match_scores[ $game ] : array();
@@ -558,6 +559,7 @@ final class TTTC_Admin {
 			$second     = isset( $game_score[1] ) ? trim( (string) $game_score[1] ) : '';
 
 			if ( '' === $first && '' === $second ) {
+				$has_blank   = true;
 				$validated[] = array( '', '' );
 				continue;
 			}
@@ -566,14 +568,26 @@ final class TTTC_Admin {
 				return new WP_Error( 'invalid_score', __( 'Each entered game must contain two nonnegative whole-number scores.', 'table-tennis-tournament-for-clubs' ) );
 			}
 
-			$first_score  = (int) $first;
-			$second_score = (int) $second;
-			$has_score    = true;
-
-			if ( $first_score === $second_score || abs( $first_score - $second_score ) < 2 || max( $first_score, $second_score ) < 11 ) {
-				return new WP_Error( 'invalid_game', __( 'A game must be won with at least 11 points and a two-point margin.', 'table-tennis-tournament-for-clubs' ) );
+			if ( max( $wins ) >= $required ) {
+				return new WP_Error( 'extra_game', __( 'Scores cannot be entered for games after the match has been decided.', 'table-tennis-tournament-for-clubs' ) );
 			}
 
+			if ( $has_blank ) {
+				return new WP_Error( 'skipped_game', __( 'Games must be entered in order without skipping games.', 'table-tennis-tournament-for-clubs' ) );
+			}
+
+			$first_score  = (int) $first;
+			$second_score = (int) $second;
+			$high         = max( $first_score, $second_score );
+			$low          = min( $first_score, $second_score );
+
+			$is_valid_game = ( 11 === $high && $low <= 9 ) || ( $high > 11 && 2 === ( $high - $low ) );
+
+			if ( ! $is_valid_game ) {
+				return new WP_Error( 'invalid_game', __( 'A game must be won with 11 points (and at least a two-point margin) or beyond 10-10 with a lead of exactly two points.', 'table-tennis-tournament-for-clubs' ) );
+			}
+
+			$has_score = true;
 			$wins[ $first_score > $second_score ? 0 : 1 ]++;
 			$validated[] = array( (string) $first_score, (string) $second_score );
 		}
