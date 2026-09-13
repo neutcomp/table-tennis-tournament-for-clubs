@@ -38,6 +38,9 @@
 
 .tttc-dashboard-section {
   min-width: 0;
+  padding: 20px;
+  border: 1px solid #dcdcde;
+  background: #fff;
 }
 
 .tttc-dashboard-section h2 {
@@ -55,11 +58,11 @@
 }
 
 .tttc-stat-list > div {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 32px;
+  min-height: 56px;
   padding: 16px;
   border: 1px solid #dcdcde;
   background: #fff;
@@ -72,6 +75,7 @@
 .tttc-stat-list strong {
   font-size: 24px;
   line-height: 1;
+  text-align: right;
 }
 
 .tttc-top-players {
