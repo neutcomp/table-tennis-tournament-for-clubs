@@ -102,23 +102,23 @@ final class TTTC_Public {
 			return;
 		}
 		?>
-		<nav class="tttc-breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumbs', 'table-tennis-tournament-for-clubs' ); ?>">
-			<ol class="tttc-breadcrumbs__list" itemscope itemtype="https://schema.org/BreadcrumbList">
+		<nav class="tttc-breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumbs', 'table-tennis-tournament-for-clubs' ); ?>" style="margin-bottom: 20px;">
+			<div class="tttc-breadcrumbs__list" itemscope itemtype="https://schema.org/BreadcrumbList" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 0; padding: 0; font-size: 14px; line-height: 1.4;">
 				<?php foreach ( $items as $index => $item ) :
 					$position = $index + 1;
 					$is_last  = $position === count( $items );
 					?>
-					<li class="tttc-breadcrumbs__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+					<span class="tttc-breadcrumbs__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" style="display: inline-flex; align-items: center; gap: 6px 8px;">
 						<?php if ( ! empty( $item['url'] ) && ! $is_last ) : ?>
 							<a class="tttc-breadcrumbs__link" href="<?php echo esc_url( $item['url'] ); ?>" itemprop="item"><span itemprop="name"><?php echo esc_html( $item['label'] ); ?></span></a>
-							<span class="tttc-breadcrumbs__separator" aria-hidden="true">&gt;</span>
+							<span class="tttc-breadcrumbs__separator" aria-hidden="true" style="color: #8c8f94; font-size: 13px; user-select: none;">&gt;</span>
 						<?php else : ?>
-							<span class="tttc-breadcrumbs__current" aria-current="page" itemprop="name"><?php echo esc_html( $item['label'] ); ?></span>
+							<span class="tttc-breadcrumbs__current" aria-current="page" itemprop="name" style="color: #646970; font-weight: 500;"><?php echo esc_html( $item['label'] ); ?></span>
 						<?php endif; ?>
 						<meta itemprop="position" content="<?php echo esc_attr( $position ); ?>">
-					</li>
+					</span>
 				<?php endforeach; ?>
-			</ol>
+			</div>
 		</nav>
 		<?php
 	}
