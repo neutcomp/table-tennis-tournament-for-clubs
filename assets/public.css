@@ -130,6 +130,22 @@
   margin-top: 20px;
 }
 
+.tttc-public-player-list-header {
+  color: #646970;
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  grid-template-columns: minmax(0, 1fr) 80px;
+  letter-spacing: 0.04em;
+  margin: 20px 0 0 28px;
+  padding: 0 8px 8px 0;
+  text-transform: uppercase;
+}
+
+.tttc-public-player-list-header span:last-child {
+  text-align: right;
+}
+
 .tttc-public-tournament__eyebrow {
   color: #646970;
   font-size: 12px;
@@ -233,21 +249,22 @@
 }
 
 .tttc-public-player-list {
-  columns: 3;
+  columns: 1;
   margin: 0;
   padding-left: 28px;
 }
 
 .tttc-public-player-list li {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
   gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 80px;
   border-bottom: 1px solid #f0f0f1;
   padding: 8px 8px 8px 0;
 }
 
 .tttc-public-player-list strong {
   color: #2271b1;
+  text-align: right;
 }
 
 .tttc-public-group-grid {

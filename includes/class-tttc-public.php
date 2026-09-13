@@ -215,6 +215,7 @@ final class TTTC_Public {
 					<?php if ( empty( $players ) ) : ?>
 						<p><?php esc_html_e( 'Players will be announced soon.', 'table-tennis-tournament-for-clubs' ); ?></p>
 					<?php else : ?>
+						<div class="tttc-public-player-list-header" aria-hidden="true"><span><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?></span><span><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></span></div>
 						<ol class="tttc-public-player-list">
 							<?php foreach ( $players as $player ) : ?>
 								<li><span><?php echo esc_html( $player->post_title ); ?></span><strong><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></strong></li>
