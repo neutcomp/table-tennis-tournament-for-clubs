@@ -108,7 +108,10 @@
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(29, 35, 39, 0.06);
   padding: 24px;
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 .tttc-tournament:hover {
