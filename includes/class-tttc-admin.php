@@ -621,7 +621,7 @@ final class TTTC_Admin {
 					<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
 					<?php wp_nonce_field( 'tttc_save_scores', 'tttc_scores_nonce' ); ?>
 					<div class="tttc-scores-toolbar">
-						<button type="button" class="button tttc-print-button" data-tttc-print-groups><?php esc_html_e( 'Print current group', 'table-tennis-tournament-for-clubs' ); ?></button>
+						<button type="button" class="button tttc-print-button" onclick="window.print(); return false;"><?php esc_html_e( 'Print current group', 'table-tennis-tournament-for-clubs' ); ?></button>
 					</div>
 					<div class="tttc-public-group-tabs tttc-admin-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?>">
 						<?php foreach ( $schedule as $group_index => $group_schedule ) : $tab_id = 'tttc-score-group-tab-' . ( $group_index + 1 ); $panel_id = 'tttc-score-group-panel-' . ( $group_index + 1 ); ?>
