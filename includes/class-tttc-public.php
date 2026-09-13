@@ -494,6 +494,9 @@ final class TTTC_Public {
 		$schedule    = $this->tournament_schedule( $tournament_id );
 		$scores      = $this->saved_scores( $tournament_id );
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
+		if ( ! $this->all_games_played( $schedule, $competition, $scores, $games ) ) {
+			return 0;
+		}
 
 		foreach ( $competition['places'] as $index => $place ) {
 			if ( isset( $place['player']->ID ) && (int) $place['player']->ID === (int) $player_id ) {
@@ -503,6 +506,38 @@ final class TTTC_Public {
 		}
 
 		return 0;
+	}
+
+	private function all_games_played( $schedule, $competition, $scores, $games ) {
+		$matches = array();
+		foreach ( $schedule as $group_schedule ) {
+			foreach ( $group_schedule['rounds'] as $round ) {
+				foreach ( $round as $match ) {
+					$matches[] = $this->match_key( $match[0]->ID, $match[1]->ID );
+				}
+			}
+		}
+		foreach ( $competition['stages'] as $stage ) {
+			foreach ( $stage['matches'] as $match ) {
+				if ( ! $match['players'][0] || ! $match['players'][1] ) {
+					return false;
+				}
+				$matches[] = $match['score_key'];
+			}
+		}
+
+		foreach ( $matches as $match_key ) {
+			if ( ! isset( $scores[ $match_key ] ) ) {
+				return false;
+			}
+			for ( $game = 0; $game < $games; $game++ ) {
+				if ( ! isset( $scores[ $match_key ][ $game ][0], $scores[ $match_key ][ $game ][1] ) || '' === (string) $scores[ $match_key ][ $game ][0] || '' === (string) $scores[ $match_key ][ $game ][1] ) {
+					return false;
+				}
+			}
+		}
+
+		return ! empty( $matches );
 	}
 
 	private function saved_scores( $tournament_id ) {
