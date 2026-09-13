@@ -1,0 +1,223 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: table-tennis-tournament-for-clubs\n"
+"POT-Creation-Date: 2026-09-13 00:00+0000\n"
+"PO-Revision-Date: 2026-09-13 00:00+0000\n"
+"Last-Translator: Copilot\n"
+"Language-Team: Dutch\n"
+"Language: nl_NL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Copilot\n"
+
+msgid "Table Tennis Settings"
+msgstr "Tafeltennisinstellingen"
+
+msgid "Table Tennis"
+msgstr "Tafeltennis"
+
+msgid "Table Tennis Clubs"
+msgstr "Tafeltennisclubs"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Players"
+msgstr "Spelers"
+
+msgid "Tournaments"
+msgstr "Toernooien"
+
+msgid "Tournament Players"
+msgstr "Toernooispelers"
+
+msgid "Tournament Scores"
+msgstr "Toernooischeers"
+
+msgid "You do not have permission to view this page."
+msgstr "Je hebt geen toestemming om deze pagina te bekijken."
+
+msgid "Signup confirmed for [tournament-name]"
+msgstr "Aanmelding bevestigd voor [tournament-name]"
+
+msgid "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nWe look forward to seeing you."
+msgstr "Hallo,\n\nJe aanmelding voor [tournament-name] op [tournament-date] is ontvangen.\n\nWe kijken uit naar je komst."
+
+msgid "Player details"
+msgstr "Spelersdetails"
+
+msgid "Tournament details"
+msgstr "Toernooidetails"
+
+msgid "Name"
+msgstr "Naam"
+
+msgid "Gender"
+msgstr "Geslacht"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Rating"
+msgstr "Rating"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "Active"
+msgstr "Actief"
+
+msgid "Url"
+msgstr "Url"
+
+msgid "Female"
+msgstr "Vrouw"
+
+msgid "Male"
+msgstr "Man"
+
+msgid "Youth"
+msgstr "Jeugd"
+
+msgid "Senior"
+msgstr "Senior"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nee"
+
+msgid "Website"
+msgstr "Website"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "Best of"
+msgstr "Best of"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Manage players"
+msgstr "Spelers beheren"
+
+msgid "Enter scores"
+msgstr "Scores invoeren"
+
+msgid "The tournament could not be found."
+msgstr "Het toernooi kon niet worden gevonden."
+
+msgid "Group %d"
+msgstr "Groep %d"
+
+msgid "Match"
+msgstr "Wedstrijd"
+
+msgid "Player 1"
+msgstr "Speler 1"
+
+msgid "Player 2"
+msgstr "Speler 2"
+
+msgid "Game %d"
+msgstr "Partij %d"
+
+msgid "Waiting for previous matches"
+msgstr "Wachten op eerdere wedstrijden"
+
+msgid "The security check failed."
+msgstr "De beveiligingscontrole is mislukt."
+
+msgid "Each entered game must contain two nonnegative whole-number scores."
+msgstr "Elke ingevoerde partij moet twee niet-negatieve gehele scores bevatten."
+
+msgid "A game must be won with at least 11 points and a two-point margin."
+msgstr "Een partij moet worden gewonnen met minstens 11 punten en een voorsprong van twee punten."
+
+msgid "A Best of %d match must have a winner with at least %d games won."
+msgstr "Een Best of %d-wedstrijd moet een winnaar hebben met minstens %d gewonnen partijen."
+
+msgid "Round %d"
+msgstr "Ronde %d"
+
+msgid "Games won"
+msgstr "Gewonnen partijen"
+
+msgid "Player"
+msgstr "Speler"
+
+msgid "Add Player"
+msgstr "Speler toevoegen"
+
+msgid "Edit Player"
+msgstr "Speler bewerken"
+
+msgid "Tournament"
+msgstr "Toernooi"
+
+msgid "Add Tournament"
+msgstr "Toernooi toevoegen"
+
+msgid "Edit Tournament"
+msgstr "Toernooi bewerken"
+
+msgid "Draft"
+msgstr "Concept"
+
+msgid "Upcoming"
+msgstr "Aankomend"
+
+msgid "Completed"
+msgstr "Voltooid"
+
+msgid "Cancelled"
+msgstr "Geannuleerd"
+
+msgid "Position: %d"
+msgstr "Positie: %d"
+
+msgid "No tournaments found."
+msgstr "Geen toernooien gevonden."
+
+msgid "The signup could not be verified. Please try again."
+msgstr "De aanmelding kon niet worden geverifieerd. Probeer het opnieuw."
+
+msgid "Please enter your name."
+msgstr "Vul je naam in."
+
+msgid "Please enter a valid nonnegative rating."
+msgstr "Vul een geldige niet-negatieve rating in."
+
+msgid "Please enter a valid email address so we can confirm your signup."
+msgstr "Vul een geldig e-mailadres in zodat we je aanmelding kunnen bevestigen."
+
+msgid "Please select a valid gender."
+msgstr "Kies een geldig geslacht."
+
+msgid "Please select a valid player type."
+msgstr "Kies een geldig spelerstype."
+
+msgid "This tournament is only open to %s players."
+msgstr "Dit toernooi is alleen open voor %s spelers."
+
+msgid "An existing player with this name and email has a type that is not allowed for this tournament."
+msgstr "Een bestaande speler met dezelfde naam en e-mail heeft een type dat niet is toegestaan voor dit toernooi."
+
+msgid "The player could not be saved. Please try again."
+msgstr "De speler kon niet worden opgeslagen. Probeer het opnieuw."
+
+msgid "The player was saved, but could not be added to the tournament. Please try again."
+msgstr "De speler is opgeslagen, maar kon niet aan het toernooi worden toegevoegd. Probeer het opnieuw."
+
+msgid "No active players found."
+msgstr "Geen actieve spelers gevonden."
+
+msgid "Rating:"
+msgstr "Rating:"
+
+msgid "Players will be announced soon."
+msgstr "Spelers worden binnenkort bekendgemaakt."
