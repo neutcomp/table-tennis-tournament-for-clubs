@@ -146,6 +146,7 @@ final class TTTC_Public {
 					<dl class="tttc-public-player__details">
 						<div><dt><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></dt><dd><?php echo esc_html( $gender_label ); ?></dd></div>
 						<div><dt><?php esc_html_e( 'Type', 'table-tennis-tournament-for-clubs' ); ?></dt><dd><?php echo esc_html( $type ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></dt><dd><?php echo esc_html( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></dd></div>
 					</dl>
 				</header>
 				<section class="tttc-public-player__tournaments" aria-labelledby="tttc-player-tournaments-heading">
@@ -156,7 +157,7 @@ final class TTTC_Public {
 						<ul class="tttc-public-player__tournament-list">
 							<?php foreach ( $tournaments as $tournament ) : $position = $this->player_tournament_position( $player_id, $tournament->ID ); ?>
 								<li>
-									<a href="<?php echo esc_url( $this->tournament_url( $tournament->ID ) ); ?>"><?php echo esc_html( get_the_title( $tournament->ID ) ); ?></a>
+									<div><a href="<?php echo esc_url( $this->tournament_url( $tournament->ID ) ); ?>"><?php echo esc_html( get_the_title( $tournament->ID ) ); ?></a> <span class="tttc-public-player__tournament-date"><?php echo esc_html( $this->display_date( get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ); ?></span></div>
 									<?php if ( $position ) : ?><span><?php echo esc_html( sprintf( __( 'Position: %d', 'table-tennis-tournament-for-clubs' ), $position ) ); ?></span><?php endif; ?>
 								</li>
 							<?php endforeach; ?>
@@ -465,6 +466,7 @@ final class TTTC_Public {
 			'numberposts'    => -1,
 			'orderby'        => 'meta_value',
 			'meta_key'       => TTTC_Plugin::TOURNAMENT_META_DATE,
+			'meta_type'      => 'DATE',
 			'order'          => 'DESC',
 		) );
 	}
