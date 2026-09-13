@@ -254,9 +254,13 @@
   }
 
   .tttc-admin-group {
-    border: 0;
-    margin: 0;
-    padding: 0;
+    border: 0 !important;
+    box-shadow: none !important;
+    break-inside: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-inside: auto !important;
+    width: 100% !important;
   }
 
   .tttc-admin-group h2 {
@@ -290,16 +294,21 @@
   }
 
   .tttc-scores-table {
-    font-size: 16px;
-    min-width: 0;
-    width: 100%;
+    box-sizing: border-box;
+    font-size: 14px;
+    min-width: 0 !important;
+    table-layout: fixed;
+    width: 100% !important;
   }
 
   .tttc-scores-table th,
   .tttc-scores-table td {
     border: 1px solid #000 !important;
-    padding: 12px 14px;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding: 8px 6px;
     white-space: normal;
+    word-break: break-word;
   }
 
   .tttc-scores-table th {
@@ -311,7 +320,13 @@
   .tttc-scores-table input {
     background: transparent;
     border: 0;
-    font-size: 16px;
-    width: 36px;
+    font-size: 14px;
+    max-width: 32px;
+    padding: 0;
+    width: 100%;
+  }
+
+  .tttc-score-pair {
+    gap: 2px;
   }
 }
