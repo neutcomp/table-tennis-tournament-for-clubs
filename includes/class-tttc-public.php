@@ -56,12 +56,17 @@ final class TTTC_Public {
 		return home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $tournament_id ) . '/' . $date_object->format( 'd-m-Y' ) ) );
 	}
 
-	public function player_url( $player_id ) {
+	public function player_url( $player_id, $tournament_id = 0 ) {
 		if ( TTTC_Plugin::PLAYER_POST_TYPE !== get_post_type( $player_id ) ) {
 			return '';
 		}
 
-		return home_url( user_trailingslashit( 'speler/' . get_post_field( 'post_name', $player_id ) . '/' . absint( $player_id ) ) );
+		$url = home_url( user_trailingslashit( 'speler/' . get_post_field( 'post_name', $player_id ) . '/' . absint( $player_id ) ) );
+		if ( $tournament_id && TTTC_Plugin::TOURNAMENT_POST_TYPE === get_post_type( $tournament_id ) ) {
+			$url = add_query_arg( 'toernooi', absint( $tournament_id ), $url );
+		}
+
+		return $url;
 	}
 
 	public function tournaments_page_url() {
@@ -106,7 +111,7 @@ final class TTTC_Public {
 					<li class="tttc-breadcrumbs__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
 						<?php if ( ! empty( $item['url'] ) && ! $is_last ) : ?>
 							<a class="tttc-breadcrumbs__link" href="<?php echo esc_url( $item['url'] ); ?>" itemprop="item"><span itemprop="name"><?php echo esc_html( $item['label'] ); ?></span></a>
-							<span class="tttc-breadcrumbs__separator" aria-hidden="true">&#8250;</span>
+							<span class="tttc-breadcrumbs__separator" aria-hidden="true">&gt;</span>
 						<?php else : ?>
 							<span class="tttc-breadcrumbs__current" aria-current="page" itemprop="name"><?php echo esc_html( $item['label'] ); ?></span>
 						<?php endif; ?>
@@ -191,19 +196,35 @@ final class TTTC_Public {
 		$gender_abbreviation = 'female' === $gender ? _x( 'F', 'female gender abbreviation', 'table-tennis-tournament-for-clubs' ) : _x( 'M', 'male gender abbreviation', 'table-tennis-tournament-for-clubs' );
 		$type         = 'youth' === $type ? __( 'Youth', 'table-tennis-tournament-for-clubs' ) : __( 'Senior', 'table-tennis-tournament-for-clubs' );
 		$tournaments  = $this->player_tournaments( $player_id );
-		$breadcrumbs  = array(
+		$tournament_param  = isset( $_GET['toernooi'] ) ? absint( $_GET['toernooi'] ) : ( isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0 );
+		$active_tournament = null;
+		if ( $tournament_param && TTTC_Plugin::TOURNAMENT_POST_TYPE === get_post_type( $tournament_param ) && 'publish' === get_post_status( $tournament_param ) ) {
+			$active_tournament = get_post( $tournament_param );
+		} elseif ( ! empty( $tournaments ) ) {
+			$active_tournament = $tournaments[0];
+		}
+
+		$breadcrumbs = array(
 			array(
 				'label' => __( 'Home', 'table-tennis-tournament-for-clubs' ),
 				'url'   => home_url( '/' ),
 			),
 			array(
-				'label' => __( 'Players', 'table-tennis-tournament-for-clubs' ),
-				'url'   => $this->players_page_url(),
+				'label' => __( 'Tournaments', 'table-tennis-tournament-for-clubs' ),
+				'url'   => $this->tournaments_page_url(),
 			),
-			array(
-				'label' => $player_name,
-				'url'   => '',
-			),
+		);
+
+		if ( $active_tournament ) {
+			$breadcrumbs[] = array(
+				'label' => get_the_title( $active_tournament->ID ),
+				'url'   => $this->tournament_url( $active_tournament->ID ),
+			);
+		}
+
+		$breadcrumbs[] = array(
+			'label' => $player_name,
+			'url'   => '',
 		);
 		?>
 		<main class="tttc-public-player">
@@ -308,7 +329,7 @@ final class TTTC_Public {
 						<div class="tttc-public-player-list-header" aria-hidden="true"><span><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?></span><span><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></span></div>
 						<ol class="tttc-public-player-list">
 							<?php foreach ( $players as $player ) : ?>
-								<li><span><a href="<?php echo esc_url( $this->player_url( $player->ID ) ); ?>"><?php echo esc_html( $player->post_title ); ?></a></span><strong><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></strong></li>
+								<li><span><a href="<?php echo esc_url( $this->player_url( $player->ID, $tournament_id ) ); ?>"><?php echo esc_html( $player->post_title ); ?></a></span><strong><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></strong></li>
 							<?php endforeach; ?>
 						</ol>
 					<?php endif; ?>
