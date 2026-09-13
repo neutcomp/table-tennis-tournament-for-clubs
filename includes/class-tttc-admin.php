@@ -21,6 +21,7 @@ final class TTTC_Admin {
 		add_action( 'save_post_' . TTTC_Plugin::TOURNAMENT_POST_TYPE, array( $this, 'save_tournament' ) );
 		add_filter( 'manage_' . TTTC_Plugin::PLAYER_POST_TYPE . '_posts_columns', array( $this, 'player_columns' ) );
 		add_action( 'manage_' . TTTC_Plugin::PLAYER_POST_TYPE . '_posts_custom_column', array( $this, 'player_column' ), 10, 2 );
+		add_filter( 'manage_edit-' . TTTC_Plugin::PLAYER_POST_TYPE . '_sortable_columns', array( $this, 'player_sortable_columns' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'player_filters' ) );
 		add_action( 'pre_get_posts', array( $this, 'filter_players' ) );
 		add_filter( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_columns', array( $this, 'tournament_columns' ) );
@@ -296,6 +297,16 @@ final class TTTC_Admin {
 		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_gender' => __( 'Gender', 'table-tennis-tournament-for-clubs' ), 'tttc_type' => __( 'Type', 'table-tennis-tournament-for-clubs' ), 'tttc_rating' => __( 'Rating', 'table-tennis-tournament-for-clubs' ), 'tttc_email' => __( 'Email', 'table-tennis-tournament-for-clubs' ), 'tttc_active' => __( 'Active', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
 	}
 
+	public function player_sortable_columns( $columns ) {
+		$columns['tttc_gender'] = 'tttc_gender';
+		$columns['tttc_type']   = 'tttc_type';
+		$columns['tttc_rating'] = 'tttc_rating';
+		$columns['tttc_email']  = 'tttc_email';
+		$columns['tttc_active'] = 'tttc_active';
+
+		return $columns;
+	}
+
 	public function player_column( $column, $post_id ) {
 		if ( 'tttc_rating' === $column ) {
 			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_RATING, true ) );
@@ -358,6 +369,19 @@ final class TTTC_Admin {
 
 		if ( count( $meta_query ) > 0 ) {
 			$query->set( 'meta_query', $meta_query );
+		}
+
+		$sortable_meta_keys = array(
+			'tttc_gender' => array( 'key' => TTTC_Plugin::PLAYER_META_GENDER, 'orderby' => 'meta_value' ),
+			'tttc_type'   => array( 'key' => TTTC_Plugin::PLAYER_META_TYPE, 'orderby' => 'meta_value' ),
+			'tttc_rating' => array( 'key' => TTTC_Plugin::PLAYER_META_RATING, 'orderby' => 'meta_value_num' ),
+			'tttc_email'  => array( 'key' => TTTC_Plugin::PLAYER_META_EMAIL, 'orderby' => 'meta_value' ),
+			'tttc_active' => array( 'key' => TTTC_Plugin::PLAYER_META_ACTIVE, 'orderby' => 'meta_value' ),
+		);
+		$orderby = $query->get( 'orderby' );
+		if ( isset( $sortable_meta_keys[ $orderby ] ) ) {
+			$query->set( 'meta_key', $sortable_meta_keys[ $orderby ]['key'] );
+			$query->set( 'orderby', $sortable_meta_keys[ $orderby ]['orderby'] );
 		}
 	}
 
