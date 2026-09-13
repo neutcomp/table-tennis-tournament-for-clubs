@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Plugin {
-	const DB_VERSION = '1.2.0';
+	const DB_VERSION = '1.3.0';
 	const PLAYER_POST_TYPE = 'tttc_player';
 	const TOURNAMENT_POST_TYPE = 'tttc_tournament';
 	const PLAYER_META_RATING = '_tttc_rating';

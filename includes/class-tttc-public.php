@@ -19,6 +19,7 @@ final class TTTC_Public {
 		add_action( 'init', array( $this, 'register_rewrite' ) );
 		add_filter( 'query_vars', array( $this, 'query_vars' ) );
 		add_action( 'template_redirect', array( $this, 'render_tournament_page' ) );
+		add_action( 'template_redirect', array( $this, 'render_player_page' ) );
 	}
 
 	public static function instance() {
@@ -27,11 +28,14 @@ final class TTTC_Public {
 
 	public static function register_rewrite() {
 		add_rewrite_rule( '^toernooi/([^/]+)/([0-9]{2}-[0-9]{2}-[0-9]{4})/?$', 'index.php?tttc_tournament=$matches[1]&tttc_tournament_date=$matches[2]', 'top' );
+		add_rewrite_rule( '^speler/([^/]+)/([0-9]+)/?$', 'index.php?tttc_player=$matches[1]&tttc_player_id=$matches[2]', 'top' );
 	}
 
 	public function query_vars( $vars ) {
 		$vars[] = 'tttc_tournament';
 		$vars[] = 'tttc_tournament_date';
+		$vars[] = 'tttc_player';
+		$vars[] = 'tttc_player_id';
 
 		return $vars;
 	}
@@ -48,6 +52,14 @@ final class TTTC_Public {
 		}
 
 		return home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $tournament_id ) . '/' . $date_object->format( 'd-m-Y' ) ) );
+	}
+
+	public function player_url( $player_id ) {
+		if ( TTTC_Plugin::PLAYER_POST_TYPE !== get_post_type( $player_id ) ) {
+			return '';
+		}
+
+		return home_url( user_trailingslashit( 'speler/' . get_post_field( 'post_name', $player_id ) . '/' . absint( $player_id ) ) );
 	}
 
 	public function tournament_schedule( $tournament_id ) {
@@ -93,6 +105,63 @@ final class TTTC_Public {
 		$this->render_tournament_detail( $tournament_id );
 		get_footer();
 		exit;
+	}
+
+	public function render_player_page() {
+		$slug      = get_query_var( 'tttc_player' );
+		$player_id = absint( get_query_var( 'tttc_player_id' ) );
+		if ( ! $slug || ! $player_id || TTTC_Plugin::PLAYER_POST_TYPE !== get_post_type( $player_id ) || 'publish' !== get_post_status( $player_id ) ) {
+			return;
+		}
+
+		if ( get_post_field( 'post_name', $player_id ) !== sanitize_title( $slug ) ) {
+			return;
+		}
+
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
+		get_header();
+		$this->render_player_detail( $player_id );
+		get_footer();
+		exit;
+	}
+
+	private function render_player_detail( $player_id ) {
+		$player_name = get_the_title( $player_id );
+		$gender      = get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_GENDER, true );
+		$type        = get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_TYPE, true );
+		$gender      = 'female' === $gender ? 'F' : 'M';
+		$gender_label = 'F' === $gender ? __( 'Female', 'table-tennis-tournament-for-clubs' ) : __( 'Male', 'table-tennis-tournament-for-clubs' );
+		$type         = 'youth' === $type ? __( 'Youth', 'table-tennis-tournament-for-clubs' ) : __( 'Senior', 'table-tennis-tournament-for-clubs' );
+		$tournaments  = $this->player_tournaments( $player_id );
+		?>
+		<main class="tttc-public-player">
+			<div class="tttc-public-player__inner">
+				<header class="tttc-public-player__header">
+					<p class="tttc-public-player__eyebrow"><?php esc_html_e( 'Table tennis player', 'table-tennis-tournament-for-clubs' ); ?></p>
+					<h1><?php echo esc_html( $player_name . ' (' . $gender . ')' ); ?></h1>
+					<dl class="tttc-public-player__details">
+						<div><dt><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></dt><dd><?php echo esc_html( $gender_label ); ?></dd></div>
+						<div><dt><?php esc_html_e( 'Type', 'table-tennis-tournament-for-clubs' ); ?></dt><dd><?php echo esc_html( $type ); ?></dd></div>
+					</dl>
+				</header>
+				<section class="tttc-public-player__tournaments" aria-labelledby="tttc-player-tournaments-heading">
+					<h2 id="tttc-player-tournaments-heading"><?php esc_html_e( 'Played tournaments', 'table-tennis-tournament-for-clubs' ); ?></h2>
+					<?php if ( empty( $tournaments ) ) : ?>
+						<p class="tttc-public-notice"><?php esc_html_e( 'No published tournaments found.', 'table-tennis-tournament-for-clubs' ); ?></p>
+					<?php else : ?>
+						<ul class="tttc-public-player__tournament-list">
+							<?php foreach ( $tournaments as $tournament ) : $position = $this->player_tournament_position( $player_id, $tournament->ID ); ?>
+								<li>
+									<a href="<?php echo esc_url( $this->tournament_url( $tournament->ID ) ); ?>"><?php echo esc_html( get_the_title( $tournament->ID ) ); ?></a>
+									<?php if ( $position ) : ?><span><?php echo esc_html( sprintf( __( 'Position: %d', 'table-tennis-tournament-for-clubs' ), $position ) ); ?></span><?php endif; ?>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
+				</section>
+			</div>
+		</main>
+		<?php
 	}
 
 	public function tournaments_shortcode( $atts ) {
@@ -231,6 +300,41 @@ final class TTTC_Public {
 		} );
 
 		return $players;
+	}
+
+	private function player_tournaments( $player_id ) {
+		global $wpdb;
+		$tournament_ids = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT tournament_id FROM ' . TTTC_Plugin::table_name() . ' WHERE player_id = %d', $player_id ) ) );
+		if ( empty( $tournament_ids ) ) {
+			return array();
+		}
+
+		return get_posts( array(
+			'post_type'      => TTTC_Plugin::TOURNAMENT_POST_TYPE,
+			'post_status'    => 'publish',
+			'post__in'       => $tournament_ids,
+			'numberposts'    => -1,
+			'orderby'        => 'meta_value',
+			'meta_key'       => TTTC_Plugin::TOURNAMENT_META_DATE,
+			'order'          => 'DESC',
+		) );
+	}
+
+	private function player_tournament_position( $player_id, $tournament_id ) {
+		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
+		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$schedule    = $this->tournament_schedule( $tournament_id );
+		$scores      = $this->saved_scores( $tournament_id );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
+
+		foreach ( $competition['places'] as $index => $place ) {
+			if ( isset( $place['player']->ID ) && (int) $place['player']->ID === (int) $player_id ) {
+				$position = $index + 1;
+				return $position <= 3 ? $position : 0;
+			}
+		}
+
+		return 0;
 	}
 
 	private function saved_scores( $tournament_id ) {

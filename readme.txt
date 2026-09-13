@@ -26,6 +26,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Group and crossover standings are ordered by match wins, game difference, point difference, and then a stable player-order fallback.
 * Match scores are stored for administrators and are not shown on public tournament pages.
 * Public tournament pages with groups and round-robin match schedules.
+* Public player pages at `/speler/{player-name}/{player-id}` with player details, played tournaments, and finalized top-three positions.
 * Public shortcodes for tournament and active player lists.
 
 == Installation ==

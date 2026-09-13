@@ -1,14 +1,18 @@
+.tttc-public-player,
 .tttc-public-tournament {
   color: #1d2327;
   background: #f0f0f1;
   padding: 32px 20px 56px;
 }
 
+.tttc-public-player__inner,
 .tttc-public-tournament__inner {
   max-width: 1180px;
   margin: 0 auto;
 }
 
+.tttc-public-player__header,
+.tttc-public-player__tournaments,
 .tttc-public-tournament__header,
 .tttc-public-tournament__players,
 .tttc-public-groups {
@@ -16,6 +20,77 @@
   border: 1px solid #dcdcde;
   padding: 28px;
   margin-bottom: 24px;
+}
+
+.tttc-public-player__eyebrow {
+  color: #646970;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.tttc-public-player h1,
+.tttc-public-player h2 {
+  color: #1d2327;
+  margin-top: 0;
+}
+
+.tttc-public-player h1 {
+  font-size: clamp(28px, 5vw, 48px);
+  margin-bottom: 24px;
+}
+
+.tttc-public-player__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 48px;
+  margin: 0;
+}
+
+.tttc-public-player__details div {
+  min-width: 120px;
+}
+
+.tttc-public-player__details dt {
+  color: #646970;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tttc-public-player__details dd {
+  color: #2271b1;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+
+.tttc-public-player__tournament-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tttc-public-player__tournament-list li {
+  align-items: center;
+  border-bottom: 1px solid #f0f0f1;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+.tttc-public-player__tournament-list a {
+  color: #2271b1;
+  font-weight: 600;
+}
+
+.tttc-public-player__tournament-list span {
+  color: #646970;
+  flex: 0 0 auto;
+  font-size: 14px;
 }
 
 .tttc-public-tournament__players summary {
@@ -214,14 +289,23 @@
 }
 
 @media (max-width: 640px) {
+  .tttc-public-player,
   .tttc-public-tournament {
     padding: 20px 12px 36px;
   }
 
+  .tttc-public-player__header,
+  .tttc-public-player__tournaments,
   .tttc-public-tournament__header,
   .tttc-public-tournament__players,
   .tttc-public-groups {
     padding: 20px;
+  }
+
+  .tttc-public-player__tournament-list li {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .tttc-public-player-list {
@@ -247,11 +331,14 @@
     display: none !important;
   }
 
+  .tttc-public-player,
   .tttc-public-tournament {
     background: #fff;
     padding: 0;
   }
 
+  .tttc-public-player__header,
+  .tttc-public-player__tournaments,
   .tttc-public-tournament__header,
   .tttc-public-tournament__players,
   .tttc-public-groups {
