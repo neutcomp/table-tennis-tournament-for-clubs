@@ -100,7 +100,7 @@ final class TTTC_Admin {
 		<div class="wrap tttc-dashboard">
 			<h1><?php esc_html_e( 'Table Tennis Tournament for Clubs', 'table-tennis-tournament-for-clubs' ); ?></h1>
 			<p><?php esc_html_e( 'Manage your club players and tournaments from one place.', 'table-tennis-tournament-for-clubs' ); ?></p>
-			<div class="tttc-summary-grid">
+			<div class="tttc-dashboard-grid">
 				<div class="tttc-summary-card"><span class="dashicons dashicons-groups"></span><strong><?php echo esc_html( $player_count ); ?></strong><span><?php esc_html_e( 'Published players', 'table-tennis-tournament-for-clubs' ); ?></span></div>
 				<div class="tttc-summary-card"><span class="dashicons dashicons-awards"></span><strong><?php echo esc_html( $tournament_count ); ?></strong><span><?php esc_html_e( 'Published tournaments', 'table-tennis-tournament-for-clubs' ); ?></span></div>
 			</div>
