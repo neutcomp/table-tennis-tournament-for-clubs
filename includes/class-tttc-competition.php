@@ -206,6 +206,9 @@ final class TTTC_Competition {
 
 	private static function places( $groups, $stages, $scores, $games ) {
 		$places = array();
+		if ( 1 === count( $groups ) ) {
+			return isset( $groups[0]['complete'] ) && $groups[0]['complete'] ? $groups[0]['standings'] : array();
+		}
 		if ( 3 === count( $groups ) && isset( $stages[0] ) ) {
 			$stats = array();
 			$completed_matches = 0;
