@@ -15,6 +15,14 @@ msgstr ""
 msgid "Table Tennis Settings"
 msgstr "Tafeltennisinstellingen"
 
+msgctxt "female gender abbreviation"
+msgid "F"
+msgstr "V"
+
+msgctxt "male gender abbreviation"
+msgid "M"
+msgstr "M"
+
 msgid "Table Tennis"
 msgstr "Tafeltennis"
 
@@ -221,3 +229,129 @@ msgstr "Rating:"
 
 msgid "Players will be announced soon."
 msgstr "Spelers worden binnenkort bekendgemaakt."
+
+msgid "Table tennis player"
+msgstr "Tafeltennisspeler"
+
+msgid "Table tennis tournament"
+msgstr "Tafeltennistoernooi"
+
+msgid "Played tournaments"
+msgstr "Gespeelde toernooien"
+
+msgid "No published tournaments found."
+msgstr "Geen gepubliceerde toernooien gevonden."
+
+msgid "Groups and matches"
+msgstr "Groepen en wedstrijden"
+
+msgid "Groups and crossover rounds"
+msgstr "Groepen en kruisfinale rondes"
+
+msgid "Crossover rounds"
+msgstr "Kruisfinale rondes"
+
+msgid "Final places"
+msgstr "Eindklassering"
+
+msgid "expand"
+msgstr "uitklappen"
+
+msgid "collapse"
+msgstr "inklappen"
+
+msgid "Sign up for this tournament"
+msgstr "Meld je aan voor dit toernooi"
+
+msgid "Sign up"
+msgstr "Aanmelden"
+
+msgid "Your signup was successful."
+msgstr "Je aanmelding is gelukt."
+
+msgid "A match schedule is available for tournaments with 4 to 28 active players."
+msgstr "Een wedstrijdschema is beschikbaar voor toernooien met 4 tot 28 actieve spelers."
+
+msgid "Groups"
+msgstr "Groepen"
+
+msgid "Table Tennis Tournament for Clubs"
+msgstr "Tafeltennistoernooi voor Clubs"
+
+msgid "Manage your club players and tournaments from one place."
+msgstr "Beheer de spelers en toernooien van je club vanaf één plek."
+
+msgid "Published players"
+msgstr "Gepubliceerde spelers"
+
+msgid "Published tournaments"
+msgstr "Gepubliceerde toernooien"
+
+msgid "Top 3 players by rating"
+msgstr "Top 3 spelers op rating"
+
+msgid "No active published players found."
+msgstr "Geen actieve gepubliceerde spelers gevonden."
+
+msgid "Average players per tournament"
+msgstr "Gemiddeld aantal spelers per toernooi"
+
+msgid "Both"
+msgstr "Beide"
+
+msgid "All genders"
+msgstr "Alle geslachten"
+
+msgid "All types"
+msgstr "Alle types"
+
+msgid "Tournament statuses"
+msgstr "Toernooistatussen"
+
+msgid "Player type"
+msgstr "Spelerstype"
+
+msgid "Player is active and available for new tournament assignments"
+msgstr "Speler is actief en beschikbaar voor nieuwe toernooitoewijzingen"
+
+msgid "A score sheet is available when the tournament has 4 to 28 assigned active players."
+msgstr "Een scoreformulier is beschikbaar wanneer het toernooi 4 tot 28 toegewezen actieve spelers heeft."
+
+msgid "Round"
+msgstr "Ronde"
+
+msgid "Save scores"
+msgstr "Scores opslaan"
+
+msgid "Tournament scores updated."
+msgstr "Toernooiscores bijgewerkt."
+
+msgid "Select the active players who will participate in this tournament."
+msgstr "Selecteer de actieve spelers die aan dit toernooi deelnemen."
+
+msgid "Save tournament players"
+msgstr "Toernooispelers opslaan"
+
+msgid "Tournament players updated."
+msgstr "Toernooispelers bijgewerkt."
+
+msgid "Scores"
+msgstr "Scores"
+
+msgid "Configure the confirmation email sent after a player signs up for an Upcoming tournament."
+msgstr "Configureer de bevestigingsmail die wordt verzonden nadat een speler zich aanmeldt voor een aankomend toernooi."
+
+msgid "Send from email address"
+msgstr "Verzenden vanaf e-mailadres"
+
+msgid "This address is used in the From header."
+msgstr "Dit adres wordt gebruikt in de Van-header."
+
+msgid "Subject"
+msgstr "Onderwerp"
+
+msgid "Body"
+msgstr "Inhoud"
+
+msgid "Available merge fields: [tournament-name] and [tournament-date]."
+msgstr "Beschikbare samenvoegvelden: [tournament-name] en [tournament-date]."

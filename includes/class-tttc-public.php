@@ -133,8 +133,8 @@ final class TTTC_Public {
 		$player_name = get_the_title( $player_id );
 		$gender      = get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_GENDER, true );
 		$type        = get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_TYPE, true );
-		$gender      = 'female' === $gender ? 'F' : 'M';
-		$gender_label = 'F' === $gender ? __( 'Female', 'table-tennis-tournament-for-clubs' ) : __( 'Male', 'table-tennis-tournament-for-clubs' );
+		$gender_label = 'female' === $gender ? __( 'Female', 'table-tennis-tournament-for-clubs' ) : __( 'Male', 'table-tennis-tournament-for-clubs' );
+		$gender_abbreviation = 'female' === $gender ? _x( 'F', 'female gender abbreviation', 'table-tennis-tournament-for-clubs' ) : _x( 'M', 'male gender abbreviation', 'table-tennis-tournament-for-clubs' );
 		$type         = 'youth' === $type ? __( 'Youth', 'table-tennis-tournament-for-clubs' ) : __( 'Senior', 'table-tennis-tournament-for-clubs' );
 		$tournaments  = $this->player_tournaments( $player_id );
 		?>
@@ -142,7 +142,7 @@ final class TTTC_Public {
 			<div class="tttc-public-player__inner">
 				<header class="tttc-public-player__header">
 					<p class="tttc-public-player__eyebrow"><?php esc_html_e( 'Table tennis player', 'table-tennis-tournament-for-clubs' ); ?></p>
-					<h1><?php echo esc_html( $player_name . ' (' . $gender . ')' ); ?></h1>
+					<h1><?php echo esc_html( $player_name . ' (' . $gender_abbreviation . ')' ); ?></h1>
 					<dl class="tttc-public-player__details">
 						<div><dt><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></dt><dd><?php echo esc_html( $gender_label ); ?></dd></div>
 						<div><dt><?php esc_html_e( 'Type', 'table-tennis-tournament-for-clubs' ); ?></dt><dd><?php echo esc_html( $type ); ?></dd></div>
