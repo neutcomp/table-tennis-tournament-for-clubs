@@ -22,9 +22,13 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_GAMES = '_tttc_games';
 	const TOURNAMENT_META_STATUS = '_tttc_status';
 	const TOURNAMENT_META_TYPE = '_tttc_tournament_type';
+	const TOURNAMENT_META_FORMAT_RANGES = '_tttc_format_ranges';
 	const OPTION_EMAIL_FROM = 'tttc_email_from';
 	const OPTION_EMAIL_SUBJECT = 'tttc_email_subject';
 	const OPTION_EMAIL_BODY = 'tttc_email_body';
+	const OPTION_DEFAULT_GAMES = 'tttc_default_games';
+	const OPTION_DEFAULT_TYPE = 'tttc_default_type';
+	const OPTION_FORMAT_RANGES = 'tttc_format_ranges';
 
 	private static $instance;
 
@@ -180,5 +184,68 @@ final class TTTC_Plugin {
 			'completed' => __( 'Completed', 'table-tennis-tournament-for-clubs' ),
 			'cancelled' => __( 'Cancelled', 'table-tennis-tournament-for-clubs' ),
 		);
+	}
+
+	public static function default_format_ranges() {
+		return array(
+			1 => array( 'min' => 4, 'max' => 7 ),
+			2 => array( 'min' => 8, 'max' => 14 ),
+			3 => array( 'min' => 15, 'max' => 19 ),
+			4 => array( 'min' => 20, 'max' => 28 ),
+		);
+	}
+
+	public static function sanitize_format_ranges( $input ) {
+		$defaults = self::default_format_ranges();
+		if ( ! is_array( $input ) ) {
+			return $defaults;
+		}
+
+		$sanitized = array();
+		for ( $groups = 1; $groups <= 4; $groups++ ) {
+			$min = isset( $input[ $groups ]['min'] ) ? absint( $input[ $groups ]['min'] ) : $defaults[ $groups ]['min'];
+			$max = isset( $input[ $groups ]['max'] ) ? absint( $input[ $groups ]['max'] ) : $defaults[ $groups ]['max'];
+
+			if ( $min < 2 ) {
+				$min = 2;
+			}
+			if ( $max < $min ) {
+				$max = $min;
+			}
+
+			$sanitized[ $groups ] = array(
+				'min' => $min,
+				'max' => $max,
+			);
+		}
+
+		return $sanitized;
+	}
+
+	public static function get_format_ranges( $tournament_id = 0 ) {
+		if ( $tournament_id ) {
+			$meta = get_post_meta( $tournament_id, self::TOURNAMENT_META_FORMAT_RANGES, true );
+			if ( is_array( $meta ) && ! empty( $meta ) ) {
+				return self::sanitize_format_ranges( $meta );
+			}
+		}
+
+		$option = get_option( self::OPTION_FORMAT_RANGES );
+		if ( is_array( $option ) && ! empty( $option ) ) {
+			return self::sanitize_format_ranges( $option );
+		}
+
+		return self::default_format_ranges();
+	}
+
+	public static function has_scores( $tournament_id ) {
+		if ( ! $tournament_id ) {
+			return false;
+		}
+
+		global $wpdb;
+		$count = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . self::scores_table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+
+		return (int) $count > 0;
 	}
 }

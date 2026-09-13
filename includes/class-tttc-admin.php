@@ -56,9 +56,32 @@ final class TTTC_Admin {
 	}
 
 	public function register_settings() {
+		register_setting( 'tttc_email_settings', TTTC_Plugin::OPTION_EMAIL_FROM, array( 'sanitize_callback' => 'sanitize_email' ) );
+		register_setting( 'tttc_email_settings', TTTC_Plugin::OPTION_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'tttc_email_settings', TTTC_Plugin::OPTION_EMAIL_BODY, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+
+		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_DEFAULT_GAMES, array( 'sanitize_callback' => array( $this, 'sanitize_games_setting' ) ) );
+		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_DEFAULT_TYPE, array( 'sanitize_callback' => array( $this, 'sanitize_type_setting' ) ) );
+		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_FORMAT_RANGES, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_format_ranges' ) ) );
+
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_FROM, array( 'sanitize_callback' => 'sanitize_email' ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_BODY, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_DEFAULT_GAMES, array( 'sanitize_callback' => array( $this, 'sanitize_games_setting' ) ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_DEFAULT_TYPE, array( 'sanitize_callback' => array( $this, 'sanitize_type_setting' ) ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_FORMAT_RANGES, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_format_ranges' ) ) );
+	}
+
+	public function sanitize_games_setting( $value ) {
+		$value = sanitize_key( (string) $value );
+
+		return in_array( $value, array( '3', '5' ), true ) ? $value : '3';
+	}
+
+	public function sanitize_type_setting( $value ) {
+		$value = sanitize_key( (string) $value );
+
+		return in_array( $value, array( 'senior', 'youth', 'both' ), true ) ? $value : 'both';
 	}
 
 	public function settings_page() {
@@ -66,22 +89,103 @@ final class TTTC_Admin {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
-		$from    = get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) );
-		$subject = get_option( TTTC_Plugin::OPTION_EMAIL_SUBJECT, __( 'Signup confirmed for [tournament-name]', 'table-tennis-tournament-for-clubs' ) );
-		$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
+		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'email';
+		if ( ! in_array( $active_tab, array( 'email', 'formats' ), true ) ) {
+			$active_tab = 'email';
+		}
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Table Tennis', 'table-tennis-tournament-for-clubs' ); ?></h1>
-			<p><?php esc_html_e( 'Configure the confirmation email sent after a player signs up for an Upcoming tournament.', 'table-tennis-tournament-for-clubs' ); ?></p>
-			<form method="post" action="options.php">
-				<?php settings_fields( 'tttc_settings' ); ?>
-				<table class="form-table" role="presentation">
-					<tr><th scope="row"><label for="tttc-email-from"><?php esc_html_e( 'Send from email address', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="email" class="regular-text" id="tttc-email-from" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_FROM ); ?>" value="<?php echo esc_attr( $from ); ?>" required><p class="description"><?php esc_html_e( 'This address is used in the From header.', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
-					<tr><th scope="row"><label for="tttc-email-subject"><?php esc_html_e( 'Subject', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="text" class="large-text" id="tttc-email-subject" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_SUBJECT ); ?>" value="<?php echo esc_attr( $subject ); ?>" required><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name] and [tournament-date].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
-					<tr><th scope="row"><label for="tttc-email-body"><?php esc_html_e( 'Body', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><textarea class="large-text" rows="10" id="tttc-email-body" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_BODY ); ?>" required><?php echo esc_textarea( $body ); ?></textarea><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name] and [tournament-date].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
-				</table>
-				<?php submit_button(); ?>
-			</form>
+			<h1><?php esc_html_e( 'Table Tennis Settings', 'table-tennis-tournament-for-clubs' ); ?></h1>
+			<nav class="nav-tab-wrapper">
+				<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=email' ) ); ?>" class="nav-tab <?php echo 'email' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></a>
+				<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=formats' ) ); ?>" class="nav-tab <?php echo 'formats' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Tournament Formats', 'table-tennis-tournament-for-clubs' ); ?></a>
+			</nav>
+
+			<?php if ( 'email' === $active_tab ) :
+				$from    = get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) );
+				$subject = get_option( TTTC_Plugin::OPTION_EMAIL_SUBJECT, __( 'Signup confirmed for [tournament-name]', 'table-tennis-tournament-for-clubs' ) );
+				$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
+				?>
+				<p><?php esc_html_e( 'Configure the confirmation email sent after a player signs up for an Upcoming tournament.', 'table-tennis-tournament-for-clubs' ); ?></p>
+				<form method="post" action="options.php">
+					<?php settings_fields( 'tttc_email_settings' ); ?>
+					<table class="form-table" role="presentation">
+						<tr><th scope="row"><label for="tttc-email-from"><?php esc_html_e( 'Send from email address', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="email" class="regular-text" id="tttc-email-from" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_FROM ); ?>" value="<?php echo esc_attr( $from ); ?>" required><p class="description"><?php esc_html_e( 'This address is used in the From header.', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
+						<tr><th scope="row"><label for="tttc-email-subject"><?php esc_html_e( 'Subject', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="text" class="large-text" id="tttc-email-subject" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_SUBJECT ); ?>" value="<?php echo esc_attr( $subject ); ?>" required><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name] and [tournament-date].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
+						<tr><th scope="row"><label for="tttc-email-body"><?php esc_html_e( 'Body', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><textarea class="large-text" rows="10" id="tttc-email-body" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_BODY ); ?>" required><?php echo esc_textarea( $body ); ?></textarea><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name] and [tournament-date].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
+					</table>
+					<?php submit_button(); ?>
+				</form>
+			<?php else :
+				$default_games = get_option( TTTC_Plugin::OPTION_DEFAULT_GAMES, '3' );
+				$default_type  = get_option( TTTC_Plugin::OPTION_DEFAULT_TYPE, 'both' );
+				$format_ranges = TTTC_Plugin::get_format_ranges();
+				?>
+				<p><?php esc_html_e( 'Configure default tournament options and player count brackets for group distribution.', 'table-tennis-tournament-for-clubs' ); ?></p>
+				<form method="post" action="options.php">
+					<?php settings_fields( 'tttc_format_settings' ); ?>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><label for="tttc-default-games"><?php esc_html_e( 'Default Best of', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+							<td>
+								<select id="tttc-default-games" name="<?php echo esc_attr( TTTC_Plugin::OPTION_DEFAULT_GAMES ); ?>">
+									<option value="3" <?php selected( $default_games, '3' ); ?>>3</option>
+									<option value="5" <?php selected( $default_games, '5' ); ?>>5</option>
+								</select>
+								<p class="description"><?php esc_html_e( 'Default match format for newly created tournaments.', 'table-tennis-tournament-for-clubs' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="tttc-default-type"><?php esc_html_e( 'Default player type', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+							<td>
+								<select id="tttc-default-type" name="<?php echo esc_attr( TTTC_Plugin::OPTION_DEFAULT_TYPE ); ?>">
+									<option value="senior" <?php selected( $default_type, 'senior' ); ?>><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></option>
+									<option value="youth" <?php selected( $default_type, 'youth' ); ?>><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></option>
+									<option value="both" <?php selected( $default_type, 'both' ); ?>><?php esc_html_e( 'Both', 'table-tennis-tournament-for-clubs' ); ?></option>
+								</select>
+								<p class="description"><?php esc_html_e( 'Default player type restriction for newly created tournaments.', 'table-tennis-tournament-for-clubs' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Group player brackets', 'table-tennis-tournament-for-clubs' ); ?></th>
+							<td>
+								<p class="description" style="margin-bottom: 12px;"><?php esc_html_e( 'Set the minimum and maximum active player thresholds for distributing players into 1 to 4 groups.', 'table-tennis-tournament-for-clubs' ); ?></p>
+								<table class="widefat striped tttc-format-table" style="max-width: 600px;">
+									<thead>
+										<tr>
+											<th><?php esc_html_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?></th>
+											<th><?php esc_html_e( 'Min players', 'table-tennis-tournament-for-clubs' ); ?></th>
+											<th><?php esc_html_e( 'Max players', 'table-tennis-tournament-for-clubs' ); ?></th>
+											<th><?php esc_html_e( 'Crossover format', 'table-tennis-tournament-for-clubs' ); ?></th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php
+										$format_labels = array(
+											1 => __( 'Single group round-robin', 'table-tennis-tournament-for-clubs' ),
+											2 => __( 'Final and 3rd place match', 'table-tennis-tournament-for-clubs' ),
+											3 => __( 'Winner round-robin', 'table-tennis-tournament-for-clubs' ),
+											4 => __( 'Semi-finals, final, 3rd place', 'table-tennis-tournament-for-clubs' ),
+										);
+										for ( $g = 1; $g <= 4; $g++ ) :
+											$min = isset( $format_ranges[ $g ]['min'] ) ? $format_ranges[ $g ]['min'] : 2;
+											$max = isset( $format_ranges[ $g ]['max'] ) ? $format_ranges[ $g ]['max'] : 2;
+											?>
+											<tr>
+												<td><strong><?php echo esc_html( sprintf( _n( '%d Group', '%d Groups', $g, 'table-tennis-tournament-for-clubs' ), $g ) ); ?></strong></td>
+												<td><input type="number" class="small-text" min="2" step="1" name="<?php echo esc_attr( TTTC_Plugin::OPTION_FORMAT_RANGES . '[' . $g . '][min]' ); ?>" value="<?php echo esc_attr( $min ); ?>" required></td>
+												<td><input type="number" class="small-text" min="2" step="1" name="<?php echo esc_attr( TTTC_Plugin::OPTION_FORMAT_RANGES . '[' . $g . '][max]' ); ?>" value="<?php echo esc_attr( $max ); ?>" required></td>
+												<td><span class="description"><?php echo esc_html( $format_labels[ $g ] ); ?></span></td>
+											</tr>
+										<?php endfor; ?>
+									</tbody>
+								</table>
+							</td>
+						</tr>
+					</table>
+					<?php submit_button(); ?>
+				</form>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -216,17 +320,57 @@ final class TTTC_Admin {
 		$status = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$type   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
 		$status = $status ? $status : 'draft';
-		$type   = $type ? $type : 'both';
-		$games  = in_array( (string) $games, array( '3', '5' ), true ) ? (string) $games : '3';
+		if ( '' === $type ) {
+			$type = get_option( TTTC_Plugin::OPTION_DEFAULT_TYPE, 'both' );
+		}
+		$type = in_array( $type, array( 'senior', 'youth', 'both' ), true ) ? $type : 'both';
+		if ( '' === $games ) {
+			$games = get_option( TTTC_Plugin::OPTION_DEFAULT_GAMES, '3' );
+		}
+		$games = in_array( (string) $games, array( '3', '5' ), true ) ? (string) $games : '3';
+
+		$format_ranges = TTTC_Plugin::get_format_ranges( $post->ID );
+		$has_scores    = TTTC_Plugin::has_scores( $post->ID );
 		?>
+		<?php if ( $has_scores ) : ?>
+			<div class="notice notice-warning inline" style="margin: 0 0 16px;">
+				<p><strong><?php esc_html_e( 'Note:', 'table-tennis-tournament-for-clubs' ); ?></strong> <?php esc_html_e( 'Match scores have already been recorded for this tournament. Format settings (Best of and group player brackets) cannot be changed.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			</div>
+		<?php endif; ?>
 		<p><label for="tttc-date"><strong><?php esc_html_e( 'Date', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input type="date" id="tttc-date" name="tttc_date" value="<?php echo esc_attr( $date ); ?>" required></p>
-		<p><label for="tttc-games"><strong><?php esc_html_e( 'Best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-games" name="tttc_games" required><option value="3" <?php selected( $games, '3' ); ?>>3</option><option value="5" <?php selected( $games, '5' ); ?>>5</option></select></p>
+		<p><label for="tttc-games"><strong><?php esc_html_e( 'Best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-games" name="tttc_games" required <?php disabled( $has_scores ); ?>><option value="3" <?php selected( $games, '3' ); ?>>3</option><option value="5" <?php selected( $games, '5' ); ?>>5</option></select></p>
 		<p><label for="tttc-type"><strong><?php esc_html_e( 'Player type', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-type" name="tttc_type"><option value="senior" <?php selected( $type, 'senior' ); ?>><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></option><option value="youth" <?php selected( $type, 'youth' ); ?>><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></option><option value="both" <?php selected( $type, 'both' ); ?>><?php esc_html_e( 'Both', 'table-tennis-tournament-for-clubs' ); ?></option></select></p>
 		<p><label for="tttc-status"><strong><?php esc_html_e( 'Status', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select id="tttc-status" name="tttc_status">
 			<?php foreach ( TTTC_Plugin::statuses() as $key => $label ) : ?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $status, $key ); ?>><?php echo esc_html( $label ); ?></option>
 			<?php endforeach; ?>
 		</select></p>
+
+		<div class="tttc-tournament-format-section" style="margin-top: 16px; border-top: 1px solid #dcdcde; padding-top: 12px;">
+			<p><strong><?php esc_html_e( 'Group player brackets (format)', 'table-tennis-tournament-for-clubs' ); ?></strong></p>
+			<p class="description"><?php esc_html_e( 'Customize player count brackets for this tournament or leave default.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			<table class="widefat striped tttc-format-table" style="max-width: 500px; margin-top: 8px;">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?></th>
+						<th><?php esc_html_e( 'Min', 'table-tennis-tournament-for-clubs' ); ?></th>
+						<th><?php esc_html_e( 'Max', 'table-tennis-tournament-for-clubs' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php for ( $g = 1; $g <= 4; $g++ ) :
+						$min = isset( $format_ranges[ $g ]['min'] ) ? $format_ranges[ $g ]['min'] : 2;
+						$max = isset( $format_ranges[ $g ]['max'] ) ? $format_ranges[ $g ]['max'] : 2;
+						?>
+						<tr>
+							<td><strong><?php echo esc_html( sprintf( _n( '%d Group', '%d Groups', $g, 'table-tennis-tournament-for-clubs' ), $g ) ); ?></strong></td>
+							<td><input type="number" class="small-text" min="2" step="1" name="tttc_format_ranges[<?php echo esc_attr( $g ); ?>][min]" value="<?php echo esc_attr( $min ); ?>" required <?php disabled( $has_scores ); ?>></td>
+							<td><input type="number" class="small-text" min="2" step="1" name="tttc_format_ranges[<?php echo esc_attr( $g ); ?>][max]" value="<?php echo esc_attr( $max ); ?>" required <?php disabled( $has_scores ); ?>></td>
+						</tr>
+					<?php endfor; ?>
+				</tbody>
+			</table>
+		</div>
 		<?php
 	}
 
@@ -256,22 +400,31 @@ final class TTTC_Admin {
 		if ( ! $date_object || $date_object->format( 'Y-m-d' ) !== $date ) {
 			$date = '';
 		}
-		$games  = isset( $_POST['tttc_games'] ) ? sanitize_key( wp_unslash( $_POST['tttc_games'] ) ) : '3';
 		$type   = isset( $_POST['tttc_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_type'] ) ) : 'both';
 		$status = isset( $_POST['tttc_status'] ) ? sanitize_key( $_POST['tttc_status'] ) : 'draft';
 		if ( ! in_array( $type, array( 'senior', 'youth', 'both' ), true ) ) {
 			$type = 'both';
 		}
-		if ( ! in_array( $games, array( '3', '5' ), true ) ) {
-			$games = '3';
-		}
 		if ( ! array_key_exists( $status, TTTC_Plugin::statuses() ) ) {
 			$status = 'draft';
 		}
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, $date );
-		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GAMES, $games );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TYPE, $type );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
+
+		$has_scores = TTTC_Plugin::has_scores( $post_id );
+		if ( ! $has_scores ) {
+			$games = isset( $_POST['tttc_games'] ) ? sanitize_key( wp_unslash( $_POST['tttc_games'] ) ) : '3';
+			if ( ! in_array( $games, array( '3', '5' ), true ) ) {
+				$games = '3';
+			}
+			update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GAMES, $games );
+
+			if ( isset( $_POST['tttc_format_ranges'] ) && is_array( $_POST['tttc_format_ranges'] ) ) {
+				$ranges = TTTC_Plugin::sanitize_format_ranges( wp_unslash( $_POST['tttc_format_ranges'] ) );
+				update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_FORMAT_RANGES, $ranges );
+			}
+		}
 	}
 
 	public function redirect_after_post_save( $location, $post_id ) {
@@ -427,10 +580,13 @@ final class TTTC_Admin {
 			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
-		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
-		$schedule    = TTTC_Public::instance()->tournament_schedule( $tournament_id );
-		$error_data  = get_transient( $this->score_error_transient_key( $tournament_id ) );
+		$games         = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
+		$games         = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$schedule      = TTTC_Public::instance()->tournament_schedule( $tournament_id );
+		$format_ranges = TTTC_Plugin::get_format_ranges( $tournament_id );
+		$min_players   = isset( $format_ranges[1]['min'] ) ? $format_ranges[1]['min'] : 4;
+		$max_players   = isset( $format_ranges[4]['max'] ) ? $format_ranges[4]['max'] : 28;
+		$error_data    = get_transient( $this->score_error_transient_key( $tournament_id ) );
 		if ( is_array( $error_data ) ) {
 			delete_transient( $this->score_error_transient_key( $tournament_id ) );
 			$this->score_error       = isset( $error_data['message'] ) ? $error_data['message'] : '';
@@ -455,7 +611,7 @@ final class TTTC_Admin {
 			<?php if ( $this->score_error ) : ?><div class="notice notice-error"><p><?php echo esc_html( $this->score_error ); ?></p></div><?php endif; ?>
 			<?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Tournament scores updated.', 'table-tennis-tournament-for-clubs' ); ?></p></div><?php endif; ?>
 			<?php if ( empty( $schedule ) ) : ?>
-				<p><?php esc_html_e( 'A score sheet is available when the tournament has 4 to 28 assigned active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
+				<p><?php echo esc_html( sprintf( __( 'A score sheet is available when the tournament has %1$d to %2$d assigned active players.', 'table-tennis-tournament-for-clubs' ), $min_players, $max_players ) ); ?></p>
 			<?php else : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form">
 					<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">

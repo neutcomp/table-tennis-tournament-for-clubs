@@ -66,7 +66,7 @@ final class TTTC_Public {
 
 	public function tournament_schedule( $tournament_id ) {
 		$players     = $this->assigned_players( $tournament_id );
-		$group_count = $this->group_count( count( $players ) );
+		$group_count = $this->group_count( count( $players ), $tournament_id );
 		$schedule    = array();
 
 		foreach ( $this->build_groups( $players, $group_count ) as $group ) {
@@ -287,8 +287,12 @@ final class TTTC_Public {
 							</section>
 						<?php endif; ?>
 					</section>
-				<?php elseif ( in_array( $status, array( 'active', 'completed' ), true ) && count( $players ) ) : ?>
-					<p class="tttc-public-notice"><?php esc_html_e( 'A match schedule is available for tournaments with 4 to 28 active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
+				<?php elseif ( in_array( $status, array( 'active', 'completed' ), true ) && count( $players ) ) :
+					$format_ranges = TTTC_Plugin::get_format_ranges( $tournament_id );
+					$min_players   = isset( $format_ranges[1]['min'] ) ? $format_ranges[1]['min'] : 4;
+					$max_players   = isset( $format_ranges[4]['max'] ) ? $format_ranges[4]['max'] : 28;
+					?>
+					<p class="tttc-public-notice"><?php echo esc_html( sprintf( __( 'A match schedule is available for tournaments with %1$d to %2$d active players.', 'table-tennis-tournament-for-clubs' ), $min_players, $max_players ) ); ?></p>
 				<?php endif; ?>
 			</div>
 		</main>
@@ -601,18 +605,12 @@ final class TTTC_Public {
 		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d ORDER BY created_at ASC', $tournament_id ) ) );
 	}
 
-	private function group_count( $player_count ) {
-		if ( $player_count >= 4 && $player_count <= 7 ) {
-			return 1;
-		}
-		if ( $player_count >= 8 && $player_count <= 14 ) {
-			return 2;
-		}
-		if ( $player_count >= 15 && $player_count <= 19 ) {
-			return 3;
-		}
-		if ( $player_count >= 20 && $player_count <= 28 ) {
-			return 4;
+	private function group_count( $player_count, $tournament_id = 0 ) {
+		$ranges = TTTC_Plugin::get_format_ranges( $tournament_id );
+		for ( $groups = 1; $groups <= 4; $groups++ ) {
+			if ( isset( $ranges[ $groups ] ) && $player_count >= $ranges[ $groups ]['min'] && $player_count <= $ranges[ $groups ]['max'] ) {
+				return $groups;
+			}
 		}
 
 		return 0;

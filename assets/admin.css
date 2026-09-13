@@ -171,3 +171,22 @@
   display: inline-flex;
   gap: 4px;
 }
+
+.tttc-format-table {
+  margin-top: 8px;
+  border-collapse: collapse;
+}
+
+.tttc-format-table th,
+.tttc-format-table td {
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+
+.tttc-format-table input[type="number"] {
+  width: 60px;
+}
+
+.tttc-tournament-format-section {
+  max-width: 600px;
+}
