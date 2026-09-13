@@ -237,19 +237,23 @@ final class TTTC_Competition {
 			usort( $places, array( __CLASS__, 'compare_standings' ) );
 			return $places;
 		}
-		$deciding_stage = 2 === count( $stages ) ? 1 : 2;
-		if ( ! isset( $stages[0]['matches'][0]['winner'], $stages[1]['matches'][0]['winner'], $stages[ $deciding_stage ]['matches'][0]['winner'] ) || ! $stages[0]['matches'][0]['winner'] || ! $stages[1]['matches'][0]['winner'] || ! $stages[ $deciding_stage ]['matches'][0]['winner'] ) {
+
+		$final_stage       = null;
+		$third_place_stage = null;
+		foreach ( $stages as $stage ) {
+			if ( 'final' === $stage['id'] ) {
+				$final_stage = $stage;
+			} elseif ( 'third-place' === $stage['id'] ) {
+				$third_place_stage = $stage;
+			}
+		}
+		if ( ! $final_stage || ! $third_place_stage || empty( $final_stage['matches'][0]['winner'] ) || empty( $final_stage['matches'][0]['loser'] ) || empty( $third_place_stage['matches'][0]['winner'] ) ) {
 			return array();
 		}
-		if ( $stages[0]['matches'][0]['winner'] ) {
-			$places[] = array( 'player' => $stages[0]['matches'][0]['winner'] );
-		}
-		if ( isset( $stages[0]['matches'][0]['loser'] ) && $stages[0]['matches'][0]['loser'] ) {
-			$places[] = array( 'player' => $stages[0]['matches'][0]['loser'] );
-		}
-		if ( isset( $stages[1]['matches'][0]['winner'] ) && $stages[1]['matches'][0]['winner'] ) {
-			$places[] = array( 'player' => $stages[1]['matches'][0]['winner'] );
-		}
-		return $places;
+		return array(
+			array( 'player' => $final_stage['matches'][0]['winner'] ),
+			array( 'player' => $final_stage['matches'][0]['loser'] ),
+			array( 'player' => $third_place_stage['matches'][0]['winner'] ),
+		);
 	}
 }

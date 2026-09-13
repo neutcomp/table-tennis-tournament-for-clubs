@@ -34,7 +34,7 @@ msgid "Tournament Players"
 msgstr "Toernooispelers"
 
 msgid "Tournament Scores"
-msgstr "Toernooischeers"
+msgstr "Toernooi scores"
 
 msgid "You do not have permission to view this page."
 msgstr "Je hebt geen toestemming om deze pagina te bekijken."
@@ -46,10 +46,10 @@ msgid "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been
 msgstr "Hallo,\n\nJe aanmelding voor [tournament-name] op [tournament-date] is ontvangen.\n\nWe kijken uit naar je komst."
 
 msgid "Player details"
-msgstr "Spelersdetails"
+msgstr "Spelers details"
 
 msgid "Tournament details"
-msgstr "Toernooidetails"
+msgstr "Toernooi details"
 
 msgid "Name"
 msgstr "Naam"
@@ -139,13 +139,13 @@ msgid "A game must be won with at least 11 points and a two-point margin."
 msgstr "Een partij moet worden gewonnen met minstens 11 punten en een voorsprong van twee punten."
 
 msgid "A Best of %d match must have a winner with at least %d games won."
-msgstr "Een Best of %d-wedstrijd moet een winnaar hebben met minstens %d gewonnen partijen."
+msgstr "Een Best of %d-wedstrijd moet een winnaar hebben met minstens %d gewonnen games."
 
 msgid "Round %d"
 msgstr "Ronde %d"
 
 msgid "Games won"
-msgstr "Gewonnen partijen"
+msgstr "Gewonnen games"
 
 msgid "Player"
 msgstr "Speler"
