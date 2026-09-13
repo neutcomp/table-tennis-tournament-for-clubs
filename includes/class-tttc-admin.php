@@ -104,15 +104,15 @@ final class TTTC_Admin {
 			<?php if ( 'email' === $active_tab ) :
 				$from    = get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) );
 				$subject = get_option( TTTC_Plugin::OPTION_EMAIL_SUBJECT, __( 'Signup confirmed for [tournament-name]', 'table-tennis-tournament-for-clubs' ) );
-				$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
+				$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nView the tournament: [tournament-link]\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
 				?>
 				<p><?php esc_html_e( 'Configure the confirmation email sent after a player signs up for an Upcoming tournament.', 'table-tennis-tournament-for-clubs' ); ?></p>
 				<form method="post" action="options.php">
 					<?php settings_fields( 'tttc_email_settings' ); ?>
 					<table class="form-table" role="presentation">
 						<tr><th scope="row"><label for="tttc-email-from"><?php esc_html_e( 'Send from email address', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="email" class="regular-text" id="tttc-email-from" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_FROM ); ?>" value="<?php echo esc_attr( $from ); ?>" required><p class="description"><?php esc_html_e( 'This address is used in the From header.', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
-						<tr><th scope="row"><label for="tttc-email-subject"><?php esc_html_e( 'Subject', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="text" class="large-text" id="tttc-email-subject" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_SUBJECT ); ?>" value="<?php echo esc_attr( $subject ); ?>" required><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name] and [tournament-date].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
-						<tr><th scope="row"><label for="tttc-email-body"><?php esc_html_e( 'Body', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><textarea class="large-text" rows="10" id="tttc-email-body" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_BODY ); ?>" required><?php echo esc_textarea( $body ); ?></textarea><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name] and [tournament-date].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
+						<tr><th scope="row"><label for="tttc-email-subject"><?php esc_html_e( 'Subject', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="text" class="large-text" id="tttc-email-subject" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_SUBJECT ); ?>" value="<?php echo esc_attr( $subject ); ?>" required><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name], [tournament-date], and [tournament-link].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
+						<tr><th scope="row"><label for="tttc-email-body"><?php esc_html_e( 'Body', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><textarea class="large-text" rows="10" id="tttc-email-body" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_BODY ); ?>" required><?php echo esc_textarea( $body ); ?></textarea><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name], [tournament-date], and [tournament-link].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
 					</table>
 					<?php submit_button(); ?>
 				</form>

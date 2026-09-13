@@ -453,10 +453,11 @@ final class TTTC_Public {
 	private function send_signup_email( $tournament_id, $recipient ) {
 		$from    = sanitize_email( get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) ) );
 		$subject = get_option( TTTC_Plugin::OPTION_EMAIL_SUBJECT, __( 'Signup confirmed for [tournament-name]', 'table-tennis-tournament-for-clubs' ) );
-		$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
+		$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nView the tournament: [tournament-link]\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
 		$replacements = array(
 			'[tournament-name]' => get_the_title( $tournament_id ),
 			'[tournament-date]' => $this->display_date( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ),
+			'[tournament-link]' => $this->tournament_url( $tournament_id ),
 		);
 		$subject = strtr( $subject, $replacements );
 		$body    = strtr( $body, $replacements );
