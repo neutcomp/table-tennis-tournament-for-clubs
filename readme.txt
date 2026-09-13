@@ -45,6 +45,8 @@ After every group match has a completed score, the Scores screen reveals the app
 
 Each published tournament title links to `/toernooi/{tournament-name}/{DD-MM-YYYY}`. The public tournament page lists active assigned players by rating, distributes them into groups using the tournament group rules, and shows every round-robin match in each group. Schedules are available for 4 to 28 players.
 
+Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced.
+
 Optional attributes:
 
 * `[tttc_tournaments limit="10"]`

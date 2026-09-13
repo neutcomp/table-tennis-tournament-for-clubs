@@ -14,6 +14,7 @@
 .tttc-public-player__header,
 .tttc-public-player__tournaments,
 .tttc-public-tournament__header,
+.tttc-public-tournament__signup,
 .tttc-public-tournament__players,
 .tttc-public-groups {
   background: #fff;
@@ -157,6 +158,58 @@
   margin: 0;
 }
 
+.tttc-public-tournament__signup h2 {
+  color: #1d2327;
+  margin-top: 0;
+}
+
+.tttc-public-signup-form__grid {
+  display: grid;
+  gap: 0 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tttc-public-signup-form p {
+  margin: 0 0 18px;
+}
+
+.tttc-public-signup-form label {
+  color: #1d2327;
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.tttc-public-signup-form label span {
+  color: #b32d2e;
+}
+
+.tttc-public-signup-form input,
+.tttc-public-signup-form select {
+  border: 1px solid #8c8f94;
+  box-sizing: border-box;
+  font: inherit;
+  max-width: 100%;
+  padding: 9px 10px;
+  width: 100%;
+}
+
+.tttc-public-signup-form button {
+  background: #2271b1;
+  border: 1px solid #2271b1;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+.tttc-public-signup-form button:hover,
+.tttc-public-signup-form button:focus-visible {
+  background: #135e96;
+  border-color: #135e96;
+}
+
 .tttc-public-player-list {
   columns: 3;
   margin: 0;
@@ -288,6 +341,10 @@
   padding: 14px 18px;
 }
 
+.tttc-public-notice--success {
+  border-left-color: #00a32a;
+}
+
 @media (max-width: 640px) {
   .tttc-public-player,
   .tttc-public-tournament {
@@ -297,6 +354,7 @@
   .tttc-public-player__header,
   .tttc-public-player__tournaments,
   .tttc-public-tournament__header,
+  .tttc-public-tournament__signup,
   .tttc-public-tournament__players,
   .tttc-public-groups {
     padding: 20px;
@@ -310,6 +368,10 @@
 
   .tttc-public-player-list {
     columns: 1;
+  }
+
+  .tttc-public-signup-form__grid {
+    grid-template-columns: 1fr;
   }
 
   .tttc-public-round-grid {
@@ -340,6 +402,7 @@
   .tttc-public-player__header,
   .tttc-public-player__tournaments,
   .tttc-public-tournament__header,
+  .tttc-public-tournament__signup,
   .tttc-public-tournament__players,
   .tttc-public-groups {
     border: 0;
