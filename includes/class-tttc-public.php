@@ -202,13 +202,20 @@ final class TTTC_Public {
 		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
 		$scores      = $this->saved_scores( $tournament_id );
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
+		$page_url    = $this->tournament_url( $tournament_id );
+		$qr_url      = $page_url ? 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . rawurlencode( $page_url ) : '';
 		?>
 		<main class="tttc-public-tournament">
 			<div class="tttc-public-tournament__inner">
 				<header class="tttc-public-tournament__header">
-					<p class="tttc-public-tournament__eyebrow"><?php esc_html_e( 'Table tennis tournament', 'table-tennis-tournament-for-clubs' ); ?></p>
-					<h1><?php echo esc_html( $title ); ?></h1>
-					<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date( $stored_date ) ); ?></p>
+					<div class="tttc-public-tournament__header-text">
+						<p class="tttc-public-tournament__eyebrow"><?php esc_html_e( 'Table tennis tournament', 'table-tennis-tournament-for-clubs' ); ?></p>
+						<h1><?php echo esc_html( $title ); ?></h1>
+						<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date( $stored_date ) ); ?></p>
+					</div>
+					<?php if ( $qr_url ) : ?>
+						<img class="tttc-public-tournament__qr" src="<?php echo esc_url( $qr_url ); ?>" width="200" height="200" alt="<?php esc_attr_e( 'QR code linking to this tournament page', 'table-tennis-tournament-for-clubs' ); ?>" loading="lazy">
+					<?php endif; ?>
 				</header>
 				<?php if ( 'upcoming' === $status ) : $this->render_signup_form( $tournament_id ); endif; ?>
 				<details class="tttc-public-tournament__players">

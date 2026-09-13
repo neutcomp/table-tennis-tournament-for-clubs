@@ -146,6 +146,25 @@
   text-align: right;
 }
 
+.tttc-public-tournament__header {
+  align-items: stretch;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+}
+
+.tttc-public-tournament__header-text {
+  min-width: 0;
+}
+
+.tttc-public-tournament__qr {
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+  height: 100%;
+  max-width: 100%;
+  width: auto;
+}
+
 .tttc-public-tournament__eyebrow {
   color: #646970;
   font-size: 12px;
@@ -412,6 +431,15 @@
 
   .tttc-public-signup-form__grid {
     grid-template-columns: 1fr;
+  }
+
+  .tttc-public-tournament__header {
+    flex-direction: column;
+  }
+
+  .tttc-public-tournament__qr {
+    height: 160px;
+    width: 160px;
   }
 
   .tttc-public-round-grid {
