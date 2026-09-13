@@ -530,10 +530,9 @@ final class TTTC_Public {
 			if ( ! isset( $scores[ $match_key ] ) ) {
 				return false;
 			}
-			for ( $game = 0; $game < $games; $game++ ) {
-				if ( ! isset( $scores[ $match_key ][ $game ][0], $scores[ $match_key ][ $game ][1] ) || '' === (string) $scores[ $match_key ][ $game ][0] || '' === (string) $scores[ $match_key ][ $game ][1] ) {
-					return false;
-				}
+			$games_won = $this->games_won( $scores[ $match_key ], $games );
+			if ( max( $games_won ) < (int) ceil( $games / 2 ) ) {
+				return false;
 			}
 		}
 
