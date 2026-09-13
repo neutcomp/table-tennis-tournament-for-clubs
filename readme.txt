@@ -47,6 +47,8 @@ Each published tournament title links to `/toernooi/{tournament-name}/{DD-MM-YYY
 
 Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced.
 
+Players must provide an email address when signing up. After a successful signup, the plugin sends a confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. The subject and body support the merge fields `[tournament-name]` and `[tournament-date]`. Email delivery does not undo a saved signup.
+
 Optional attributes:
 
 * `[tttc_tournaments limit="10"]`

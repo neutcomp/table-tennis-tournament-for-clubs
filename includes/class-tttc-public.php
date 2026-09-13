@@ -325,8 +325,8 @@ final class TTTC_Public {
 			$this->signup_error = __( 'Please enter a valid nonnegative rating.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
-		if ( '' !== $this->signup_form['email'] && ! is_email( $this->signup_form['email'] ) ) {
-			$this->signup_error = __( 'Please enter a valid email address.', 'table-tennis-tournament-for-clubs' );
+		if ( '' === $this->signup_form['email'] || ! is_email( $this->signup_form['email'] ) ) {
+			$this->signup_error = __( 'Please enter a valid email address so we can confirm your signup.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
 		if ( ! in_array( $this->signup_form['gender'], array( 'male', 'female' ), true ) ) {
@@ -397,6 +397,8 @@ final class TTTC_Public {
 			return;
 		}
 
+		$this->send_signup_email( $tournament_id, $this->signup_form['email'] );
+
 		wp_safe_redirect( add_query_arg( 'tttc_signup', 'success', $this->tournament_url( $tournament_id ) ) );
 		exit;
 	}
@@ -413,7 +415,7 @@ final class TTTC_Public {
 				<div class="tttc-public-signup-form__grid">
 					<p><label for="tttc-signup-name"><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="text" id="tttc-signup-name" name="tttc_signup_name" value="<?php echo esc_attr( $form['name'] ); ?>" required></p>
 					<p><label for="tttc-signup-rating"><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="number" min="0" step="1" id="tttc-signup-rating" name="tttc_signup_rating" value="<?php echo esc_attr( $form['rating'] ); ?>" required></p>
-					<p><label for="tttc-signup-email"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></label><input type="email" id="tttc-signup-email" name="tttc_signup_email" value="<?php echo esc_attr( $form['email'] ); ?>"></p>
+					<p><label for="tttc-signup-email"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="email" id="tttc-signup-email" name="tttc_signup_email" value="<?php echo esc_attr( $form['email'] ); ?>" required></p>
 					<p><label for="tttc-signup-gender"><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></label><select id="tttc-signup-gender" name="tttc_signup_gender"><option value="male" <?php selected( $form['gender'], 'male' ); ?>><?php esc_html_e( 'Male', 'table-tennis-tournament-for-clubs' ); ?></option><option value="female" <?php selected( $form['gender'], 'female' ); ?>><?php esc_html_e( 'Female', 'table-tennis-tournament-for-clubs' ); ?></option></select></p>
 					<p><label for="tttc-signup-type"><?php esc_html_e( 'Type', 'table-tennis-tournament-for-clubs' ); ?></label><select id="tttc-signup-type" name="tttc_signup_type"><option value="senior" <?php selected( $form['type'], 'senior' ); ?>><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></option><option value="youth" <?php selected( $form['type'], 'youth' ); ?>><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></option></select></p>
 				</div>
@@ -427,6 +429,21 @@ final class TTTC_Public {
 		$name = sanitize_text_field( $name );
 
 		return preg_replace( '/\s+/', ' ', trim( $name ) );
+	}
+
+	private function send_signup_email( $tournament_id, $recipient ) {
+		$from    = sanitize_email( get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) ) );
+		$subject = get_option( TTTC_Plugin::OPTION_EMAIL_SUBJECT, __( 'Signup confirmed for [tournament-name]', 'table-tennis-tournament-for-clubs' ) );
+		$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
+		$replacements = array(
+			'[tournament-name]' => get_the_title( $tournament_id ),
+			'[tournament-date]' => $this->display_date( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ),
+		);
+		$subject = strtr( $subject, $replacements );
+		$body    = strtr( $body, $replacements );
+		$headers = $from ? array( 'From: ' . $from ) : array();
+
+		wp_mail( $recipient, $subject, $body, $headers );
 	}
 
 	private function assigned_players( $tournament_id ) {

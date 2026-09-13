@@ -15,6 +15,7 @@ final class TTTC_Admin {
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
 		add_action( 'save_post_' . TTTC_Plugin::PLAYER_POST_TYPE, array( $this, 'save_player' ) );
 		add_action( 'save_post_' . TTTC_Plugin::TOURNAMENT_POST_TYPE, array( $this, 'save_tournament' ) );
@@ -31,6 +32,7 @@ final class TTTC_Admin {
 	}
 
 	public function register_menu() {
+		add_options_page( __( 'Table Tennis Settings', 'table-tennis-tournament-for-clubs' ), __( 'Table Tennis', 'table-tennis-tournament-for-clubs' ), 'manage_options', 'tttc-settings', array( $this, 'settings_page' ) );
 		add_menu_page(
 			__( 'Table Tennis Clubs', 'table-tennis-tournament-for-clubs' ),
 			__( 'Table Tennis', 'table-tennis-tournament-for-clubs' ),
@@ -45,6 +47,37 @@ final class TTTC_Admin {
 		add_submenu_page( 'tttc-dashboard', __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE );
 		add_submenu_page( null, __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-assignments', array( $this, 'assignments_page' ) );
 		add_submenu_page( null, __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-scores', array( $this, 'scores_page' ) );
+	}
+
+	public function register_settings() {
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_FROM, array( 'sanitize_callback' => 'sanitize_email' ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_BODY, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+	}
+
+	public function settings_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$from    = get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) );
+		$subject = get_option( TTTC_Plugin::OPTION_EMAIL_SUBJECT, __( 'Signup confirmed for [tournament-name]', 'table-tennis-tournament-for-clubs' ) );
+		$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Table Tennis', 'table-tennis-tournament-for-clubs' ); ?></h1>
+			<p><?php esc_html_e( 'Configure the confirmation email sent after a player signs up for an Upcoming tournament.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			<form method="post" action="options.php">
+				<?php settings_fields( 'tttc_settings' ); ?>
+				<table class="form-table" role="presentation">
+					<tr><th scope="row"><label for="tttc-email-from"><?php esc_html_e( 'Send from email address', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="email" class="regular-text" id="tttc-email-from" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_FROM ); ?>" value="<?php echo esc_attr( $from ); ?>" required><p class="description"><?php esc_html_e( 'This address is used in the From header.', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
+					<tr><th scope="row"><label for="tttc-email-subject"><?php esc_html_e( 'Subject', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><input type="text" class="large-text" id="tttc-email-subject" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_SUBJECT ); ?>" value="<?php echo esc_attr( $subject ); ?>" required><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name] and [tournament-date].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
+					<tr><th scope="row"><label for="tttc-email-body"><?php esc_html_e( 'Body', 'table-tennis-tournament-for-clubs' ); ?></label></th><td><textarea class="large-text" rows="10" id="tttc-email-body" name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_BODY ); ?>" required><?php echo esc_textarea( $body ); ?></textarea><p class="description"><?php esc_html_e( 'Available merge fields: [tournament-name] and [tournament-date].', 'table-tennis-tournament-for-clubs' ); ?></p></td></tr>
+				</table>
+				<?php submit_button(); ?>
+			</form>
+		</div>
+		<?php
 	}
 
 	public function dashboard() {
