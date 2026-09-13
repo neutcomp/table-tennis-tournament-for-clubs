@@ -132,7 +132,7 @@ msgid "Player 2"
 msgstr "Speler 2"
 
 msgid "Game %d"
-msgstr "Partij %d"
+msgstr "Game %d"
 
 msgid "Waiting for previous matches"
 msgstr "Wachten op eerdere wedstrijden"
@@ -141,10 +141,10 @@ msgid "The security check failed."
 msgstr "De beveiligingscontrole is mislukt."
 
 msgid "Each entered game must contain two nonnegative whole-number scores."
-msgstr "Elke ingevoerde partij moet twee niet-negatieve gehele scores bevatten."
+msgstr "Elke ingevoerde game moet twee niet-negatieve gehele scores bevatten."
 
 msgid "A game must be won with at least 11 points and a two-point margin."
-msgstr "Een partij moet worden gewonnen met minstens 11 punten en een voorsprong van twee punten."
+msgstr "Een game moet worden gewonnen met minstens 11 punten en een voorsprong van twee punten."
 
 msgid "A Best of %d match must have a winner with at least %d games won."
 msgstr "Een Best of %d-wedstrijd moet een winnaar hebben met minstens %d gewonnen games."

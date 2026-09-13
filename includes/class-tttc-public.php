@@ -224,7 +224,7 @@ final class TTTC_Public {
 						</ol>
 					<?php endif; ?>
 				</details>
-				<?php if ( ! empty( $schedule ) ) : ?>
+				<?php if ( in_array( $status, array( 'active', 'completed' ), true ) && ! empty( $schedule ) ) : ?>
 					<section class="tttc-public-groups" aria-labelledby="tttc-groups-heading">
 						<h2 id="tttc-groups-heading"><?php esc_html_e( 'Groups and matches', 'table-tennis-tournament-for-clubs' ); ?></h2>
 						<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Groups and crossover rounds', 'table-tennis-tournament-for-clubs' ); ?>">
@@ -279,7 +279,7 @@ final class TTTC_Public {
 							</div>
 						<?php endif; ?>
 					</section>
-				<?php elseif ( count( $players ) ) : ?>
+				<?php elseif ( in_array( $status, array( 'active', 'completed' ), true ) && count( $players ) ) : ?>
 					<p class="tttc-public-notice"><?php esc_html_e( 'A match schedule is available for tournaments with 4 to 28 active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
 				<?php endif; ?>
 			</div>
