@@ -952,15 +952,6 @@ final class TTTC_Admin {
 		$tournament_type = $tournament_id ? get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TYPE, true ) : 'both';
 		$tournament_type = in_array( $tournament_type, array( 'senior', 'youth', 'both' ), true ) ? $tournament_type : 'both';
 		$players         = get_posts( array( 'post_type' => TTTC_Plugin::PLAYER_POST_TYPE, 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC', 'meta_query' => array( array( 'key' => TTTC_Plugin::PLAYER_META_ACTIVE, 'value' => '1' ) ) ) );
-		$players         = array_filter(
-			$players,
-			function ( $player ) use ( $tournament_type ) {
-				$player_type = get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_TYPE, true );
-				$player_type = $player_type ? $player_type : 'senior';
-
-				return 'both' === $tournament_type || $player_type === $tournament_type;
-			}
-		);
 		$assigned      = $tournament_id ? $this->assigned_player_ids( $tournament_id ) : array();
 		?>
 		<div class="wrap">
@@ -972,8 +963,19 @@ final class TTTC_Admin {
 					<?php wp_nonce_field( 'tttc_update_players', 'tttc_assignment_nonce' ); ?>
 					<h2><?php echo esc_html( get_the_title( $tournament_id ) ); ?></h2>
 					<p><?php esc_html_e( 'Select the active players who will participate in this tournament.', 'table-tennis-tournament-for-clubs' ); ?></p>
-					<table class="widefat striped"><thead><tr><th class="check-column"><input type="checkbox" class="tttc-select-all"></th><th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
-					<?php foreach ( $players as $player ) : ?><tr><th class="check-column"><input type="checkbox" name="player_ids[]" value="<?php echo esc_attr( $player->ID ); ?>" <?php checked( in_array( $player->ID, $assigned, true ) ); ?>></th><td><?php echo esc_html( $player->post_title ); ?></td><td><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></td><td><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_EMAIL, true ) ); ?></td></tr><?php endforeach; ?>
+					<?php if ( 'both' !== $tournament_type ) : ?>
+						<p><label><input type="checkbox" class="tttc-show-all-players"> <?php esc_html_e( 'Show all players (including other player types)', 'table-tennis-tournament-for-clubs' ); ?></label></p>
+					<?php endif; ?>
+					<table class="widefat striped" data-tournament-type="<?php echo esc_attr( $tournament_type ); ?>"><thead><tr><th class="check-column"><input type="checkbox" class="tttc-select-all"></th><th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
+					<?php
+					foreach ( $players as $player ) :
+						$player_type = get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_TYPE, true );
+						$player_type = $player_type ? $player_type : 'senior';
+						$is_assigned = in_array( $player->ID, $assigned, true );
+						$type_mismatch = 'both' !== $tournament_type && $player_type !== $tournament_type;
+						?>
+						<tr data-type="<?php echo esc_attr( $player_type ); ?>" class="<?php echo $type_mismatch && ! $is_assigned ? 'tttc-row-hidden-by-type' : ''; ?>"><th class="check-column"><input type="checkbox" name="player_ids[]" value="<?php echo esc_attr( $player->ID ); ?>" <?php checked( $is_assigned ); ?>></th><td><?php echo esc_html( $player->post_title ); ?></td><td><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></td><td><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_EMAIL, true ) ); ?></td></tr>
+					<?php endforeach; ?>
 					</tbody></table><p><button class="button button-primary"><?php esc_html_e( 'Save tournament players', 'table-tennis-tournament-for-clubs' ); ?></button></p>
 				</form>
 			<?php endif; ?>
@@ -987,13 +989,9 @@ final class TTTC_Admin {
 		}
 		$tournament_id = isset( $_POST['tournament_id'] ) ? absint( $_POST['tournament_id'] ) : 0;
 		$player_ids    = isset( $_POST['player_ids'] ) ? array_map( 'absint', (array) $_POST['player_ids'] ) : array();
-		$tournament_type = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
-		$tournament_type = in_array( $tournament_type, array( 'senior', 'youth', 'both' ), true ) ? $tournament_type : 'both';
 		$active_ids    = array();
 		foreach ( $player_ids as $player_id ) {
-			$player_type = get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_TYPE, true );
-			$player_type = $player_type ? $player_type : 'senior';
-			if ( TTTC_Plugin::PLAYER_POST_TYPE === get_post_type( $player_id ) && '1' === get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, true ) && ( 'both' === $tournament_type || $player_type === $tournament_type ) ) {
+			if ( TTTC_Plugin::PLAYER_POST_TYPE === get_post_type( $player_id ) && '1' === get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, true ) ) {
 				$active_ids[] = $player_id;
 			}
 		}

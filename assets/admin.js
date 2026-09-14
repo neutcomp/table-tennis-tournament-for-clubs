@@ -5,6 +5,10 @@
 		$('.tttc-assignment-form tbody input[type="checkbox"]:not(:disabled)').prop('checked', this.checked);
 	});
 
+	$(document).on('change', '.tttc-show-all-players', function () {
+		$('.tttc-assignment-form table').toggleClass('tttc-show-all-players-active', this.checked);
+	});
+
 	$(document).ready(function () {
 		var $postForm = $('#post');
 		if (!$postForm.length || typeof tttcAdminData === 'undefined' || !tttcAdminData.players) {

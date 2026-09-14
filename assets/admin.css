@@ -134,6 +134,14 @@
   margin-top: 28px;
 }
 
+.tttc-assignment-form tr.tttc-row-hidden-by-type {
+  display: none;
+}
+
+.tttc-assignment-form table.tttc-show-all-players-active tr.tttc-row-hidden-by-type {
+  display: table-row;
+}
+
 .tttc-scores-form {
   margin-top: 28px;
 }
