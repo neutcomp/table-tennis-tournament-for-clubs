@@ -37,7 +37,7 @@ final class TTTC_Admin {
 	}
 
 	public function register_menu() {
-		add_options_page( __( 'Table Tennis Settings', 'table-tennis-tournament-for-clubs' ), __( 'Table Tennis', 'table-tennis-tournament-for-clubs' ), 'manage_options', 'tttc-settings', array( $this, 'settings_page' ) );
+		add_options_page( __( 'Table Tennis Settings', 'table-tennis-tournament-for-clubs' ), __( 'Table Tennis', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-settings', array( $this, 'settings_page' ) );
 		add_menu_page(
 			__( 'Table Tennis Clubs', 'table-tennis-tournament-for-clubs' ),
 			__( 'Table Tennis', 'table-tennis-tournament-for-clubs' ),
@@ -84,7 +84,7 @@ final class TTTC_Admin {
 	}
 
 	public function settings_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
