@@ -373,12 +373,12 @@ final class TTTC_Public {
 							<?php if ( count( $schedule ) > 1 ) : ?>
 								<?php foreach ( $competition['stages'] as $stage ) : ?>
 									<?php if ( 'final' !== $stage['id'] ) : $tab_id = 'tttc-crossover-tab-' . $stage['id']; $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
-										<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false" tabindex="-1"><?php echo esc_html( $stage['label'] ); ?></button>
+										<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false" tabindex="-1"><?php echo esc_html( __( $stage['label'], 'table-tennis-tournament-for-clubs' ) ); ?></button>
 									<?php endif; ?>
 								<?php endforeach; ?>
 								<?php foreach ( $competition['stages'] as $stage ) : ?>
 									<?php if ( 'final' === $stage['id'] ) : $tab_id = 'tttc-crossover-tab-' . $stage['id']; $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
-										<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false" tabindex="-1"><?php echo esc_html( $stage['label'] ); ?></button>
+										<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false" tabindex="-1"><?php echo esc_html( __( $stage['label'], 'table-tennis-tournament-for-clubs' ) ); ?></button>
 									<?php endif; ?>
 								<?php endforeach; ?>
 							<?php endif; ?>
@@ -439,7 +439,7 @@ final class TTTC_Public {
 							<div class="tttc-public-crossover" aria-label="<?php esc_attr_e( 'Crossover rounds', 'table-tennis-tournament-for-clubs' ); ?>">
 								<?php foreach ( $competition['stages'] as $stage ) : $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
 									<section id="<?php echo esc_attr( $panel_id ); ?>" class="tttc-public-group tttc-public-crossover-stage" role="tabpanel" aria-labelledby="<?php echo esc_attr( 'tttc-crossover-tab-' . $stage['id'] ); ?>" hidden>
-										<h3><?php echo esc_html( $stage['label'] ); ?></h3>
+										<h3><?php echo esc_html( __( $stage['label'], 'table-tennis-tournament-for-clubs' ) ); ?></h3>
 										<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
 										<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $match_scores = isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array(); $games_won = $this->games_won( $match_scores, $games ); ?>
 											<tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?><td><?php echo esc_html( (string) $game_score[0] . '-' . (string) $game_score[1] ); ?></td><?php endfor; ?><td><?php echo esc_html( $games_won[0] . '-' . $games_won[1] ); ?></td></tr>
