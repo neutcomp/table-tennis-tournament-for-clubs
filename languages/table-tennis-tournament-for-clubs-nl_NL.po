@@ -299,6 +299,12 @@ msgstr "Top 3 spelers op rating"
 msgid "No active published players found."
 msgstr "Geen actieve gepubliceerde spelers gevonden."
 
+msgid "Top 3 players by tournament wins"
+msgstr "Top 3 spelers op toernooiwinsten"
+
+msgid "No winners announced yet"
+msgstr "Nog geen winnaars bekend"
+
 msgid "Average players per tournament"
 msgstr "Gemiddeld aantal spelers per toernooi"
 
