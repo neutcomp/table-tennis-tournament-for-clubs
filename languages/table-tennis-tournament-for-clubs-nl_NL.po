@@ -350,6 +350,9 @@ msgstr "Toernooiscores bijgewerkt."
 msgid "Select the active players who will participate in this tournament."
 msgstr "Selecteer de actieve spelers die aan dit toernooi deelnemen."
 
+msgid "Show all players (including other player types)"
+msgstr "Toon alle spelers (inclusief andere spelertypes)"
+
 msgid "Save tournament players"
 msgstr "Toernooispelers opslaan"
 
