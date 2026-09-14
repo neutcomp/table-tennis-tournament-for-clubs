@@ -5,7 +5,7 @@
  * Version: 1.0.8
  * Requires at least: 6.3
  * Requires PHP: 7.4
- * Author: Club Tools
+ * Author: Bjorn van der Neut
  * Text Domain: table-tennis-tournament-for-clubs
  * Domain Path: /languages
  */

@@ -1,5 +1,5 @@
 === Table Tennis Tournament for Clubs ===
-Contributors: club-tools
+Contributors: neutcomp
 Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 6.3
