@@ -17,6 +17,7 @@ final class TTTC_Admin {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
+		add_filter( 'wp_insert_post_data', array( $this, 'validate_player_duplicate' ), 10, 2 );
 		add_action( 'save_post_' . TTTC_Plugin::PLAYER_POST_TYPE, array( $this, 'save_player' ) );
 		add_action( 'save_post_' . TTTC_Plugin::TOURNAMENT_POST_TYPE, array( $this, 'save_tournament' ) );
 		add_filter( 'manage_' . TTTC_Plugin::PLAYER_POST_TYPE . '_posts_columns', array( $this, 'player_columns' ) );
@@ -410,6 +411,60 @@ final class TTTC_Admin {
 			</table>
 		</div>
 		<?php
+	}
+
+	public function validate_player_duplicate( $data, $postarr ) {
+		if ( TTTC_Plugin::PLAYER_POST_TYPE !== $data['post_type'] ) {
+			return $data;
+		}
+
+		if ( in_array( $data['post_status'], array( 'auto-draft', 'trash' ), true ) ) {
+			return $data;
+		}
+
+		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( isset( $postarr['ID'] ) ? $postarr['ID'] : 0 ) ) {
+			return $data;
+		}
+
+		if ( ! isset( $_POST['tttc_email'] ) ) {
+			return $data;
+		}
+
+		$name  = preg_replace( '/\s+/', ' ', trim( $data['post_title'] ) );
+		$email = strtolower( sanitize_email( wp_unslash( $_POST['tttc_email'] ) ) );
+
+		if ( '' === $name || '' === $email ) {
+			return $data;
+		}
+
+		$current_id = isset( $postarr['ID'] ) ? absint( $postarr['ID'] ) : 0;
+
+		$existing_players = get_posts( array(
+			'post_type'      => TTTC_Plugin::PLAYER_POST_TYPE,
+			'post_status'    => array( 'publish', 'draft', 'future', 'pending', 'private' ),
+			'posts_per_page' => -1,
+			'post__not_in'   => $current_id ? array( $current_id ) : array(),
+			'meta_query'     => array(
+				array(
+					'key'     => TTTC_Plugin::PLAYER_META_EMAIL,
+					'value'   => $email,
+					'compare' => '=',
+				),
+			),
+		) );
+
+		foreach ( $existing_players as $player ) {
+			$existing_name = preg_replace( '/\s+/', ' ', trim( $player->post_title ) );
+			if ( 0 === strcasecmp( $existing_name, $name ) ) {
+				wp_die(
+					esc_html__( 'A player with this name and email already exists.', 'table-tennis-tournament-for-clubs' ),
+					esc_html__( 'Duplicate Player Error', 'table-tennis-tournament-for-clubs' ),
+					array( 'back_link' => true )
+				);
+			}
+		}
+
+		return $data;
 	}
 
 	public function save_player( $post_id ) {
@@ -1141,9 +1196,43 @@ final class TTTC_Admin {
 	}
 
 	public function enqueue_assets( $hook ) {
-		if ( false !== strpos( $hook, 'tttc-' ) || ( isset( $_GET['post_type'] ) && in_array( $_GET['post_type'], array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) ) {
+		$screen           = get_current_screen();
+		$screen_post_type = $screen ? $screen->post_type : '';
+		if ( ! $screen_post_type && isset( $_GET['post_type'] ) ) {
+			$screen_post_type = sanitize_key( wp_unslash( $_GET['post_type'] ) );
+		}
+
+		if ( false !== strpos( $hook, 'tttc-' ) || in_array( $screen_post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) {
 			wp_enqueue_style( 'tttc-admin', TTTC_URL . 'assets/admin.css', array(), TTTC_VERSION );
 			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery' ), TTTC_VERSION, true );
+
+			if ( TTTC_Plugin::PLAYER_POST_TYPE === $screen_post_type && in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+				$existing_players = get_posts( array(
+					'post_type'   => TTTC_Plugin::PLAYER_POST_TYPE,
+					'post_status' => array( 'publish', 'draft', 'future', 'pending', 'private' ),
+					'numberposts' => -1,
+				) );
+				$player_data = array();
+				foreach ( $existing_players as $p ) {
+					$email         = get_post_meta( $p->ID, TTTC_Plugin::PLAYER_META_EMAIL, true );
+					$player_data[] = array(
+						'id'    => (int) $p->ID,
+						'name'  => preg_replace( '/\s+/', ' ', trim( $p->post_title ) ),
+						'email' => strtolower( trim( $email ) ),
+					);
+				}
+				$current_post_id = get_the_ID() ? (int) get_the_ID() : ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0 );
+				wp_localize_script(
+					'tttc-admin',
+					'tttcAdminData',
+					array(
+						'players'       => $player_data,
+						'currentPostId' => $current_post_id,
+						'duplicateMsg'  => __( 'A player with this name and email already exists.', 'table-tennis-tournament-for-clubs' ),
+					)
+				);
+			}
+
 			if ( false !== strpos( $hook, 'tttc-scores' ) ) {
 				wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array( 'tttc-admin' ), TTTC_VERSION );
 				wp_enqueue_script( 'tttc-public', TTTC_URL . 'assets/public.js', array(), TTTC_VERSION, true );
