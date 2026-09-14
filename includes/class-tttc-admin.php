@@ -548,7 +548,9 @@ final class TTTC_Admin {
 
 	public function tournament_column( $column, $post_id ) {
 		if ( 'tttc_date' === $column ) {
-			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) );
+			$date        = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
+			$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
+			echo esc_html( $date_object ? $date_object->format( 'd-m-Y' ) : $date );
 		} elseif ( 'tttc_games' === $column ) {
 			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true ) );
 		} elseif ( 'tttc_status' === $column ) {
