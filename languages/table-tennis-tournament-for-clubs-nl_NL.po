@@ -419,6 +419,12 @@ msgstr "Enkele groep, iedereen tegen iedereen"
 msgid "Final and 3rd place match"
 msgstr "Finale en wedstrijd om de 3e plaats"
 
+msgid "Final"
+msgstr "Finale"
+
+msgid "Third-place match"
+msgstr "Wedstrijd om de 3e plaats"
+
 msgid "Winner round-robin"
 msgstr "Winnaarsgroep, iedereen tegen iedereen"
 

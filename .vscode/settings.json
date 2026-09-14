@@ -20,6 +20,8 @@
         "/^cd (?: .*)?$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "command": true,
+        "msgfmt": true
     }
 }
