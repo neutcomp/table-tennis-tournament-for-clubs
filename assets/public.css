@@ -169,34 +169,95 @@ ul.tttc-breadcrumbs__list > li::after {
 
 .tttc-tournaments {
   display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  grid-template-columns: repeat(2, 1fr);
   margin: 24px auto;
   max-width: 1180px;
 }
 
 .tttc-tournament {
-  background: #fff;
-  border: 1px solid #dcdcde;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(29, 35, 39, 0.06);
-  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e0e2e4;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px;
+  position: relative;
   transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+  overflow: hidden;
+}
+
+.tttc-tournament::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #2271b1;
+}
+
+.tttc-tournament--upcoming::before {
+  background: #2271b1;
+}
+
+.tttc-tournament--active::before {
+  background: #00a32a;
+}
+
+.tttc-tournament--completed::before {
+  background: #646970;
 }
 
 .tttc-tournament:hover {
-  border-color: #8c8f94;
-  box-shadow: 0 8px 20px rgba(29, 35, 39, 0.1);
-  transform: translateY(-2px);
+  border-color: #c3c4c7;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+}
+
+.tttc-tournament__header {
+  margin-bottom: 16px;
+}
+
+.tttc-tournament-status {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.tttc-tournament-status--upcoming {
+  background: #f0f6fc;
+  color: #1d5f98;
+  border: 1px solid #c2d9ee;
+}
+
+.tttc-tournament-status--active {
+  background: #edfaef;
+  color: #00701c;
+  border: 1px solid #b8e6c1;
+}
+
+.tttc-tournament-status--completed {
+  background: #f6f7f7;
+  color: #50575e;
+  border: 1px solid #dcdcde;
 }
 
 .tttc-tournament h3 {
   font-size: 22px;
-  line-height: 1.25;
-  margin: 0 0 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
 }
 
 .tttc-tournament h3 a {
@@ -211,40 +272,83 @@ ul.tttc-breadcrumbs__list > li::after {
   text-underline-offset: 3px;
 }
 
-.tttc-tournament dl {
+.tttc-tournament__details {
   border-top: 1px solid #f0f0f1;
-  margin: 0;
+  margin: 20px 0 0;
   padding-top: 16px;
 }
 
-.tttc-tournament dt {
+.tttc-tournament__detail-item dt {
   color: #646970;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.tttc-tournament dd {
-  color: #2271b1;
-  font-size: 18px;
+.tttc-tournament__detail-item dd {
+  color: #1d2327;
+  font-size: 16px;
   font-weight: 600;
   margin: 4px 0 0;
 }
 
 .tttc-tournament-action {
-  margin: 16px 0 0;
+  margin: 24px 0 0;
 }
 
-.tttc-tournament-action a {
-  color: #2271b1;
+.tttc-tournament-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font-size: 14px;
   font-weight: 600;
-  text-decoration: underline;
+  border-radius: 8px;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
 }
 
-.tttc-tournament-action a:hover,
-.tttc-tournament-action a:focus-visible {
-  color: #135e96;
+.tttc-tournament-btn--upcoming {
+  background-color: #2271b1;
+  color: #ffffff;
+  border: 1px solid #2271b1;
+}
+
+.tttc-tournament-btn--upcoming:hover,
+.tttc-tournament-btn--upcoming:focus-visible {
+  background-color: #135e96;
+  border-color: #135e96;
+  color: #ffffff;
+}
+
+.tttc-tournament-btn--active {
+  background-color: #00a32a;
+  color: #ffffff;
+  border: 1px solid #00a32a;
+}
+
+.tttc-tournament-btn--active:hover,
+.tttc-tournament-btn--active:focus-visible {
+  background-color: #008a20;
+  border-color: #008a20;
+  color: #ffffff;
+}
+
+.tttc-tournament-btn--completed {
+  background-color: #f6f7f7;
+  color: #2c3338;
+  border: 1px solid #c3c4c7;
+}
+
+.tttc-tournament-btn--completed:hover,
+.tttc-tournament-btn--completed:focus-visible {
+  background-color: #f0f0f1;
+  color: #1d2327;
+  border-color: #8c8f94;
 }
 
 .tttc-public-tournament__players summary {

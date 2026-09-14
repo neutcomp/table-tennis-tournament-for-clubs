@@ -283,21 +283,24 @@ final class TTTC_Public {
 		if ( ! $query->have_posts() ) {
 			return '<p class="tttc-empty">' . esc_html__( 'No tournaments found.', 'table-tennis-tournament-for-clubs' ) . '</p>';
 		}
-		$output = '<div class="tttc-tournaments">';
+		$statuses = TTTC_Plugin::statuses();
+		$output   = '<div class="tttc-tournaments">';
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$post_id     = get_the_ID();
 			$status      = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
-			$title       = '<a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html( get_the_title() ) . '</a>';
-			$action_link = '';
+			$status_text = isset( $statuses[ $status ] ) ? $statuses[ $status ] : ucfirst( $status );
+			$status_badge = '<span class="tttc-tournament-status tttc-tournament-status--' . esc_attr( $status ) . '">' . esc_html( $status_text ) . '</span>';
+			$title        = '<a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html( get_the_title() ) . '</a>';
+			$action_link  = '';
 			if ( 'upcoming' === $status ) {
-				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html__( 'Signup now!', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
+				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--upcoming">' . esc_html__( 'Signup now!', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
 			} elseif ( 'active' === $status ) {
-				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html__( 'Show live score', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
+				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--active">' . esc_html__( 'Show live score', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
 			} elseif ( 'completed' === $status ) {
-				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html__( 'Show results', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
+				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--completed">' . esc_html__( 'Show results', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
 			}
-			$output .= '<article class="tttc-tournament"><h3>' . $title . '</h3><dl><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $this->display_date( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ) . '</dd></dl>' . $action_link . '</article>';
+			$output .= '<article class="tttc-tournament tttc-tournament--' . esc_attr( $status ) . '"><header class="tttc-tournament__header">' . $status_badge . '<h3>' . $title . '</h3></header><dl class="tttc-tournament__details"><div class="tttc-tournament__detail-item"><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $this->display_date( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ) . '</dd></div></dl>' . $action_link . '</article>';
 		}
 		wp_reset_postdata();
 		return $output . '</div>';
