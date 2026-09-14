@@ -92,6 +92,79 @@ final class TTTC_Competition {
 		return array( 'standings' => $standings, 'complete' => $completed_matches === $total_matches );
 	}
 
+	public static function is_round_complete( $round, $scores, $games ) {
+		if ( empty( $round ) ) {
+			return false;
+		}
+
+		foreach ( $round as $match ) {
+			$first_id  = (int) $match[0]->ID;
+			$second_id = (int) $match[1]->ID;
+			$key       = self::pair_key( $first_id, $second_id );
+			if ( ! isset( $scores[ $key ] ) ) {
+				return false;
+			}
+			$game_totals = self::game_totals( $scores[ $key ], $games );
+			if ( null === $game_totals['winner'] ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public static function standings_up_to_round( $group_schedule, $scores, $games, $round_index ) {
+		$stats = array();
+		foreach ( $group_schedule['players'] as $player ) {
+			$stats[ (int) $player->ID ] = array(
+				'player'         => $player,
+				'wins'           => 0,
+				'losses'         => 0,
+				'games_for'      => 0,
+				'games_against'  => 0,
+				'points_for'     => 0,
+				'points_against' => 0,
+			);
+		}
+
+		foreach ( $group_schedule['rounds'] as $index => $round ) {
+			if ( $index > $round_index ) {
+				break;
+			}
+			foreach ( $round as $match ) {
+				$first_id  = (int) $match[0]->ID;
+				$second_id = (int) $match[1]->ID;
+				$key       = self::pair_key( $first_id, $second_id );
+				if ( ! isset( $scores[ $key ] ) ) {
+					continue;
+				}
+				$game_totals = self::game_totals( $scores[ $key ], $games );
+				if ( null === $game_totals['winner'] ) {
+					continue;
+				}
+				$stats[ $first_id ]['games_for']       += $game_totals['games'][0];
+				$stats[ $first_id ]['games_against']   += $game_totals['games'][1];
+				$stats[ $second_id ]['games_for']      += $game_totals['games'][1];
+				$stats[ $second_id ]['games_against']  += $game_totals['games'][0];
+				$stats[ $first_id ]['points_for']      += $game_totals['points'][0];
+				$stats[ $first_id ]['points_against']  += $game_totals['points'][1];
+				$stats[ $second_id ]['points_for']     += $game_totals['points'][1];
+				$stats[ $second_id ]['points_against'] += $game_totals['points'][0];
+				if ( 0 === $game_totals['winner'] ) {
+					$stats[ $first_id ]['wins']++;
+					$stats[ $second_id ]['losses']++;
+				} else {
+					$stats[ $second_id ]['wins']++;
+					$stats[ $first_id ]['losses']++;
+				}
+			}
+		}
+
+		$standings = array_values( $stats );
+		usort( $standings, array( __CLASS__, 'compare_standings' ) );
+		return $standings;
+	}
+
 	private static function compare_standings( $first, $second ) {
 		$fields = array(
 			'wins' => 1,

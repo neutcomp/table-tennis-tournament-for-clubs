@@ -492,3 +492,21 @@ msgstr "Kruimelpad"
 
 msgid "Home"
 msgstr "Home"
+
+msgid "Standings after Round %d"
+msgstr "Stand na ronde %d"
+
+msgid "Pos"
+msgstr "Pos."
+
+msgid "Wins"
+msgstr "Winst"
+
+msgid "Losses"
+msgstr "Verlies"
+
+msgid "Games"
+msgstr "Games"
+
+msgid "Points"
+msgstr "Punten"

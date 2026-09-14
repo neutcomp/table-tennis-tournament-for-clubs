@@ -623,6 +623,28 @@ ul.tttc-breadcrumbs__list > li::after {
   width: 48px;
 }
 
+.tttc-public-round-standings {
+  margin-top: 14px;
+}
+
+.tttc-public-round-standings-title {
+  color: #50575e;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.tttc-public-standings-table th,
+.tttc-public-standings-table td {
+  text-align: center;
+}
+
+.tttc-public-standings-table th:nth-child(2),
+.tttc-public-standings-table td:nth-child(2) {
+  text-align: left;
+}
+
 .tttc-public-notice {
   background: #fff;
   border-left: 4px solid #dba617;
