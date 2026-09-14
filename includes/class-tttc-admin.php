@@ -44,8 +44,7 @@ final class TTTC_Admin {
 			'edit_posts',
 			'tttc-dashboard',
 			array( $this, 'dashboard' ),
-			'dashicons-awards',
-			80
+			'dashicons-awards'
 		);
 		add_submenu_page( 'tttc-dashboard', __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-dashboard', array( $this, 'dashboard' ) );
 		add_submenu_page( 'tttc-dashboard', __( 'Players', 'table-tennis-tournament-for-clubs' ), __( 'Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE );

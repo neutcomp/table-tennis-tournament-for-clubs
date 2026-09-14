@@ -63,7 +63,7 @@ final class TTTC_Public {
 
 		$url = home_url( user_trailingslashit( 'speler/' . get_post_field( 'post_name', $player_id ) . '/' . absint( $player_id ) ) );
 		if ( $tournament_id && TTTC_Plugin::TOURNAMENT_POST_TYPE === get_post_type( $tournament_id ) ) {
-			$url = add_query_arg( 'toernooi', absint( $tournament_id ), $url );
+			$url = add_query_arg( 'tttc_tournament_id', absint( $tournament_id ), $url );
 		}
 
 		return $url;
@@ -196,7 +196,7 @@ final class TTTC_Public {
 		$gender_abbreviation = 'female' === $gender ? _x( 'F', 'female gender abbreviation', 'table-tennis-tournament-for-clubs' ) : _x( 'M', 'male gender abbreviation', 'table-tennis-tournament-for-clubs' );
 		$type         = 'youth' === $type ? __( 'Youth', 'table-tennis-tournament-for-clubs' ) : __( 'Senior', 'table-tennis-tournament-for-clubs' );
 		$tournaments  = $this->player_tournaments( $player_id );
-		$tournament_param  = isset( $_GET['toernooi'] ) ? absint( $_GET['toernooi'] ) : ( isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0 );
+		$tournament_param = isset( $_GET['tttc_tournament_id'] ) ? absint( wp_unslash( $_GET['tttc_tournament_id'] ) ) : ( isset( $_GET['tournament_id'] ) ? absint( wp_unslash( $_GET['tournament_id'] ) ) : 0 );
 		$active_tournament = null;
 		if ( $tournament_param && TTTC_Plugin::TOURNAMENT_POST_TYPE === get_post_type( $tournament_param ) && 'publish' === get_post_status( $tournament_param ) ) {
 			$active_tournament = get_post( $tournament_param );
