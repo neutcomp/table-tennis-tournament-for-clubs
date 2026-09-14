@@ -400,40 +400,38 @@ final class TTTC_Public {
 											<table class="tttc-public-matches"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
 											<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); $match_scores = isset( $scores[ $match_key ] ) ? $scores[ $match_key ] : array(); $games_won = $this->games_won( $match_scores, $games ); ?><tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?><td><?php echo esc_html( (string) $game_score[0] . '-' . (string) $game_score[1] ); ?></td><?php endfor; ?><td><?php echo esc_html( $games_won[0] . '-' . $games_won[1] ); ?></td></tr><?php endforeach; ?>
 											</tbody></table>
-											<?php if ( TTTC_Competition::is_round_complete( $round, $scores, $games ) ) :
-												$round_standings = TTTC_Competition::standings_up_to_round( $group_schedule, $scores, $games, $round_number );
-												?>
-												<div class="tttc-public-round-standings">
-													<h5 class="tttc-public-round-standings-title"><?php echo esc_html( sprintf( __( 'Standings after Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></h5>
-													<table class="tttc-public-matches tttc-public-standings-table">
-														<thead>
-															<tr>
-																<th><?php esc_html_e( 'Pos', 'table-tennis-tournament-for-clubs' ); ?></th>
-																<th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th>
-																<th><?php esc_html_e( 'Wins', 'table-tennis-tournament-for-clubs' ); ?></th>
-																<th><?php esc_html_e( 'Losses', 'table-tennis-tournament-for-clubs' ); ?></th>
-																<th><?php esc_html_e( 'Games', 'table-tennis-tournament-for-clubs' ); ?></th>
-																<th><?php esc_html_e( 'Points', 'table-tennis-tournament-for-clubs' ); ?></th>
-															</tr>
-														</thead>
-														<tbody>
-															<?php foreach ( $round_standings as $rank => $standing ) : ?>
-																<tr>
-																	<td><?php echo esc_html( $rank + 1 ); ?></td>
-																	<td><a href="<?php echo esc_url( $this->player_url( $standing['player']->ID, $tournament_id ) ); ?>"><?php echo esc_html( $standing['player']->post_title ); ?></a></td>
-																	<td><?php echo esc_html( $standing['wins'] ); ?></td>
-																	<td><?php echo esc_html( $standing['losses'] ); ?></td>
-																	<td><?php echo esc_html( $standing['games_for'] . '-' . $standing['games_against'] ); ?></td>
-																	<td><?php echo esc_html( $standing['points_for'] . '-' . $standing['points_against'] ); ?></td>
-																</tr>
-															<?php endforeach; ?>
-														</tbody>
-													</table>
-												</div>
-											<?php endif; ?>
 										</div>
 									<?php endforeach; ?>
 									</div>
+									<?php if ( ! empty( $competition['groups'][ $index ]['complete'] ) ) : ?>
+										<div class="tttc-public-round-standings">
+											<h4 class="tttc-public-round-standings-title"><?php esc_html_e( 'Standings', 'table-tennis-tournament-for-clubs' ); ?></h4>
+											<table class="tttc-public-matches tttc-public-standings-table">
+												<thead>
+													<tr>
+														<th><?php esc_html_e( 'Pos', 'table-tennis-tournament-for-clubs' ); ?></th>
+														<th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th>
+														<th><?php esc_html_e( 'Wins', 'table-tennis-tournament-for-clubs' ); ?></th>
+														<th><?php esc_html_e( 'Losses', 'table-tennis-tournament-for-clubs' ); ?></th>
+														<th><?php esc_html_e( 'Games', 'table-tennis-tournament-for-clubs' ); ?></th>
+														<th><?php esc_html_e( 'Points', 'table-tennis-tournament-for-clubs' ); ?></th>
+													</tr>
+												</thead>
+												<tbody>
+													<?php foreach ( $competition['groups'][ $index ]['standings'] as $rank => $standing ) : ?>
+														<tr>
+															<td><?php echo esc_html( $rank + 1 ); ?></td>
+															<td><a href="<?php echo esc_url( $this->player_url( $standing['player']->ID, $tournament_id ) ); ?>"><?php echo esc_html( $standing['player']->post_title ); ?></a></td>
+															<td><?php echo esc_html( $standing['wins'] ); ?></td>
+															<td><?php echo esc_html( $standing['losses'] ); ?></td>
+															<td><?php echo esc_html( $standing['games_for'] . '-' . $standing['games_against'] ); ?></td>
+															<td><?php echo esc_html( $standing['points_for'] . '-' . $standing['points_against'] ); ?></td>
+														</tr>
+													<?php endforeach; ?>
+												</tbody>
+											</table>
+										</div>
+									<?php endif; ?>
 								</section>
 							<?php endforeach; ?>
 						</div>

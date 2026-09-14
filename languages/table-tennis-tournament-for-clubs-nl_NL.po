@@ -493,8 +493,8 @@ msgstr "Kruimelpad"
 msgid "Home"
 msgstr "Home"
 
-msgid "Standings after Round %d"
-msgstr "Stand na ronde %d"
+msgid "Standings"
+msgstr "Stand"
 
 msgid "Pos"
 msgstr "Pos."

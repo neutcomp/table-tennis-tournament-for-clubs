@@ -624,15 +624,14 @@ ul.tttc-breadcrumbs__list > li::after {
 }
 
 .tttc-public-round-standings {
-  margin-top: 14px;
+  margin-top: 24px;
 }
 
 .tttc-public-round-standings-title {
-  color: #50575e;
-  font-size: 13px;
-  font-weight: 600;
-  margin: 0 0 6px;
-  text-transform: uppercase;
+  border-top: 1px solid #dcdcde;
+  color: #646970;
+  margin: 18px 0 8px;
+  padding-top: 12px;
 }
 
 .tttc-public-standings-table th,
