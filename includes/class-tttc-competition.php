@@ -40,11 +40,15 @@ final class TTTC_Competition {
 	}
 
 	private static function standings_for_group( $group_schedule, $scores, $games ) {
-		$stats = array();
+		$stats         = array();
+		$players_by_id = array();
+		$match_records = array();
 		$completed_matches = 0;
 		$total_matches     = 0;
 		foreach ( $group_schedule['players'] as $player ) {
-			$stats[ (int) $player->ID ] = array(
+			$id                    = (int) $player->ID;
+			$players_by_id[ $id ]  = $player;
+			$stats[ $id ] = array(
 				'player' => $player,
 				'wins' => 0,
 				'losses' => 0,
@@ -77,37 +81,117 @@ final class TTTC_Competition {
 				$stats[ $first_id ]['points_against']  += $game_totals['points'][1];
 				$stats[ $second_id ]['points_for']     += $game_totals['points'][1];
 				$stats[ $second_id ]['points_against'] += $game_totals['points'][0];
-				if ( 0 === $game_totals['winner'] ) {
+				$winner_id = 0 === $game_totals['winner'] ? $first_id : $second_id;
+				if ( $winner_id === $first_id ) {
 					$stats[ $first_id ]['wins']++;
 					$stats[ $second_id ]['losses']++;
 				} else {
 					$stats[ $second_id ]['wins']++;
 					$stats[ $first_id ]['losses']++;
 				}
+				$match_records[] = array(
+					'ids'       => array( $first_id, $second_id ),
+					'winner_id' => $winner_id,
+					'games'     => $game_totals['games'],
+					'points'    => $game_totals['points'],
+				);
 			}
 		}
 
-		$standings = array_values( $stats );
-		usort( $standings, array( __CLASS__, 'compare_standings' ) );
+		$standings = array();
+		foreach ( self::rank_group_players( array_keys( $stats ), $match_records, $players_by_id ) as $id ) {
+			$standings[] = $stats[ $id ];
+		}
 		return array( 'standings' => $standings, 'complete' => $completed_matches === $total_matches );
 	}
 
-	private static function compare_standings( $first, $second ) {
-		$fields = array(
-			'wins' => 1,
-			'games_for' => 1,
-			'games_against' => -1,
-			'points_for' => 1,
-			'points_against' => -1,
-		);
-		foreach ( $fields as $field => $direction ) {
-			$value = $direction * ( $first[ $field ] - $second[ $field ] );
-			if ( 0 !== $value ) {
-				return $value > 0 ? -1 : 1;
+	/**
+	 * Ranks players per the ITTF group tie-break order: match wins, then a head-to-head
+	 * mini-league (wins, game ratio, point ratio) restricted to just the tied players, recursively.
+	 */
+	private static function rank_group_players( $ids, $match_records, $players_by_id ) {
+		if ( count( $ids ) <= 1 ) {
+			return $ids;
+		}
+		$sub_stats = self::subgroup_stats( $ids, $match_records );
+		$buckets   = array();
+		foreach ( $ids as $id ) {
+			$buckets[ $sub_stats[ $id ]['wins'] ][] = $id;
+		}
+		krsort( $buckets, SORT_NUMERIC );
+
+		$ordered = array();
+		foreach ( $buckets as $bucket ) {
+			if ( 1 === count( $bucket ) ) {
+				$ordered[] = $bucket[0];
+			} elseif ( count( $bucket ) === count( $ids ) ) {
+				// Wins didn't separate anyone in this subset: fall back to game/point ratios among them.
+				$ordered = array_merge( $ordered, self::rank_by_ratio( $bucket, $sub_stats, $players_by_id ) );
+			} else {
+				$ordered = array_merge( $ordered, self::rank_group_players( $bucket, $match_records, $players_by_id ) );
 			}
 		}
-		$title_difference = strcasecmp( $first['player']->post_title, $second['player']->post_title );
-		return 0 !== $title_difference ? $title_difference : ( (int) $first['player']->ID - (int) $second['player']->ID );
+		return $ordered;
+	}
+
+	private static function subgroup_stats( $ids, $match_records ) {
+		$stats = array();
+		foreach ( $ids as $id ) {
+			$stats[ $id ] = array( 'wins' => 0, 'games_for' => 0, 'games_against' => 0, 'points_for' => 0, 'points_against' => 0 );
+		}
+		$id_lookup = array_flip( $ids );
+		foreach ( $match_records as $record ) {
+			list( $first_id, $second_id ) = $record['ids'];
+			if ( ! isset( $id_lookup[ $first_id ], $id_lookup[ $second_id ] ) ) {
+				continue;
+			}
+			$stats[ $first_id ]['games_for']       += $record['games'][0];
+			$stats[ $first_id ]['games_against']   += $record['games'][1];
+			$stats[ $second_id ]['games_for']      += $record['games'][1];
+			$stats[ $second_id ]['games_against']  += $record['games'][0];
+			$stats[ $first_id ]['points_for']      += $record['points'][0];
+			$stats[ $first_id ]['points_against']  += $record['points'][1];
+			$stats[ $second_id ]['points_for']     += $record['points'][1];
+			$stats[ $second_id ]['points_against'] += $record['points'][0];
+			$stats[ $record['winner_id'] ]['wins']++;
+		}
+		return $stats;
+	}
+
+	private static function rank_by_ratio( $ids, $stats, $players_by_id ) {
+		usort(
+			$ids,
+			function( $a, $b ) use ( $stats, $players_by_id ) {
+				$game_ratio = self::compare_ratio( $stats[ $a ]['games_for'], $stats[ $a ]['games_against'], $stats[ $b ]['games_for'], $stats[ $b ]['games_against'] );
+				if ( 0 !== $game_ratio ) {
+					return $game_ratio;
+				}
+				$point_ratio = self::compare_ratio( $stats[ $a ]['points_for'], $stats[ $a ]['points_against'], $stats[ $b ]['points_for'], $stats[ $b ]['points_against'] );
+				if ( 0 !== $point_ratio ) {
+					return $point_ratio;
+				}
+				// Still fully tied: ITTF resolves this by drawing lots, so fall back to a stable, deterministic order.
+				$title_difference = strcasecmp( $players_by_id[ $a ]->post_title, $players_by_id[ $b ]->post_title );
+				return 0 !== $title_difference ? $title_difference : ( $a - $b );
+			}
+		);
+		return $ids;
+	}
+
+	/**
+	 * Compares two for/against ratios via cross-multiplication (avoids float error); a zero denominator is treated as an infinite ratio.
+	 */
+	private static function compare_ratio( $a_for, $a_against, $b_for, $b_against ) {
+		if ( 0 === $a_against && 0 === $b_against ) {
+			return $b_for <=> $a_for;
+		}
+		if ( 0 === $a_against ) {
+			return -1;
+		}
+		if ( 0 === $b_against ) {
+			return 1;
+		}
+		return ( $b_for * $a_against ) <=> ( $a_for * $b_against );
 	}
 
 	private static function crossover_stages( $group_count ) {
@@ -210,34 +294,32 @@ final class TTTC_Competition {
 			return isset( $groups[0]['complete'] ) && $groups[0]['complete'] ? $groups[0]['standings'] : array();
 		}
 		if ( 3 === count( $groups ) && isset( $stages[0] ) ) {
-			$stats = array();
-			$completed_matches = 0;
+			$players_by_id = array();
 			foreach ( $groups as $group ) {
 				if ( isset( $group['complete'], $group['standings'][0]['player'] ) && $group['complete'] ) {
-					$stats[ (int) $group['standings'][0]['player']->ID ] = array( 'player' => $group['standings'][0]['player'], 'wins' => 0, 'losses' => 0, 'games_for' => 0, 'games_against' => 0, 'points_for' => 0, 'points_against' => 0 );
+					$player = $group['standings'][0]['player'];
+					$players_by_id[ (int) $player->ID ] = $player;
 				}
 			}
+			$match_records = array();
 			foreach ( $stages[0]['matches'] as $match ) {
-				if ( ! $match['winner'] || ! isset( $stats[ (int) $match['players'][0]->ID ], $stats[ (int) $match['players'][1]->ID ], $scores[ $match['score_key'] ] ) ) {
+				if ( ! $match['winner'] || ! isset( $players_by_id[ (int) $match['players'][0]->ID ], $players_by_id[ (int) $match['players'][1]->ID ], $scores[ $match['score_key'] ] ) ) {
 					continue;
 				}
-				$totals = self::game_totals( $scores[ $match['score_key'] ], $games );
-				$completed_matches++;
-				$stats[ (int) $match['winner']->ID ]['wins']++;
-				$stats[ (int) $match['players'][0]->ID ]['games_for'] += $totals['games'][0];
-				$stats[ (int) $match['players'][0]->ID ]['games_against'] += $totals['games'][1];
-				$stats[ (int) $match['players'][1]->ID ]['games_for'] += $totals['games'][1];
-				$stats[ (int) $match['players'][1]->ID ]['games_against'] += $totals['games'][0];
-				$stats[ (int) $match['players'][0]->ID ]['points_for'] += $totals['points'][0];
-				$stats[ (int) $match['players'][0]->ID ]['points_against'] += $totals['points'][1];
-				$stats[ (int) $match['players'][1]->ID ]['points_for'] += $totals['points'][1];
-				$stats[ (int) $match['players'][1]->ID ]['points_against'] += $totals['points'][0];
+				$totals          = self::game_totals( $scores[ $match['score_key'] ], $games );
+				$match_records[] = array(
+					'ids'       => array( (int) $match['players'][0]->ID, (int) $match['players'][1]->ID ),
+					'winner_id' => (int) $match['winner']->ID,
+					'games'     => $totals['games'],
+					'points'    => $totals['points'],
+				);
 			}
-			if ( count( $stats ) !== 3 || 3 !== $completed_matches ) {
+			if ( count( $players_by_id ) !== 3 || 3 !== count( $match_records ) ) {
 				return array();
 			}
-			$places = array_values( $stats );
-			usort( $places, array( __CLASS__, 'compare_standings' ) );
+			foreach ( self::rank_group_players( array_keys( $players_by_id ), $match_records, $players_by_id ) as $id ) {
+				$places[] = array( 'player' => $players_by_id[ $id ] );
+			}
 			return $places;
 		}
 
