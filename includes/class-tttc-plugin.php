@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Plugin {
-	const DB_VERSION = '1.3.0';
+	const DB_VERSION = '1.4.0';
 	const PLAYER_POST_TYPE = 'tttc_player';
 	const TOURNAMENT_POST_TYPE = 'tttc_tournament';
 	const PLAYER_META_RATING = '_tttc_rating';
@@ -97,6 +97,7 @@ final class TTTC_Plugin {
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			tournament_id bigint(20) unsigned NOT NULL,
 			player_id bigint(20) unsigned NOT NULL,
+			rating bigint(20) unsigned DEFAULT NULL,
 			created_at datetime NOT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY tournament_player (tournament_id, player_id),
@@ -122,6 +123,12 @@ final class TTTC_Plugin {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 		dbDelta( $scores_sql );
+		$wpdb->query(
+			"UPDATE {$table_name} AS assignments
+			INNER JOIN {$wpdb->postmeta} AS player_meta ON player_meta.post_id = assignments.player_id AND player_meta.meta_key = '" . self::PLAYER_META_RATING . "'
+			SET assignments.rating = CAST( player_meta.meta_value AS UNSIGNED )
+			WHERE assignments.rating IS NULL"
+		);
 		update_option( 'tttc_db_version', self::DB_VERSION );
 	}
 

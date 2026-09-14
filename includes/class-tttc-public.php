@@ -314,6 +314,7 @@ final class TTTC_Public {
 		$stored_date = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
 		$status      = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$players     = $this->assigned_players( $tournament_id );
+		$player_ratings = $this->assigned_player_ratings( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
 		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
@@ -358,7 +359,7 @@ final class TTTC_Public {
 						<div class="tttc-public-player-list-header" aria-hidden="true"><span><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?></span><span><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></span></div>
 						<ol class="tttc-public-player-list">
 							<?php foreach ( $players as $player ) : ?>
-								<li><span><a href="<?php echo esc_url( $this->player_url( $player->ID, $tournament_id ) ); ?>"><?php echo esc_html( $player->post_title ); ?></a></span><strong><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></strong></li>
+								<li><span><a href="<?php echo esc_url( $this->player_url( $player->ID, $tournament_id ) ); ?>"><?php echo esc_html( $player->post_title ); ?></a></span><strong><?php echo esc_html( isset( $player_ratings[ $player->ID ] ) ? $player_ratings[ $player->ID ] : 0 ); ?></strong></li>
 							<?php endforeach; ?>
 						</ol>
 					<?php endif; ?>
@@ -572,7 +573,7 @@ final class TTTC_Public {
 		global $wpdb;
 		$table = TTTC_Plugin::table_name();
 		$assigned = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . $table . ' WHERE tournament_id = %d AND player_id = %d LIMIT 1', $tournament_id, $player->ID ) );
-		if ( ! $assigned && false === $wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player->ID, 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%s' ) ) ) {
+		if ( ! $assigned && false === $wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player->ID, 'rating' => absint( $this->signup_form['rating'] ), 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%d', '%s' ) ) ) {
 			$this->signup_error = __( 'The player was saved, but could not be added to the tournament. Please try again.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
@@ -628,7 +629,8 @@ final class TTTC_Public {
 	}
 
 	private function assigned_players( $tournament_id ) {
-		$player_ids = $this->assigned_player_ids( $tournament_id );
+		$player_ratings = $this->assigned_player_ratings( $tournament_id );
+		$player_ids     = array_keys( $player_ratings );
 		if ( empty( $player_ids ) ) {
 			return array();
 		}
@@ -637,8 +639,8 @@ final class TTTC_Public {
 		$players = array_filter( $players, function ( $player ) {
 			return '1' === get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_ACTIVE, true );
 		} );
-		usort( $players, function ( $first, $second ) {
-			$rating_difference = absint( get_post_meta( $second->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ) - absint( get_post_meta( $first->ID, TTTC_Plugin::PLAYER_META_RATING, true ) );
+		usort( $players, function ( $first, $second ) use ( $player_ratings ) {
+			$rating_difference = ( isset( $player_ratings[ $second->ID ] ) ? $player_ratings[ $second->ID ] : 0 ) - ( isset( $player_ratings[ $first->ID ] ) ? $player_ratings[ $first->ID ] : 0 );
 			if ( 0 !== $rating_difference ) {
 				return $rating_difference;
 			}
@@ -648,6 +650,18 @@ final class TTTC_Public {
 		} );
 
 		return $players;
+	}
+
+	private function assigned_player_ratings( $tournament_id ) {
+		global $wpdb;
+		$assignments    = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, rating FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$player_ratings = array();
+		foreach ( $assignments as $assignment ) {
+			$player_id = (int) $assignment->player_id;
+			$player_ratings[ $player_id ] = null === $assignment->rating ? absint( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) ) : (int) $assignment->rating;
+		}
+
+		return $player_ratings;
 	}
 
 	private function player_tournaments( $player_id ) {
@@ -870,13 +884,15 @@ final class TTTC_Public {
 
 	private function assigned_players_markup( $tournament_id ) {
 		global $wpdb;
-		$player_ids = $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d ORDER BY created_at ASC', $tournament_id ) );
-		if ( empty( $player_ids ) ) {
+		$assignments = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, rating FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d ORDER BY created_at ASC', $tournament_id ) );
+		if ( empty( $assignments ) ) {
 			return '<p class="tttc-no-players">' . esc_html__( 'Players will be announced soon.', 'table-tennis-tournament-for-clubs' ) . '</p>';
 		}
 		$output = '<h4>' . esc_html__( 'Players', 'table-tennis-tournament-for-clubs' ) . '</h4><ul class="tttc-assigned-players">';
-		foreach ( $player_ids as $player_id ) {
-			$output .= '<li>' . esc_html( get_the_title( $player_id ) ) . '<span>' . esc_html__( 'Rating:', 'table-tennis-tournament-for-clubs' ) . ' ' . esc_html( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) ) . '</span></li>';
+		foreach ( $assignments as $assignment ) {
+			$player_id = (int) $assignment->player_id;
+			$rating    = null === $assignment->rating ? absint( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) ) : (int) $assignment->rating;
+			$output   .= '<li>' . esc_html( get_the_title( $player_id ) ) . '<span>' . esc_html__( 'Rating:', 'table-tennis-tournament-for-clubs' ) . ' ' . esc_html( $rating ) . '</span></li>';
 		}
 		return $output . '</ul>';
 	}

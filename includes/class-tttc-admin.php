@@ -1000,7 +1000,7 @@ final class TTTC_Admin {
 		$wpdb->delete( $table, array( 'tournament_id' => $tournament_id ), array( '%d' ) );
 		$wpdb->delete( TTTC_Plugin::scores_table_name(), array( 'tournament_id' => $tournament_id ), array( '%d' ) );
 		foreach ( array_unique( $active_ids ) as $player_id ) {
-			$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player_id, 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%s' ) );
+			$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player_id, 'rating' => absint( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) ), 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%d', '%s' ) );
 		}
 		wp_safe_redirect( add_query_arg( array( 'post_type' => TTTC_Plugin::TOURNAMENT_POST_TYPE, 'updated' => '1' ), admin_url( 'edit.php' ) ) );
 		exit;
