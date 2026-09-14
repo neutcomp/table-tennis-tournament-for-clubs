@@ -261,7 +261,21 @@ final class TTTC_Public {
 
 	public function tournaments_shortcode( $atts ) {
 		$atts = shortcode_atts( array( 'id' => 0, 'limit' => 10 ), $atts, 'tttc_tournaments' );
-		$args = array( 'post_type' => TTTC_Plugin::TOURNAMENT_POST_TYPE, 'post_status' => 'publish', 'posts_per_page' => max( 1, absint( $atts['limit'] ) ), 'orderby' => 'meta_value', 'meta_key' => TTTC_Plugin::TOURNAMENT_META_DATE, 'order' => 'ASC' );
+		$args = array(
+			'post_type'      => TTTC_Plugin::TOURNAMENT_POST_TYPE,
+			'post_status'    => 'publish',
+			'posts_per_page' => max( 1, absint( $atts['limit'] ) ),
+			'orderby'        => 'meta_value',
+			'meta_key'       => TTTC_Plugin::TOURNAMENT_META_DATE,
+			'order'          => 'ASC',
+			'meta_query'     => array(
+				array(
+					'key'     => TTTC_Plugin::TOURNAMENT_META_STATUS,
+					'value'   => array( 'draft', 'cancelled' ),
+					'compare' => 'NOT IN',
+				),
+			),
+		);
 		if ( absint( $atts['id'] ) ) {
 			$args['p'] = absint( $atts['id'] );
 		}
