@@ -221,36 +221,7 @@ ul.tttc-breadcrumbs__list > li::after {
 }
 
 .tttc-tournament__header {
-  margin-bottom: 16px;
-}
-
-.tttc-tournament-status {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 20px;
   margin-bottom: 12px;
-}
-
-.tttc-tournament-status--upcoming {
-  background: #f0f6fc;
-  color: #1d5f98;
-  border: 1px solid #c2d9ee;
-}
-
-.tttc-tournament-status--active {
-  background: #edfaef;
-  color: #00701c;
-  border: 1px solid #b8e6c1;
-}
-
-.tttc-tournament-status--completed {
-  background: #f6f7f7;
-  color: #50575e;
-  border: 1px solid #dcdcde;
 }
 
 .tttc-tournament h3 {

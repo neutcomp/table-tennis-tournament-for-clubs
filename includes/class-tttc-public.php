@@ -18,10 +18,15 @@ final class TTTC_Public {
 		self::$instance = $this;
 		add_shortcode( 'tttc_tournaments', array( $this, 'tournaments_shortcode' ) );
 		add_shortcode( 'tttc_players', array( $this, 'players_shortcode' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'init', array( $this, 'register_rewrite' ) );
 		add_filter( 'query_vars', array( $this, 'query_vars' ) );
 		add_action( 'template_redirect', array( $this, 'render_tournament_page' ) );
 		add_action( 'template_redirect', array( $this, 'render_player_page' ) );
+	}
+
+	public function enqueue_assets() {
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
 	}
 
 	public static function instance() {
@@ -260,6 +265,7 @@ final class TTTC_Public {
 	}
 
 	public function tournaments_shortcode( $atts ) {
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
 		$atts = shortcode_atts( array( 'id' => 0, 'limit' => 10 ), $atts, 'tttc_tournaments' );
 		$args = array(
 			'post_type'      => TTTC_Plugin::TOURNAMENT_POST_TYPE,
@@ -283,16 +289,13 @@ final class TTTC_Public {
 		if ( ! $query->have_posts() ) {
 			return '<p class="tttc-empty">' . esc_html__( 'No tournaments found.', 'table-tennis-tournament-for-clubs' ) . '</p>';
 		}
-		$statuses = TTTC_Plugin::statuses();
-		$output   = '<div class="tttc-tournaments">';
+		$output = '<div class="tttc-tournaments">';
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$post_id     = get_the_ID();
 			$status      = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
-			$status_text = isset( $statuses[ $status ] ) ? $statuses[ $status ] : ucfirst( $status );
-			$status_badge = '<span class="tttc-tournament-status tttc-tournament-status--' . esc_attr( $status ) . '">' . esc_html( $status_text ) . '</span>';
-			$title        = '<a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html( get_the_title() ) . '</a>';
-			$action_link  = '';
+			$title       = '<a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html( get_the_title() ) . '</a>';
+			$action_link = '';
 			if ( 'upcoming' === $status ) {
 				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--upcoming">' . esc_html__( 'Signup now!', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
 			} elseif ( 'active' === $status ) {
@@ -300,7 +303,7 @@ final class TTTC_Public {
 			} elseif ( 'completed' === $status ) {
 				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--completed">' . esc_html__( 'Show results', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
 			}
-			$output .= '<article class="tttc-tournament tttc-tournament--' . esc_attr( $status ) . '"><header class="tttc-tournament__header">' . $status_badge . '<h3>' . $title . '</h3></header><dl class="tttc-tournament__details"><div class="tttc-tournament__detail-item"><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $this->display_date( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ) . '</dd></div></dl>' . $action_link . '</article>';
+			$output .= '<article class="tttc-tournament tttc-tournament--' . esc_attr( $status ) . '"><header class="tttc-tournament__header"><h3>' . $title . '</h3></header><dl class="tttc-tournament__details"><div class="tttc-tournament__detail-item"><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $this->display_date( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ) . '</dd></div></dl>' . $action_link . '</article>';
 		}
 		wp_reset_postdata();
 		return $output . '</div>';
@@ -821,6 +824,7 @@ final class TTTC_Public {
 	}
 
 	public function players_shortcode( $atts ) {
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
 		$atts  = shortcode_atts( array( 'limit' => 50 ), $atts, 'tttc_players' );
 		$query = new WP_Query( array( 'post_type' => TTTC_Plugin::PLAYER_POST_TYPE, 'post_status' => 'publish', 'posts_per_page' => max( 1, absint( $atts['limit'] ) ), 'orderby' => 'title', 'order' => 'ASC', 'meta_query' => array( array( 'key' => TTTC_Plugin::PLAYER_META_ACTIVE, 'value' => '1' ) ) ) );
 		if ( ! $query->have_posts() ) {
