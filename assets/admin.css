@@ -138,7 +138,9 @@
   display: none;
 }
 
-.tttc-assignment-form table.tttc-show-all-players-active tr.tttc-row-hidden-by-type {
+.tttc-assignment-form
+  table.tttc-show-all-players-active
+  tr.tttc-row-hidden-by-type {
   display: table-row;
 }
 
