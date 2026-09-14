@@ -329,6 +329,15 @@ msgstr "Speler is actief en beschikbaar voor nieuwe toernooitoewijzingen"
 msgid "A score sheet is available when the tournament has 4 to 28 assigned active players."
 msgstr "Een scoreformulier is beschikbaar wanneer het toernooi 4 tot 28 toegewezen actieve spelers heeft."
 
+msgid "Signup now!"
+msgstr "Schrijf je nu in!"
+
+msgid "Show live score"
+msgstr "Bekijk live tussenstand"
+
+msgid "Show results"
+msgstr "Bekijk uitslagen"
+
 msgid "Round"
 msgstr "Ronde"
 

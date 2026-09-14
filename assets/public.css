@@ -232,6 +232,21 @@ ul.tttc-breadcrumbs__list > li::after {
   margin: 4px 0 0;
 }
 
+.tttc-tournament-action {
+  margin: 16px 0 0;
+}
+
+.tttc-tournament-action a {
+  color: #2271b1;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.tttc-tournament-action a:hover,
+.tttc-tournament-action a:focus-visible {
+  color: #135e96;
+}
+
 .tttc-public-tournament__players summary {
   color: #1d2327;
   cursor: pointer;

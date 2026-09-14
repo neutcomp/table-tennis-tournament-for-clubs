@@ -286,9 +286,18 @@ final class TTTC_Public {
 		$output = '<div class="tttc-tournaments">';
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$post_id = get_the_ID();
-			$title = '<a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html( get_the_title() ) . '</a>';
-			$output .= '<article class="tttc-tournament"><h3>' . $title . '</h3><dl><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $this->display_date( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ) . '</dd></dl></article>';
+			$post_id     = get_the_ID();
+			$status      = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+			$title       = '<a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html( get_the_title() ) . '</a>';
+			$action_link = '';
+			if ( 'upcoming' === $status ) {
+				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html__( 'Signup now!', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
+			} elseif ( 'active' === $status ) {
+				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html__( 'Show live score', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
+			} elseif ( 'completed' === $status ) {
+				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html__( 'Show results', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
+			}
+			$output .= '<article class="tttc-tournament"><h3>' . $title . '</h3><dl><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $this->display_date( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ) . '</dd></dl>' . $action_link . '</article>';
 		}
 		wp_reset_postdata();
 		return $output . '</div>';
