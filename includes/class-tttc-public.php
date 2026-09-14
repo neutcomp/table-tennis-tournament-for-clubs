@@ -611,17 +611,21 @@ final class TTTC_Public {
 		) );
 	}
 
-	private function player_tournament_position( $player_id, $tournament_id ) {
+	private function tournament_places( $tournament_id ) {
 		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
 		$schedule    = $this->tournament_schedule( $tournament_id );
 		$scores      = $this->saved_scores( $tournament_id );
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
 		if ( ! $this->all_games_played( $schedule, $competition, $scores, $games ) ) {
-			return 0;
+			return array();
 		}
 
-		foreach ( $competition['places'] as $index => $place ) {
+		return $competition['places'];
+	}
+
+	private function player_tournament_position( $player_id, $tournament_id ) {
+		foreach ( $this->tournament_places( $tournament_id ) as $index => $place ) {
 			if ( isset( $place['player']->ID ) && (int) $place['player']->ID === (int) $player_id ) {
 				$position = $index + 1;
 				return $position <= 3 ? $position : 0;
@@ -629,6 +633,19 @@ final class TTTC_Public {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Returns the winning player's ID for a completed tournament, or 0 if there is none yet.
+	 */
+	public function tournament_winner_id( $tournament_id ) {
+		if ( 'completed' !== get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true ) ) {
+			return 0;
+		}
+
+		$places = $this->tournament_places( $tournament_id );
+
+		return isset( $places[0]['player']->ID ) ? (int) $places[0]['player']->ID : 0;
 	}
 
 	private function all_games_played( $schedule, $competition, $scores, $games ) {

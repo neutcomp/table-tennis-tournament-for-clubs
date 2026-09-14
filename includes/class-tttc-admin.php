@@ -224,6 +224,7 @@ final class TTTC_Admin {
 		$tournament_statuses = array_fill_keys( array_keys( TTTC_Plugin::statuses() ), 0 );
 		$participant_total   = 0;
 		$participating_count = 0;
+		$tournament_wins     = array();
 		foreach ( $tournaments as $tournament ) {
 			$type   = get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
 			$status = get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
@@ -236,12 +237,34 @@ final class TTTC_Admin {
 				$participant_total += $participant_count;
 				$participating_count++;
 			}
+			$winner_id = TTTC_Public::instance() ? TTTC_Public::instance()->tournament_winner_id( $tournament->ID ) : 0;
+			if ( $winner_id ) {
+				$tournament_wins[ $winner_id ] = isset( $tournament_wins[ $winner_id ] ) ? $tournament_wins[ $winner_id ] + 1 : 1;
+			}
 		}
 		$average_participants = $participating_count ? round( $participant_total / $participating_count, 1 ) : 0;
 		$player_count         = count( $players );
 		$tournament_count     = count( $tournaments );
 		$players_url          = admin_url( 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE );
 		$tournaments_url      = admin_url( 'edit.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE );
+
+		$top_winners = array();
+		foreach ( $tournament_wins as $winner_id => $win_count ) {
+			$winner_post = get_post( $winner_id );
+			if ( $winner_post ) {
+				$top_winners[] = array( 'player' => $winner_post, 'wins' => $win_count );
+			}
+		}
+		usort( $top_winners, function ( $first, $second ) {
+			$win_difference = $second['wins'] - $first['wins'];
+			if ( 0 !== $win_difference ) {
+				return $win_difference;
+			}
+
+			$title_difference = strcasecmp( $first['player']->post_title, $second['player']->post_title );
+			return 0 !== $title_difference ? $title_difference : $first['player']->ID - $second['player']->ID;
+		} );
+		$top_winners = array_slice( $top_winners, 0, 3 );
 		?>
 		<div class="wrap tttc-dashboard">
 			<h1><?php esc_html_e( 'Table Tennis Tournament for Clubs', 'table-tennis-tournament-for-clubs' ); ?></h1>
@@ -268,6 +291,18 @@ final class TTTC_Admin {
 								$player_url = TTTC_Public::instance() ? TTTC_Public::instance()->player_url( $player->ID ) : '';
 								?>
 								<li><span><?php if ( $player_url ) : ?><a href="<?php echo esc_url( $player_url ); ?>"><?php echo esc_html( $player->post_title ); ?></a><?php else : ?><?php echo esc_html( $player->post_title ); ?><?php endif; ?></span><strong><?php echo esc_html( absint( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ) ); ?></strong></li>
+							<?php endforeach; ?>
+						</ol>
+					<?php endif; ?>
+					<h3><?php esc_html_e( 'Top 3 players by tournament wins', 'table-tennis-tournament-for-clubs' ); ?></h3>
+					<?php if ( empty( $top_winners ) ) : ?>
+						<p><?php esc_html_e( 'No winners announced yet', 'table-tennis-tournament-for-clubs' ); ?></p>
+					<?php else : ?>
+						<ol class="tttc-top-players">
+							<?php foreach ( $top_winners as $winner ) :
+								$player_url = TTTC_Public::instance() ? TTTC_Public::instance()->player_url( $winner['player']->ID ) : '';
+								?>
+								<li><span><?php if ( $player_url ) : ?><a href="<?php echo esc_url( $player_url ); ?>"><?php echo esc_html( $winner['player']->post_title ); ?></a><?php else : ?><?php echo esc_html( $winner['player']->post_title ); ?><?php endif; ?></span><strong><?php echo esc_html( $winner['wins'] ); ?></strong></li>
 							<?php endforeach; ?>
 						</ol>
 					<?php endif; ?>
