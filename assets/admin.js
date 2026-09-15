@@ -10,6 +10,32 @@
 	});
 
 	$(document).ready(function () {
+		var $seedList = $('.tttc-seed-list').not('.tttc-seed-list--locked');
+		if ($seedList.length && $.fn.sortable) {
+			$seedList.sortable({
+				axis: 'y',
+				handle: '.tttc-seed-handle',
+				update: function () {
+					$(this).closest('form').find('.tttc-seed-order-input').val(
+						$(this).children('li').map(function () {
+							return $(this).data('player-id');
+						}).get().join(',')
+					);
+				}
+			});
+		}
+
+		$('.tttc-seed-form').on('submit', function () {
+			var $list = $(this).find('.tttc-seed-list');
+			$(this).find('.tttc-seed-order-input').val(
+				$list.children('li').map(function () {
+					return $(this).data('player-id');
+				}).get().join(',')
+			);
+		});
+	});
+
+	$(document).ready(function () {
 		var $postForm = $('#post');
 		if (!$postForm.length || typeof tttcAdminData === 'undefined' || !tttcAdminData.players) {
 			return;

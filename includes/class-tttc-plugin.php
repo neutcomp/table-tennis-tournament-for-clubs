@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Plugin {
-	const DB_VERSION = '1.4.0';
+	const DB_VERSION = '1.5.0';
 	const PLAYER_POST_TYPE = 'tttc_player';
 	const TOURNAMENT_POST_TYPE = 'tttc_tournament';
 	const PLAYER_META_RATING = '_tttc_rating';
@@ -98,6 +98,7 @@ final class TTTC_Plugin {
 			tournament_id bigint(20) unsigned NOT NULL,
 			player_id bigint(20) unsigned NOT NULL,
 			rating bigint(20) unsigned DEFAULT NULL,
+			seed bigint(20) unsigned DEFAULT NULL,
 			created_at datetime NOT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY tournament_player (tournament_id, player_id),
@@ -127,9 +128,38 @@ final class TTTC_Plugin {
 			"UPDATE {$table_name} AS assignments
 			INNER JOIN {$wpdb->postmeta} AS player_meta ON player_meta.post_id = assignments.player_id AND player_meta.meta_key = '" . self::PLAYER_META_RATING . "'
 			SET assignments.rating = CAST( player_meta.meta_value AS UNSIGNED )
-			WHERE assignments.rating IS NULL"
+			WHERE assignments.rating IS NULL AND player_meta.meta_value != ''"
 		);
+		self::backfill_seed_order();
 		update_option( 'tttc_db_version', self::DB_VERSION );
+	}
+
+	/**
+	 * Gives every existing tournament assignment an initial seed order (rating desc, unrated last)
+	 * so manual reordering has a stable starting point instead of leaving new rows at NULL.
+	 */
+	private static function backfill_seed_order() {
+		global $wpdb;
+		$table_name     = self::table_name();
+		$tournament_ids = $wpdb->get_col( "SELECT DISTINCT tournament_id FROM {$table_name} WHERE seed IS NULL" );
+
+		foreach ( $tournament_ids as $tournament_id ) {
+			$rows = $wpdb->get_results( $wpdb->prepare( "SELECT id, player_id, rating FROM {$table_name} WHERE tournament_id = %d", $tournament_id ) );
+			usort(
+				$rows,
+				function( $first, $second ) {
+					$rating_difference = ( null === $second->rating ? -1 : (int) $second->rating ) - ( null === $first->rating ? -1 : (int) $first->rating );
+					if ( 0 !== $rating_difference ) {
+						return $rating_difference;
+					}
+					$title_difference = strcasecmp( get_the_title( $first->player_id ), get_the_title( $second->player_id ) );
+					return 0 !== $title_difference ? $title_difference : $first->player_id - $second->player_id;
+				}
+			);
+			foreach ( $rows as $index => $row ) {
+				$wpdb->update( $table_name, array( 'seed' => $index + 1 ), array( 'id' => $row->id ), array( '%d' ), array( '%d' ) );
+			}
+		}
 	}
 
 	public function delete_assignments( $post_id ) {

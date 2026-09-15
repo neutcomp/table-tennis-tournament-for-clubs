@@ -28,6 +28,7 @@ final class TTTC_Admin {
 		add_filter( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_columns', array( $this, 'tournament_columns' ) );
 		add_action( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_custom_column', array( $this, 'tournament_column' ), 10, 2 );
 		add_action( 'admin_post_tttc_update_players', array( $this, 'update_players' ) );
+		add_action( 'admin_post_tttc_reorder_players', array( $this, 'reorder_players' ) );
 		add_action( 'admin_post_tttc_save_scores', array( $this, 'save_scores' ) );
 		add_action( 'admin_post_tttc_merge_players', array( $this, 'merge_players' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
@@ -985,9 +986,40 @@ final class TTTC_Admin {
 					<?php endforeach; ?>
 					</tbody></table><p><button class="button button-primary"><?php esc_html_e( 'Save tournament players', 'table-tennis-tournament-for-clubs' ); ?></button></p>
 				</form>
+				<?php $this->render_seed_order_section( $tournament_id ); ?>
 			<?php endif; ?>
 		</div>
 		<?php
+	}
+
+	private function render_seed_order_section( $tournament_id ) {
+		$seed_players = $this->seed_ordered_players( $tournament_id );
+		if ( count( $seed_players ) < 2 ) {
+			return;
+		}
+		$locked = TTTC_Plugin::has_scores( $tournament_id );
+		?>
+		<h2><?php esc_html_e( 'Seeding order', 'table-tennis-tournament-for-clubs' ); ?></h2>
+		<?php if ( $locked ) : ?>
+			<p class="description"><?php esc_html_e( 'Seeding is locked because scores have already been entered for this tournament.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			<ol class="tttc-seed-list tttc-seed-list--locked">
+				<?php foreach ( $seed_players as $player ) : ?>
+					<li><?php echo esc_html( $player->post_title ); ?> <span class="tttc-seed-rating"><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></span></li>
+				<?php endforeach; ?>
+			</ol>
+		<?php else : ?>
+			<p><?php esc_html_e( 'Drag players to set the strength order used for grouping. This overrides the rating-based order.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-seed-form">
+				<input type="hidden" name="action" value="tttc_reorder_players"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>"><input type="hidden" class="tttc-seed-order-input" name="ordered_player_ids" value="">
+				<?php wp_nonce_field( 'tttc_reorder_players_' . $tournament_id, 'tttc_reorder_nonce' ); ?>
+				<ol class="tttc-seed-list" data-tournament-id="<?php echo esc_attr( $tournament_id ); ?>">
+					<?php foreach ( $seed_players as $player ) : ?>
+						<li data-player-id="<?php echo esc_attr( $player->ID ); ?>"><span class="tttc-seed-handle" aria-hidden="true">&#9776;</span> <?php echo esc_html( $player->post_title ); ?> <span class="tttc-seed-rating"><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></span></li>
+					<?php endforeach; ?>
+				</ol>
+				<p><button class="button button-primary"><?php esc_html_e( 'Save order', 'table-tennis-tournament-for-clubs' ); ?></button></p>
+			</form>
+		<?php endif;
 	}
 
 	public function update_players() {
@@ -1002,20 +1034,106 @@ final class TTTC_Admin {
 				$active_ids[] = $player_id;
 			}
 		}
+		$active_ids = array_values( array_unique( $active_ids ) );
+
 		global $wpdb;
-		$table = TTTC_Plugin::table_name();
+		$table          = TTTC_Plugin::table_name();
+		$existing_seeds = array();
+		foreach ( $wpdb->get_results( $wpdb->prepare( "SELECT player_id, seed FROM {$table} WHERE tournament_id = %d", $tournament_id ) ) as $row ) {
+			$existing_seeds[ (int) $row->player_id ] = null === $row->seed ? null : (int) $row->seed;
+		}
+
+		// Players already assigned keep their relative seed order; newly added players are appended by rating.
+		$kept_ids = array_values( array_intersect( $active_ids, array_keys( $existing_seeds ) ) );
+		usort( $kept_ids, function ( $first, $second ) use ( $existing_seeds ) {
+			$first_seed  = null !== $existing_seeds[ $first ] ? $existing_seeds[ $first ] : PHP_INT_MAX;
+			$second_seed = null !== $existing_seeds[ $second ] ? $existing_seeds[ $second ] : PHP_INT_MAX;
+			return $first_seed <=> $second_seed;
+		} );
+
+		$new_ids = array_values( array_diff( $active_ids, $kept_ids ) );
+		usort( $new_ids, function ( $first, $second ) {
+			$rating_difference = absint( get_post_meta( $second, TTTC_Plugin::PLAYER_META_RATING, true ) ) - absint( get_post_meta( $first, TTTC_Plugin::PLAYER_META_RATING, true ) );
+			return 0 !== $rating_difference ? $rating_difference : strcasecmp( get_the_title( $first ), get_the_title( $second ) );
+		} );
+
+		$ordered_ids = array_merge( $kept_ids, $new_ids );
+
 		$wpdb->delete( $table, array( 'tournament_id' => $tournament_id ), array( '%d' ) );
 		$wpdb->delete( TTTC_Plugin::scores_table_name(), array( 'tournament_id' => $tournament_id ), array( '%d' ) );
-		foreach ( array_unique( $active_ids ) as $player_id ) {
-			$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player_id, 'rating' => absint( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) ), 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%d', '%s' ) );
+		foreach ( $ordered_ids as $index => $player_id ) {
+			$rating_meta = get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true );
+			$rating      = '' === $rating_meta ? null : absint( $rating_meta );
+			$wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player_id, 'rating' => $rating, 'seed' => $index + 1, 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%d', '%d', '%s' ) );
 		}
 		wp_safe_redirect( add_query_arg( array( 'post_type' => TTTC_Plugin::TOURNAMENT_POST_TYPE, 'updated' => '1' ), admin_url( 'edit.php' ) ) );
+		exit;
+	}
+
+	public function reorder_players() {
+		$tournament_id = isset( $_POST['tournament_id'] ) ? absint( $_POST['tournament_id'] ) : 0;
+		if ( ! current_user_can( 'edit_posts' ) || ! isset( $_POST['tttc_reorder_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_reorder_nonce'] ) ), 'tttc_reorder_players_' . $tournament_id ) ) {
+			wp_die( esc_html__( 'The security check failed.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) || TTTC_Plugin::has_scores( $tournament_id ) ) {
+			wp_die( esc_html__( 'The seeding order can not be changed for this tournament.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		global $wpdb;
+		$table       = TTTC_Plugin::table_name();
+		$current_ids = array();
+		foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT player_id FROM {$table} WHERE tournament_id = %d", $tournament_id ) ) as $player_id ) {
+			$player_id = (int) $player_id;
+			if ( '1' === get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, true ) ) {
+				$current_ids[] = $player_id;
+			}
+		}
+
+		$submitted   = isset( $_POST['ordered_player_ids'] ) ? sanitize_text_field( wp_unslash( $_POST['ordered_player_ids'] ) ) : '';
+		$ordered_ids = array_values( array_filter( array_map( 'absint', explode( ',', $submitted ) ) ) );
+
+		$sorted_current = $current_ids;
+		$sorted_ordered = $ordered_ids;
+		sort( $sorted_current );
+		sort( $sorted_ordered );
+		if ( empty( $ordered_ids ) || $sorted_current !== $sorted_ordered ) {
+			wp_die( esc_html__( 'The submitted player order is invalid.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		foreach ( $ordered_ids as $index => $player_id ) {
+			$wpdb->update( $table, array( 'seed' => $index + 1 ), array( 'tournament_id' => $tournament_id, 'player_id' => $player_id ), array( '%d' ), array( '%d', '%d' ) );
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $tournament_id . '&updated=1' ) );
 		exit;
 	}
 
 	private function assigned_player_ids( $tournament_id ) {
 		global $wpdb;
 		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) ) );
+	}
+
+	private function seed_ordered_players( $tournament_id ) {
+		global $wpdb;
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, seed FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		usort( $rows, function ( $first, $second ) {
+			$first_seed  = null !== $first->seed ? (int) $first->seed : PHP_INT_MAX;
+			$second_seed = null !== $second->seed ? (int) $second->seed : PHP_INT_MAX;
+			return $first_seed <=> $second_seed;
+		} );
+
+		$players = array();
+		foreach ( $rows as $row ) {
+			$player_id = (int) $row->player_id;
+			if ( '1' === get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, true ) ) {
+				$player = get_post( $player_id );
+				if ( $player ) {
+					$players[] = $player;
+				}
+			}
+		}
+
+		return $players;
 	}
 
 	public function player_bulk_actions( $actions ) {
@@ -1209,7 +1327,7 @@ final class TTTC_Admin {
 
 		if ( false !== strpos( $hook, 'tttc-' ) || in_array( $screen_post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) {
 			wp_enqueue_style( 'tttc-admin', TTTC_URL . 'assets/admin.css', array(), TTTC_VERSION );
-			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery' ), TTTC_VERSION, true );
+			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery', 'jquery-ui-sortable' ), TTTC_VERSION, true );
 
 			if ( TTTC_Plugin::PLAYER_POST_TYPE === $screen_post_type && in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 				$existing_players = get_posts( array(

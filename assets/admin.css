@@ -148,6 +148,50 @@
   margin-top: 28px;
 }
 
+.tttc-seed-list {
+  max-width: 480px;
+  margin: 12px 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.tttc-seed-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border: 1px solid #dcdcde;
+  background: #fff;
+}
+
+.tttc-seed-list:not(.tttc-seed-list--locked) li {
+  cursor: grab;
+}
+
+.tttc-seed-list li.ui-sortable-helper {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.tttc-seed-list .ui-sortable-placeholder {
+  visibility: visible !important;
+  border: 1px dashed #c3c4c7;
+  background: #f0f0f1;
+}
+
+.tttc-seed-handle {
+  color: #787c82;
+}
+
+.tttc-seed-rating {
+  margin-left: auto;
+  color: #50575e;
+}
+
+.tttc-seed-list--locked li {
+  color: #646970;
+}
+
 .tttc-scores-toolbar {
   margin-bottom: 16px;
 }

@@ -502,7 +502,7 @@ final class TTTC_Public {
 			$this->signup_error = __( 'Please enter your name.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
-		if ( '' === $this->signup_form['rating'] || ! preg_match( '/^[0-9]+$/', $this->signup_form['rating'] ) ) {
+		if ( '' !== $this->signup_form['rating'] && ! preg_match( '/^[0-9]+$/', $this->signup_form['rating'] ) ) {
 			$this->signup_error = __( 'Please enter a valid nonnegative rating.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
@@ -550,7 +550,7 @@ final class TTTC_Public {
 				$this->signup_error = __( 'An existing player with this name and email has a type that is not allowed for this tournament.', 'table-tennis-tournament-for-clubs' );
 				return;
 			}
-			update_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, absint( $this->signup_form['rating'] ) );
+			update_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, '' === $this->signup_form['rating'] ? '' : absint( $this->signup_form['rating'] ) );
 			update_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_ACTIVE, '1' );
 		} else {
 			$player_id = wp_insert_post( array(
@@ -563,7 +563,7 @@ final class TTTC_Public {
 				return;
 			}
 			$player = get_post( $player_id );
-			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, absint( $this->signup_form['rating'] ) );
+			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, '' === $this->signup_form['rating'] ? '' : absint( $this->signup_form['rating'] ) );
 			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_EMAIL, $this->signup_form['email'] );
 			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, '1' );
 			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_GENDER, $this->signup_form['gender'] );
@@ -571,9 +571,11 @@ final class TTTC_Public {
 		}
 
 		global $wpdb;
-		$table = TTTC_Plugin::table_name();
+		$table    = TTTC_Plugin::table_name();
 		$assigned = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . $table . ' WHERE tournament_id = %d AND player_id = %d LIMIT 1', $tournament_id, $player->ID ) );
-		if ( ! $assigned && false === $wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player->ID, 'rating' => absint( $this->signup_form['rating'] ), 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%d', '%s' ) ) ) {
+		$next_seed = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COALESCE( MAX( seed ), 0 ) FROM ' . $table . ' WHERE tournament_id = %d', $tournament_id ) ) + 1;
+		$rating    = '' === $this->signup_form['rating'] ? null : absint( $this->signup_form['rating'] );
+		if ( ! $assigned && false === $wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player->ID, 'rating' => $rating, 'seed' => $next_seed, 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%d', '%d', '%s' ) ) ) {
 			$this->signup_error = __( 'The player was saved, but could not be added to the tournament. Please try again.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
@@ -595,7 +597,7 @@ final class TTTC_Public {
 				<input type="hidden" name="tttc_signup_action" value="tttc_signup"><input type="hidden" name="tttc_signup_tournament" value="<?php echo esc_attr( $tournament_id ); ?>"><?php wp_nonce_field( 'tttc_signup_' . $tournament_id, 'tttc_signup_nonce' ); ?>
 				<div class="tttc-public-signup-form__grid">
 					<p><label for="tttc-signup-name"><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="text" id="tttc-signup-name" name="tttc_signup_name" value="<?php echo esc_attr( $form['name'] ); ?>" required></p>
-					<p><label for="tttc-signup-rating"><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?> (<a href="https://ttapp.nl/">TTapp.nl</a>) <span aria-hidden="true">*</span></label><input type="number" min="0" step="1" id="tttc-signup-rating" name="tttc_signup_rating" value="<?php echo esc_attr( $form['rating'] ); ?>" required></p>
+					<p><label for="tttc-signup-rating"><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?> (<a href="https://ttapp.nl/">TTapp.nl</a>)</label><input type="number" min="0" step="1" id="tttc-signup-rating" name="tttc_signup_rating" value="<?php echo esc_attr( $form['rating'] ); ?>"></p>
 					<p><label for="tttc-signup-email"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="email" id="tttc-signup-email" name="tttc_signup_email" value="<?php echo esc_attr( $form['email'] ); ?>" required></p>
 					<p><label for="tttc-signup-gender"><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></label><select id="tttc-signup-gender" name="tttc_signup_gender"><option value="male" <?php selected( $form['gender'], 'male' ); ?>><?php esc_html_e( 'Male', 'table-tennis-tournament-for-clubs' ); ?></option><option value="female" <?php selected( $form['gender'], 'female' ); ?>><?php esc_html_e( 'Female', 'table-tennis-tournament-for-clubs' ); ?></option></select></p>
 					<p><label for="tttc-signup-type"><?php esc_html_e( 'Type', 'table-tennis-tournament-for-clubs' ); ?></label><select id="tttc-signup-type" name="tttc_signup_type"><option value="senior" <?php selected( $form['type'], 'senior' ); ?>><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></option><option value="youth" <?php selected( $form['type'], 'youth' ); ?>><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></option></select></p>
@@ -630,6 +632,7 @@ final class TTTC_Public {
 
 	private function assigned_players( $tournament_id ) {
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
+		$player_seeds   = $this->assigned_player_seeds( $tournament_id );
 		$player_ids     = array_keys( $player_ratings );
 		if ( empty( $player_ids ) ) {
 			return array();
@@ -639,7 +642,17 @@ final class TTTC_Public {
 		$players = array_filter( $players, function ( $player ) {
 			return '1' === get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_ACTIVE, true );
 		} );
-		usort( $players, function ( $first, $second ) use ( $player_ratings ) {
+		// The manual seed order (set on the Tournament Players screen) takes priority over rating.
+		usort( $players, function ( $first, $second ) use ( $player_ratings, $player_seeds ) {
+			$first_seed  = isset( $player_seeds[ $first->ID ] ) ? $player_seeds[ $first->ID ] : null;
+			$second_seed = isset( $player_seeds[ $second->ID ] ) ? $player_seeds[ $second->ID ] : null;
+			if ( null !== $first_seed && null !== $second_seed ) {
+				return $first_seed <=> $second_seed;
+			}
+			if ( null !== $first_seed || null !== $second_seed ) {
+				return null !== $first_seed ? -1 : 1;
+			}
+
 			$rating_difference = ( isset( $player_ratings[ $second->ID ] ) ? $player_ratings[ $second->ID ] : 0 ) - ( isset( $player_ratings[ $first->ID ] ) ? $player_ratings[ $first->ID ] : 0 );
 			if ( 0 !== $rating_difference ) {
 				return $rating_difference;
@@ -662,6 +675,19 @@ final class TTTC_Public {
 		}
 
 		return $player_ratings;
+	}
+
+	private function assigned_player_seeds( $tournament_id ) {
+		global $wpdb;
+		$rows  = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, seed FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$seeds = array();
+		foreach ( $rows as $row ) {
+			if ( null !== $row->seed ) {
+				$seeds[ (int) $row->player_id ] = (int) $row->seed;
+			}
+		}
+
+		return $seeds;
 	}
 
 	private function player_tournaments( $player_id ) {
@@ -891,7 +917,7 @@ final class TTTC_Public {
 		$output = '<h4>' . esc_html__( 'Players', 'table-tennis-tournament-for-clubs' ) . '</h4><ul class="tttc-assigned-players">';
 		foreach ( $assignments as $assignment ) {
 			$player_id = (int) $assignment->player_id;
-			$rating    = null === $assignment->rating ? absint( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) ) : (int) $assignment->rating;
+			$rating    = null === $assignment->rating ? get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) : (int) $assignment->rating;
 			$output   .= '<li>' . esc_html( get_the_title( $player_id ) ) . '<span>' . esc_html__( 'Rating:', 'table-tennis-tournament-for-clubs' ) . ' ' . esc_html( $rating ) . '</span></li>';
 		}
 		return $output . '</ul>';
