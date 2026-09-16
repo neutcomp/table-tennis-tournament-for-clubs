@@ -412,7 +412,6 @@ final class TTTC_Admin {
 				</tbody>
 			</table>
 		</div>
-		<?php $this->render_seed_order_section( $post->ID ); ?>
 		<?php
 	}
 
