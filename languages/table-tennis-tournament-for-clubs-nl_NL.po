@@ -41,6 +41,9 @@ msgstr "Toernooien"
 msgid "Tournament Players"
 msgstr "Toernooispelers"
 
+msgid "Order Players"
+msgstr "Spelers ordenen"
+
 msgid "Tournament Scores"
 msgstr "Toernooi scores"
 
@@ -110,8 +113,11 @@ msgstr "Best of"
 msgid "Status"
 msgstr "Status"
 
-msgid "Manage players"
-msgstr "Spelers beheren"
+msgid "Manage"
+msgstr "Beheren"
+
+msgid "Order"
+msgstr "Volgorde"
 
 msgid "Enter scores"
 msgstr "Scores invoeren"
@@ -358,6 +364,18 @@ msgstr "Toernooispelers opslaan"
 
 msgid "Tournament players updated."
 msgstr "Toernooispelers bijgewerkt."
+
+msgid "Seeding order"
+msgstr "Sterktevolgorde"
+
+msgid "Seeding is locked because scores have already been entered for this tournament."
+msgstr "De sterktevolgorde is vergrendeld omdat er al scores voor dit toernooi zijn ingevoerd."
+
+msgid "Drag players to set the strength order used for grouping. This overrides the rating-based order."
+msgstr "Sleep spelers om de sterktevolgorde voor de groepsindeling in te stellen. Hiermee wordt de volgorde op basis van rating overschreven."
+
+msgid "Save order"
+msgstr "Volgorde opslaan"
 
 msgid "Scores"
 msgstr "Scores"

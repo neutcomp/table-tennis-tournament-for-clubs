@@ -52,6 +52,7 @@ final class TTTC_Admin {
 		add_submenu_page( 'tttc-dashboard', __( 'Players', 'table-tennis-tournament-for-clubs' ), __( 'Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE );
 		add_submenu_page( 'tttc-dashboard', __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), __( 'Tournaments', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE );
 		add_submenu_page( null, __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-assignments', array( $this, 'assignments_page' ) );
+		add_submenu_page( null, __( 'Order Players', 'table-tennis-tournament-for-clubs' ), __( 'Order Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-order', array( $this, 'order_page' ) );
 		add_submenu_page( null, __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-scores', array( $this, 'scores_page' ) );
 		add_submenu_page( null, __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-merge-players', array( $this, 'merge_page' ) );
 	}
@@ -411,6 +412,7 @@ final class TTTC_Admin {
 				</tbody>
 			</table>
 		</div>
+		<?php $this->render_seed_order_section( $post->ID ); ?>
 		<?php
 	}
 
@@ -651,7 +653,8 @@ final class TTTC_Admin {
 			$status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 			echo esc_html( count( $count ) );
 			if ( ! in_array( $status, array( 'active', 'completed' ), true ) ) {
-				echo ' <a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Manage players', 'table-tennis-tournament-for-clubs' ) . '</a>';
+				echo ' <a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Manage', 'table-tennis-tournament-for-clubs' ) . '</a>';
+				echo ' <a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-order&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Order', 'table-tennis-tournament-for-clubs' ) . '</a>';
 			}
 		} elseif ( 'tttc_url' === $column ) {
 			$website_url = $this->tournament_url( $post_id );
@@ -986,8 +989,25 @@ final class TTTC_Admin {
 					<?php endforeach; ?>
 					</tbody></table><p><button class="button button-primary"><?php esc_html_e( 'Save tournament players', 'table-tennis-tournament-for-clubs' ); ?></button></p>
 				</form>
-				<?php $this->render_seed_order_section( $tournament_id ); ?>
 			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	public function order_page() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		$tournament_id = isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0;
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Order Players', 'table-tennis-tournament-for-clubs' ); ?></h1>
+			<h2><?php echo esc_html( get_the_title( $tournament_id ) ); ?></h2>
+			<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $tournament_id ) ); ?>"><?php esc_html_e( 'Manage', 'table-tennis-tournament-for-clubs' ); ?></a></p>
+			<?php $this->render_seed_order_section( $tournament_id ); ?>
 		</div>
 		<?php
 	}
@@ -1104,7 +1124,7 @@ final class TTTC_Admin {
 			$wpdb->update( $table, array( 'seed' => $index + 1 ), array( 'tournament_id' => $tournament_id, 'player_id' => $player_id ), array( '%d' ), array( '%d', '%d' ) );
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $tournament_id . '&updated=1' ) );
+		wp_safe_redirect( add_query_arg( array( 'post_type' => TTTC_Plugin::TOURNAMENT_POST_TYPE, 'updated' => '1' ), admin_url( 'edit.php' ) ) );
 		exit;
 	}
 
