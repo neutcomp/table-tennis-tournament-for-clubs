@@ -158,8 +158,8 @@ msgstr "Games moeten op volgorde worden ingevoerd zonder games over te slaan."
 msgid "A game must be won with 11 points (and at least a two-point margin) or beyond 10-10 with a lead of exactly two points."
 msgstr "Een game moet worden gewonnen met 11 punten (en minstens twee punten voorsprong) of boven 10-10 met precies twee punten voorsprong."
 
-msgid "A Best of %d match must have a winner with at least %d games won."
-msgstr "Een Best of %d-wedstrijd moet een winnaar hebben met minstens %d gewonnen games."
+msgid "A Best of %1$d match must have a winner with at least %2$d games won."
+msgstr "Een Best of %1$d-wedstrijd moet een winnaar hebben met minstens %2$d gewonnen games."
 
 msgid "Round %d"
 msgstr "Ronde %d"

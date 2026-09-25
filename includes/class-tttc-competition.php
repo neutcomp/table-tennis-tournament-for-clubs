@@ -197,13 +197,13 @@ final class TTTC_Competition {
 	private static function crossover_stages( $group_count ) {
 		if ( 2 === $group_count ) {
 			return array(
-				array( 'id' => 'final', 'label' => 'Final', 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 1, 'place' => 1 ) ) ) ) ),
-				array( 'id' => 'third-place', 'label' => 'Third-place match', 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'group' => 0, 'place' => 2 ), array( 'group' => 1, 'place' => 2 ) ) ) ) ),
+				array( 'id' => 'final', 'label' => __( 'Final', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 1, 'place' => 1 ) ) ) ) ),
+				array( 'id' => 'third-place', 'label' => __( 'Third-place match', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'group' => 0, 'place' => 2 ), array( 'group' => 1, 'place' => 2 ) ) ) ) ),
 			);
 		}
 		if ( 3 === $group_count ) {
 			return array(
-				array( 'id' => 'winner-round', 'label' => 'Winner round', 'matches' => array(
+				array( 'id' => 'winner-round', 'label' => __( 'Winner round', 'table-tennis-tournament-for-clubs' ), 'matches' => array(
 					array( 'id' => 'winner-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 1, 'place' => 1 ) ) ),
 					array( 'id' => 'winner-2', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 2, 'place' => 1 ) ) ),
 					array( 'id' => 'winner-3', 'players' => array( array( 'group' => 1, 'place' => 1 ), array( 'group' => 2, 'place' => 1 ) ) ),
@@ -212,12 +212,12 @@ final class TTTC_Competition {
 		}
 		if ( 4 === $group_count ) {
 			return array(
-				array( 'id' => 'semifinals', 'label' => 'Semi-finals', 'matches' => array(
+				array( 'id' => 'semifinals', 'label' => __( 'Semi-finals', 'table-tennis-tournament-for-clubs' ), 'matches' => array(
 					array( 'id' => 'semi-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 3, 'place' => 1 ) ) ),
 					array( 'id' => 'semi-2', 'players' => array( array( 'group' => 1, 'place' => 1 ), array( 'group' => 2, 'place' => 1 ) ) ),
 				) ),
-				array( 'id' => 'final', 'label' => 'Final', 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'stage' => 'semifinals', 'match' => 0, 'result' => 'winner' ), array( 'stage' => 'semifinals', 'match' => 1, 'result' => 'winner' ) ) ) ) ),
-				array( 'id' => 'third-place', 'label' => 'Third-place match', 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'stage' => 'semifinals', 'match' => 0, 'result' => 'loser' ), array( 'stage' => 'semifinals', 'match' => 1, 'result' => 'loser' ) ) ) ) ),
+				array( 'id' => 'final', 'label' => __( 'Final', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'stage' => 'semifinals', 'match' => 0, 'result' => 'winner' ), array( 'stage' => 'semifinals', 'match' => 1, 'result' => 'winner' ) ) ) ) ),
+				array( 'id' => 'third-place', 'label' => __( 'Third-place match', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'stage' => 'semifinals', 'match' => 0, 'result' => 'loser' ), array( 'stage' => 'semifinals', 'match' => 1, 'result' => 'loser' ) ) ) ) ),
 			);
 		}
 		return array();

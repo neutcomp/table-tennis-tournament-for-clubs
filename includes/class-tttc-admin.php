@@ -769,7 +769,7 @@ final class TTTC_Admin {
 					<?php endforeach; ?>
 					<?php foreach ( $ordered_stages as $stage ) : ?>
 						<section class="tttc-crossover-stage">
-							<h2><?php echo esc_html( __( $stage['label'], 'table-tennis-tournament-for-clubs' ) ); ?></h2>
+							<h2><?php echo esc_html( $stage['label'] ); ?></h2>
 							<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) :
 								// translators: %d is the game number.
 								$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game );
@@ -917,7 +917,7 @@ final class TTTC_Admin {
 
 		if ( $has_score && max( $wins ) < $required ) {
 			// translators: 1: maximum number of games, 2: games required to win.
-			return new WP_Error( 'incomplete_match', sprintf( __( 'A Best of %d match must have a winner with at least %d games won.', 'table-tennis-tournament-for-clubs' ), $games, $required ) );
+			return new WP_Error( 'incomplete_match', sprintf( __( 'A Best of %1$d match must have a winner with at least %2$d games won.', 'table-tennis-tournament-for-clubs' ), $games, $required ) );
 		}
 
 		return $validated;
@@ -952,7 +952,7 @@ final class TTTC_Admin {
 
 	private function saved_scores( $tournament_id ) {
 		global $wpdb;
-		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT match_key, scores FROM ' . TTTC_Plugin::scores_table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT match_key, scores FROM %i WHERE tournament_id = %d', TTTC_Plugin::scores_table_name(), $tournament_id ) );
 		$scores = array();
 		foreach ( $rows as $row ) {
 			$decoded = json_decode( $row->scores, true );
@@ -1084,7 +1084,7 @@ final class TTTC_Admin {
 		global $wpdb;
 		$table          = TTTC_Plugin::table_name();
 		$existing_seeds = array();
-		foreach ( $wpdb->get_results( $wpdb->prepare( "SELECT player_id, seed FROM {$table} WHERE tournament_id = %d", $tournament_id ) ) as $row ) {
+		foreach ( $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, seed FROM %i WHERE tournament_id = %d', $table, $tournament_id ) ) as $row ) {
 			$existing_seeds[ (int) $row->player_id ] = null === $row->seed ? null : (int) $row->seed;
 		}
 
@@ -1127,7 +1127,7 @@ final class TTTC_Admin {
 		global $wpdb;
 		$table       = TTTC_Plugin::table_name();
 		$current_ids = array();
-		foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT player_id FROM {$table} WHERE tournament_id = %d", $tournament_id ) ) as $player_id ) {
+		foreach ( $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM %i WHERE tournament_id = %d', $table, $tournament_id ) ) as $player_id ) {
 			$player_id = (int) $player_id;
 			if ( '1' === get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, true ) ) {
 				$current_ids[] = $player_id;
@@ -1155,12 +1155,12 @@ final class TTTC_Admin {
 
 	private function assigned_player_ids( $tournament_id ) {
 		global $wpdb;
-		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) ) );
+		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM %i WHERE tournament_id = %d', TTTC_Plugin::table_name(), $tournament_id ) ) );
 	}
 
 	private function seed_ordered_players( $tournament_id ) {
 		global $wpdb;
-		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, seed FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, seed FROM %i WHERE tournament_id = %d', TTTC_Plugin::table_name(), $tournament_id ) );
 		usort( $rows, function ( $first, $second ) {
 			$first_seed  = null !== $first->seed ? (int) $first->seed : PHP_INT_MAX;
 			$second_seed = null !== $second->seed ? (int) $second->seed : PHP_INT_MAX;
@@ -1303,9 +1303,9 @@ final class TTTC_Admin {
 		$assign_table = TTTC_Plugin::table_name();
 		$scores_table = TTTC_Plugin::scores_table_name();
 
-		$tournament_ids = $wpdb->get_col( $wpdb->prepare( "SELECT tournament_id FROM {$assign_table} WHERE player_id = %d", $source_id ) );
+		$tournament_ids = $wpdb->get_col( $wpdb->prepare( 'SELECT tournament_id FROM %i WHERE player_id = %d', $assign_table, $source_id ) );
 		foreach ( $tournament_ids as $tournament_id ) {
-			$already_assigned = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$assign_table} WHERE tournament_id = %d AND player_id = %d", $tournament_id, $keep_id ) );
+			$already_assigned = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE tournament_id = %d AND player_id = %d', $assign_table, $tournament_id, $keep_id ) );
 			if ( $already_assigned ) {
 				$wpdb->delete( $assign_table, array( 'tournament_id' => $tournament_id, 'player_id' => $source_id ), array( '%d', '%d' ) );
 			} else {
@@ -1313,7 +1313,7 @@ final class TTTC_Admin {
 			}
 		}
 
-		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$scores_table} WHERE player_one_id = %d OR player_two_id = %d", $source_id, $source_id ) );
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE player_one_id = %d OR player_two_id = %d', $scores_table, $source_id, $source_id ) );
 		foreach ( $rows as $row ) {
 			$opponent_id = (int) $row->player_one_id === (int) $source_id ? (int) $row->player_two_id : (int) $row->player_one_id;
 
@@ -1324,7 +1324,7 @@ final class TTTC_Admin {
 			}
 
 			$new_match_key = $this->match_key( $keep_id, $opponent_id );
-			$existing      = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$scores_table} WHERE tournament_id = %d AND match_key = %s AND id != %d", $row->tournament_id, $new_match_key, $row->id ) );
+			$existing      = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE tournament_id = %d AND match_key = %s AND id != %d', $scores_table, $row->tournament_id, $new_match_key, $row->id ) );
 
 			if ( $existing ) {
 				$wpdb->delete( $scores_table, array( 'id' => $row->id ), array( '%d' ) );
@@ -1360,7 +1360,7 @@ final class TTTC_Admin {
 
 	private function assigned_player_ids_for_player( $player_id ) {
 		global $wpdb;
-		return $wpdb->get_col( $wpdb->prepare( 'SELECT tournament_id FROM ' . TTTC_Plugin::table_name() . ' WHERE player_id = %d', $player_id ) );
+		return $wpdb->get_col( $wpdb->prepare( 'SELECT tournament_id FROM %i WHERE player_id = %d', TTTC_Plugin::table_name(), $player_id ) );
 	}
 
 	public function enqueue_assets( $hook ) {

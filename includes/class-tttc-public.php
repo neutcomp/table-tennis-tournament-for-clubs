@@ -55,8 +55,8 @@ final class TTTC_Public {
 
 	private function score_version( $tournament_id ) {
 		global $wpdb;
-		$score_state  = $wpdb->get_row( $wpdb->prepare( 'SELECT COUNT(*) AS total, MAX( updated_at ) AS updated FROM ' . TTTC_Plugin::scores_table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
-		$player_state = $wpdb->get_var( $wpdb->prepare( "SELECT GROUP_CONCAT( CONCAT_WS( ':', player_id, COALESCE( seed, 0 ), COALESCE( rating, 0 ) ) ORDER BY player_id ) FROM " . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$score_state  = $wpdb->get_row( $wpdb->prepare( 'SELECT COUNT(*) AS total, MAX( updated_at ) AS updated FROM %i WHERE tournament_id = %d', TTTC_Plugin::scores_table_name(), $tournament_id ) );
+		$player_state = $wpdb->get_var( $wpdb->prepare( "SELECT GROUP_CONCAT( CONCAT_WS( ':', player_id, COALESCE( seed, 0 ), COALESCE( rating, 0 ) ) ORDER BY player_id ) FROM %i WHERE tournament_id = %d", TTTC_Plugin::table_name(), $tournament_id ) );
 
 		return md5(
 			implode(
@@ -370,7 +370,7 @@ final class TTTC_Public {
 							} )
 						);
 						?>
-		<?php foreach ( $stages as $stage ) : $stage_label = __( $stage['label'], 'table-tennis-tournament-for-clubs' ); ?>
+		<?php foreach ( $stages as $stage ) : $stage_label = $stage['label']; ?>
 		<section class="tttc-tv-slide" data-tttc-label="<?php echo esc_attr( $stage_label ); ?>" hidden>
 			<h2><?php echo esc_html( $stage_label ); ?></h2>
 			<div class="tttc-tv-card tttc-tv-card--wide">
@@ -678,14 +678,14 @@ final class TTTC_Public {
 				<?php if ( 'final' !== $stage['id'] ) : $tab_id = 'tttc-crossover-tab-' . $stage['id']; $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
 				<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab"
 					aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false"
-					tabindex="-1"><?php echo esc_html( __( $stage['label'], 'table-tennis-tournament-for-clubs' ) ); ?></button>
+					tabindex="-1"><?php echo esc_html( $stage['label'] ); ?></button>
 				<?php endif; ?>
 				<?php endforeach; ?>
 				<?php foreach ( $competition['stages'] as $stage ) : ?>
 				<?php if ( 'final' === $stage['id'] ) : $tab_id = 'tttc-crossover-tab-' . $stage['id']; $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
 				<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab"
 					aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false"
-					tabindex="-1"><?php echo esc_html( __( $stage['label'], 'table-tennis-tournament-for-clubs' ) ); ?></button>
+					tabindex="-1"><?php echo esc_html( $stage['label'] ); ?></button>
 				<?php endif; ?>
 				<?php endforeach; ?>
 				<?php endif; ?>
@@ -841,7 +841,7 @@ final class TTTC_Public {
 				<?php foreach ( $competition['stages'] as $stage ) : $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
 				<section id="<?php echo esc_attr( $panel_id ); ?>" class="tttc-public-group tttc-public-crossover-stage"
 					role="tabpanel" aria-labelledby="<?php echo esc_attr( 'tttc-crossover-tab-' . $stage['id'] ); ?>" hidden>
-					<h3><?php echo esc_html( __( $stage['label'], 'table-tennis-tournament-for-clubs' ) ); ?></h3>
+					<h3><?php echo esc_html( $stage['label'] ); ?></h3>
 					<table class="tttc-public-matches">
 						<thead>
 							<tr>
@@ -1003,8 +1003,8 @@ final class TTTC_Public {
 
 		global $wpdb;
 		$table    = TTTC_Plugin::table_name();
-		$assigned = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . $table . ' WHERE tournament_id = %d AND player_id = %d LIMIT 1', $tournament_id, $player->ID ) );
-		$next_seed = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COALESCE( MAX( seed ), 0 ) FROM ' . $table . ' WHERE tournament_id = %d', $tournament_id ) ) + 1;
+		$assigned = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE tournament_id = %d AND player_id = %d LIMIT 1', $table, $tournament_id, $player->ID ) );
+		$next_seed = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COALESCE( MAX( seed ), 0 ) FROM %i WHERE tournament_id = %d', $table, $tournament_id ) ) + 1;
 		$rating    = '' === $this->signup_form['rating'] ? null : absint( $this->signup_form['rating'] );
 		if ( ! $assigned && false === $wpdb->insert( $table, array( 'tournament_id' => $tournament_id, 'player_id' => $player->ID, 'rating' => $rating, 'seed' => $next_seed, 'created_at' => current_time( 'mysql', true ) ), array( '%d', '%d', '%d', '%d', '%s' ) ) ) {
 			$this->signup_error = __( 'The player was saved, but could not be added to the tournament. Please try again.', 'table-tennis-tournament-for-clubs' );
@@ -1125,7 +1125,7 @@ final class TTTC_Public {
 
 	private function assigned_player_ratings( $tournament_id ) {
 		global $wpdb;
-		$assignments    = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, rating FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$assignments    = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, rating FROM %i WHERE tournament_id = %d', TTTC_Plugin::table_name(), $tournament_id ) );
 		$player_ratings = array();
 		foreach ( $assignments as $assignment ) {
 			$player_id = (int) $assignment->player_id;
@@ -1137,7 +1137,7 @@ final class TTTC_Public {
 
 	private function assigned_player_seeds( $tournament_id ) {
 		global $wpdb;
-		$rows  = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, seed FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$rows  = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, seed FROM %i WHERE tournament_id = %d', TTTC_Plugin::table_name(), $tournament_id ) );
 		$seeds = array();
 		foreach ( $rows as $row ) {
 			if ( null !== $row->seed ) {
@@ -1150,7 +1150,7 @@ final class TTTC_Public {
 
 	private function player_tournaments( $player_id ) {
 		global $wpdb;
-		$tournament_ids = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT tournament_id FROM ' . TTTC_Plugin::table_name() . ' WHERE player_id = %d', $player_id ) ) );
+		$tournament_ids = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT tournament_id FROM %i WHERE player_id = %d', TTTC_Plugin::table_name(), $player_id ) ) );
 		if ( empty( $tournament_ids ) ) {
 			return array();
 		}
@@ -1237,7 +1237,7 @@ final class TTTC_Public {
 
 	private function saved_scores( $tournament_id ) {
 		global $wpdb;
-		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT match_key, scores FROM ' . TTTC_Plugin::scores_table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT match_key, scores FROM %i WHERE tournament_id = %d', TTTC_Plugin::scores_table_name(), $tournament_id ) );
 		$scores = array();
 		foreach ( $rows as $row ) {
 			$decoded = json_decode( $row->scores, true );
@@ -1323,7 +1323,7 @@ final class TTTC_Public {
 	private function assigned_player_ids( $tournament_id ) {
 		global $wpdb;
 
-		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d ORDER BY created_at ASC', $tournament_id ) ) );
+		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT player_id FROM %i WHERE tournament_id = %d ORDER BY created_at ASC', TTTC_Plugin::table_name(), $tournament_id ) ) );
 	}
 
 	private function group_count( $player_count, $tournament_id = 0 ) {
@@ -1405,7 +1405,7 @@ final class TTTC_Public {
 
 	private function assigned_players_markup( $tournament_id ) {
 		global $wpdb;
-		$assignments = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, rating FROM ' . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d ORDER BY created_at ASC', $tournament_id ) );
+		$assignments = $wpdb->get_results( $wpdb->prepare( 'SELECT player_id, rating FROM %i WHERE tournament_id = %d ORDER BY created_at ASC', TTTC_Plugin::table_name(), $tournament_id ) );
 		if ( empty( $assignments ) ) {
 			return '<p class="tttc-no-players">' . esc_html__( 'Players will be announced soon.', 'table-tennis-tournament-for-clubs' ) . '</p>';
 		}

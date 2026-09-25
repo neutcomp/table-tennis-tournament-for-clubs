@@ -125,10 +125,16 @@ final class TTTC_Plugin {
 		dbDelta( $sql );
 		dbDelta( $scores_sql );
 		$wpdb->query(
-			"UPDATE {$table_name} AS assignments
-			INNER JOIN {$wpdb->postmeta} AS player_meta ON player_meta.post_id = assignments.player_id AND player_meta.meta_key = '" . self::PLAYER_META_RATING . "'
-			SET assignments.rating = CAST( player_meta.meta_value AS UNSIGNED )
-			WHERE assignments.rating IS NULL AND player_meta.meta_value != ''"
+			$wpdb->prepare(
+				'UPDATE %i AS assignments
+				INNER JOIN %i AS player_meta ON player_meta.post_id = assignments.player_id AND player_meta.meta_key = %s
+				SET assignments.rating = CAST( player_meta.meta_value AS UNSIGNED )
+				WHERE assignments.rating IS NULL AND player_meta.meta_value != %s',
+				$table_name,
+				$wpdb->postmeta,
+				self::PLAYER_META_RATING,
+				''
+			)
 		);
 		self::backfill_seed_order();
 		update_option( 'tttc_db_version', self::DB_VERSION );
@@ -141,10 +147,10 @@ final class TTTC_Plugin {
 	private static function backfill_seed_order() {
 		global $wpdb;
 		$table_name     = self::table_name();
-		$tournament_ids = $wpdb->get_col( "SELECT DISTINCT tournament_id FROM {$table_name} WHERE seed IS NULL" );
+		$tournament_ids = $wpdb->get_col( $wpdb->prepare( 'SELECT DISTINCT tournament_id FROM %i WHERE seed IS NULL', $table_name ) );
 
 		foreach ( $tournament_ids as $tournament_id ) {
-			$rows = $wpdb->get_results( $wpdb->prepare( "SELECT id, player_id, rating FROM {$table_name} WHERE tournament_id = %d", $tournament_id ) );
+			$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT id, player_id, rating FROM %i WHERE tournament_id = %d', $table_name, $tournament_id ) );
 			usort(
 				$rows,
 				function( $first, $second ) {
@@ -281,7 +287,7 @@ final class TTTC_Plugin {
 		}
 
 		global $wpdb;
-		$count = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . self::scores_table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$count = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE tournament_id = %d', self::scores_table_name(), $tournament_id ) );
 
 		return (int) $count > 0;
 	}

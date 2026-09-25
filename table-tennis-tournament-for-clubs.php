@@ -6,6 +6,8 @@
  * Requires at least: 6.3
  * Requires PHP: 7.4
  * Author: Bjorn van der Neut
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: table-tennis-tournament-for-clubs
  * Domain Path: /languages
  */
