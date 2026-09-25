@@ -923,7 +923,7 @@ final class TTTC_Public {
 		}
 
 		$this->signup_form = array(
-			'name'   => isset( $_POST['tttc_signup_name'] ) ? $this->normalize_name( wp_unslash( $_POST['tttc_signup_name'] ) ) : '',
+			'name'   => isset( $_POST['tttc_signup_name'] ) ? $this->normalize_name( sanitize_text_field( wp_unslash( $_POST['tttc_signup_name'] ) ) ) : '',
 			'rating' => isset( $_POST['tttc_signup_rating'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_rating'] ) ) : '',
 			'email'  => isset( $_POST['tttc_signup_email'] ) ? strtolower( sanitize_email( wp_unslash( $_POST['tttc_signup_email'] ) ) ) : '',
 			'gender' => isset( $_POST['tttc_signup_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_gender'] ) ) : 'male',
@@ -1068,8 +1068,6 @@ final class TTTC_Public {
 	}
 
 	private function normalize_name( $name ) {
-		$name = sanitize_text_field( $name );
-
 		return preg_replace( '/\s+/', ' ', trim( $name ) );
 	}
 

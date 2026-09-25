@@ -478,7 +478,10 @@ final class TTTC_Admin {
 	}
 
 	public function save_player( $post_id ) {
-		if ( ! $this->can_save( $post_id, 'tttc_player_nonce', 'tttc_save_player' ) ) {
+		if ( ! $this->can_save( $post_id ) ) {
+			return;
+		}
+		if ( ! isset( $_POST['tttc_player_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_player_nonce'] ) ), 'tttc_save_player' ) ) {
 			return;
 		}
 		$rating = isset( $_POST['tttc_rating'] ) ? max( 0, absint( $_POST['tttc_rating'] ) ) : 0;
@@ -495,7 +498,10 @@ final class TTTC_Admin {
 	}
 
 	public function save_tournament( $post_id ) {
-		if ( ! $this->can_save( $post_id, 'tttc_tournament_nonce', 'tttc_save_tournament' ) ) {
+		if ( ! $this->can_save( $post_id ) ) {
+			return;
+		}
+		if ( ! isset( $_POST['tttc_tournament_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_tournament_nonce'] ) ), 'tttc_save_tournament' ) ) {
 			return;
 		}
 		$date   = isset( $_POST['tttc_date'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_date'] ) ) : '';
@@ -539,11 +545,8 @@ final class TTTC_Admin {
 		return admin_url( 'edit.php?post_type=' . $post_type );
 	}
 
-	private function can_save( $post_id, $nonce_name, $nonce_action ) {
+	private function can_save( $post_id ) {
 		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( $post_id ) ) {
-			return false;
-		}
-		if ( ! isset( $_POST[ $nonce_name ] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $nonce_name ] ) ), $nonce_action ) ) {
 			return false;
 		}
 		return current_user_can( 'edit_post', $post_id );
