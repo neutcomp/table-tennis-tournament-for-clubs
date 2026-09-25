@@ -1,0 +1,481 @@
+/* TV mode (?showtv=true) */
+:root {
+  --tttc-tv-bg: #070d1a;
+  --tttc-tv-surface: rgba(255, 255, 255, 0.045);
+  --tttc-tv-surface-strong: rgba(255, 255, 255, 0.08);
+  --tttc-tv-border: rgba(255, 255, 255, 0.09);
+  --tttc-tv-text: #f1f5f9;
+  --tttc-tv-muted: #8b98ad;
+  --tttc-tv-accent: #ff7a1a;
+  --tttc-tv-accent-soft: rgba(255, 122, 26, 0.16);
+  --tttc-tv-win: #34d399;
+  --tttc-tv-win-soft: rgba(52, 211, 153, 0.14);
+  --tttc-tv-gold: #fbbf24;
+  --tttc-tv-silver: #cbd5e1;
+  --tttc-tv-bronze: #d97706;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body.tttc-tv {
+  height: 100%;
+}
+
+body.tttc-tv {
+  margin: 0;
+  overflow: hidden;
+  color: var(--tttc-tv-text);
+  background:
+    radial-gradient(ellipse at 15% -10%, rgba(255, 122, 26, 0.18), transparent 55%),
+    radial-gradient(ellipse at 110% 110%, rgba(56, 189, 248, 0.12), transparent 50%),
+    var(--tttc-tv-bg);
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(15px, 1.15vw, 36px);
+  line-height: 1.3;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tttc-tv-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 2vh 2.5vw 2.5vh;
+}
+
+/* Header */
+.tttc-tv-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2vw;
+  padding: 1.4vh 1.6vw;
+  border: 1px solid var(--tttc-tv-border);
+  border-radius: 16px;
+  background: var(--tttc-tv-surface);
+  overflow: hidden;
+}
+
+.tttc-tv-header__title {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2vw;
+  min-width: 0;
+}
+
+.tttc-tv-header h1 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 2em;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tttc-tv-date {
+  color: var(--tttc-tv-muted);
+  font-size: 1.1em;
+  white-space: nowrap;
+}
+
+.tttc-tv-header__meta {
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+  flex-shrink: 0;
+}
+
+.tttc-tv-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.25em 0.8em;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  font-size: 0.9em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tttc-tv-live::before {
+  content: "";
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: tttc-tv-pulse 1.6s ease-in-out infinite;
+}
+
+.tttc-tv-indicator {
+  color: var(--tttc-tv-accent);
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+.tttc-tv-indicator:empty {
+  display: none;
+}
+
+.tttc-tv-clock {
+  min-width: 3.2em;
+  font-size: 1.6em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.tttc-tv-progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: transparent;
+}
+
+.tttc-tv-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--tttc-tv-accent), var(--tttc-tv-gold));
+}
+
+.tttc-tv-progress span.is-running {
+  animation: tttc-tv-progress var(--tttc-tv-interval, 20000ms) linear forwards;
+}
+
+/* Slides */
+.tttc-tv-slides {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding-top: 2vh;
+}
+
+.tttc-tv-slide {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  animation: tttc-tv-slide-in 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tttc-tv-slide[hidden] {
+  display: none;
+}
+
+.tttc-tv-slide h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin: 0 0 1.6vh;
+  font-size: 1.7em;
+  font-weight: 800;
+}
+
+.tttc-tv-slide h2::before {
+  content: "";
+  width: 0.35em;
+  height: 1.1em;
+  border-radius: 4px;
+  background: var(--tttc-tv-accent);
+}
+
+.tttc-tv-grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(auto-fit, minmax(max(28vw, 340px), 1fr));
+  grid-auto-rows: min-content;
+  gap: 1.6vh 1.4vw;
+  align-content: start;
+}
+
+/* Two columns for small groups (e.g. 3 rounds + standings) to use the screen height. */
+.tttc-tv-grid:has(> :last-child:nth-child(-n + 4)) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tttc-tv-card {
+  padding: 1.2vh 1.1vw 1vh;
+  border: 1px solid var(--tttc-tv-border);
+  border-radius: 14px;
+  background: var(--tttc-tv-surface);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.tttc-tv-card h3 {
+  margin: 0 0 0.8vh;
+  color: var(--tttc-tv-muted);
+  font-size: 0.85em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tttc-tv-card--standings {
+  border-color: rgba(255, 122, 26, 0.35);
+  background: linear-gradient(180deg, var(--tttc-tv-accent-soft), var(--tttc-tv-surface) 60%);
+}
+
+.tttc-tv-card--standings h3 {
+  color: var(--tttc-tv-accent);
+}
+
+.tttc-tv-card--wide {
+  width: 100%;
+  max-width: 1600px;
+  font-size: 1.25em;
+}
+
+/* Matches */
+.tttc-tv-matches,
+.tttc-tv-standings {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.35em;
+}
+
+.tttc-tv-matches td {
+  padding: 0.45em 0.5em;
+  background: var(--tttc-tv-surface);
+  white-space: nowrap;
+}
+
+.tttc-tv-matches td:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.tttc-tv-matches td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.tttc-tv-name {
+  max-width: 10em;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.tttc-tv-name--home {
+  width: 34%;
+  text-align: right;
+}
+
+.tttc-tv-name--away {
+  width: 34%;
+  text-align: left;
+}
+
+.tttc-tv-matches .is-pending .tttc-tv-name {
+  color: var(--tttc-tv-muted);
+  font-weight: 500;
+}
+
+.tttc-tv-name.is-winner {
+  color: var(--tttc-tv-win);
+  font-weight: 800;
+}
+
+.tttc-tv-result {
+  width: 1%;
+  text-align: center;
+}
+
+.tttc-tv-result__pill {
+  display: inline-block;
+  min-width: 3.6em;
+  padding: 0.15em 0.6em;
+  border-radius: 8px;
+  background: var(--tttc-tv-surface-strong);
+  color: var(--tttc-tv-muted);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.tttc-tv-matches .is-played .tttc-tv-result__pill {
+  background: var(--tttc-tv-accent);
+  color: #1a0d02;
+}
+
+.tttc-tv-games {
+  width: 1%;
+  text-align: right;
+}
+
+.tttc-tv-game {
+  display: inline-block;
+  margin-left: 0.25em;
+  padding: 0.05em 0.4em;
+  border-radius: 6px;
+  background: var(--tttc-tv-surface-strong);
+  color: var(--tttc-tv-silver);
+  font-size: 0.78em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Standings */
+.tttc-tv-standings th {
+  padding: 0 0.5em 0.2em;
+  color: var(--tttc-tv-muted);
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.tttc-tv-standings td {
+  padding: 0.4em 0.5em;
+  background: var(--tttc-tv-surface);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tttc-tv-standings td:first-child {
+  width: 2.4em;
+  border-radius: 10px 0 0 10px;
+  font-weight: 800;
+}
+
+.tttc-tv-standings td:last-child {
+  border-radius: 0 10px 10px 0;
+  color: var(--tttc-tv-muted);
+}
+
+.tttc-tv-standings th:nth-child(2),
+.tttc-tv-standings td.tttc-tv-name {
+  text-align: left;
+}
+
+.tttc-tv-standings tbody tr:nth-child(1) td:first-child {
+  color: var(--tttc-tv-gold);
+}
+
+.tttc-tv-standings tbody tr:nth-child(2) td:first-child {
+  color: var(--tttc-tv-silver);
+}
+
+.tttc-tv-standings tbody tr:nth-child(3) td:first-child {
+  color: var(--tttc-tv-bronze);
+}
+
+/* Final places */
+.tttc-tv-places {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(22vw, 280px), 1fr));
+  gap: 1.4vh 1.4vw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tttc-tv-place {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.7em 1em;
+  border: 1px solid var(--tttc-tv-border);
+  border-radius: 14px;
+  background: var(--tttc-tv-surface);
+  font-size: 1.3em;
+}
+
+.tttc-tv-place__rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--tttc-tv-surface-strong);
+  font-weight: 800;
+}
+
+.tttc-tv-place__name {
+  overflow: hidden;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tttc-tv-place--1,
+.tttc-tv-place--2,
+.tttc-tv-place--3 {
+  font-size: 1.7em;
+}
+
+.tttc-tv-place--1 {
+  grid-column: 1 / -1;
+  justify-self: center;
+  min-width: 40%;
+  border-color: rgba(251, 191, 36, 0.5);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), var(--tttc-tv-surface));
+  font-size: 2.2em;
+}
+
+.tttc-tv-place--1 .tttc-tv-place__rank {
+  background: var(--tttc-tv-gold);
+  color: #1a1203;
+}
+
+.tttc-tv-place--2 .tttc-tv-place__rank {
+  background: var(--tttc-tv-silver);
+  color: #0f172a;
+}
+
+.tttc-tv-place--3 .tttc-tv-place__rank {
+  background: var(--tttc-tv-bronze);
+  color: #1a0d02;
+}
+
+/* Notice */
+.tttc-tv-slide--notice {
+  align-items: center;
+  justify-content: center;
+}
+
+.tttc-tv-notice {
+  margin: 0;
+  color: var(--tttc-tv-muted);
+  font-size: 2em;
+  text-align: center;
+}
+
+@keyframes tttc-tv-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.5vh);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tttc-tv-progress {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes tttc-tv-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tttc-tv-slide,
+  .tttc-tv-live::before {
+    animation: none;
+  }
+}

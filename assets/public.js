@@ -55,6 +55,8 @@
 	function initializeTv(root) {
 		var slides = Array.prototype.slice.call(root.querySelectorAll('.tttc-tv-slide'));
 		var indicator = root.querySelector('.tttc-tv-indicator');
+		var progress = root.querySelector('.tttc-tv-progress span');
+		var clock = root.querySelector('.tttc-tv-clock');
 		var interval = parseInt(root.getAttribute('data-interval'), 10) || 20000;
 		var poll = parseInt(root.getAttribute('data-poll'), 10) || 10000;
 		var version = root.getAttribute('data-version');
@@ -87,8 +89,26 @@
 				var label = slides[current].getAttribute('data-tttc-label');
 				indicator.textContent = slides.length > 1 ? (label ? label + ' · ' : '') + (current + 1) + '/' + slides.length : '';
 			}
+			if (progress && slides.length > 1) {
+				progress.classList.remove('is-running');
+				// Force reflow so the CSS animation restarts.
+				void progress.offsetWidth;
+				progress.classList.add('is-running');
+			}
 			saveIndex();
 		}
+
+		function updateClock() {
+			var now = new Date();
+			clock.textContent = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+		}
+
+		if (clock) {
+			updateClock();
+			window.setInterval(updateClock, 1000);
+		}
+
+		root.style.setProperty('--tttc-tv-interval', interval + 'ms');
 
 		if (slides.length) {
 			show(readIndex());

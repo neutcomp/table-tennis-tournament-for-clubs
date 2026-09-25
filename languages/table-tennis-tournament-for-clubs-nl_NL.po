@@ -534,3 +534,6 @@ msgstr "Toernooi niet gevonden."
 
 msgid "The match schedule is not available yet."
 msgstr "Het wedstrijdschema is nog niet beschikbaar."
+
+msgid "Live"
+msgstr "Live"
