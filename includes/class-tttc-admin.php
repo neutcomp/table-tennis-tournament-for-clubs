@@ -172,9 +172,11 @@ final class TTTC_Admin {
 										for ( $g = 1; $g <= 4; $g++ ) :
 											$min = isset( $format_ranges[ $g ]['min'] ) ? $format_ranges[ $g ]['min'] : 2;
 											$max = isset( $format_ranges[ $g ]['max'] ) ? $format_ranges[ $g ]['max'] : 2;
+											// translators: %d is the number of groups.
+											$group_count_label = sprintf( _n( '%d Group', '%d Groups', $g, 'table-tennis-tournament-for-clubs' ), $g );
 											?>
 											<tr>
-												<td><strong><?php echo esc_html( sprintf( _n( '%d Group', '%d Groups', $g, 'table-tennis-tournament-for-clubs' ), $g ) ); ?></strong></td>
+												<td><strong><?php echo esc_html( $group_count_label ); ?></strong></td>
 												<td><input type="number" class="small-text" min="2" step="1" name="<?php echo esc_attr( TTTC_Plugin::OPTION_FORMAT_RANGES . '[' . $g . '][min]' ); ?>" value="<?php echo esc_attr( $min ); ?>" required></td>
 												<td><input type="number" class="small-text" min="2" step="1" name="<?php echo esc_attr( TTTC_Plugin::OPTION_FORMAT_RANGES . '[' . $g . '][max]' ); ?>" value="<?php echo esc_attr( $max ); ?>" required></td>
 												<td><span class="description"><?php echo esc_html( $format_labels[ $g ] ); ?></span></td>
@@ -402,9 +404,11 @@ final class TTTC_Admin {
 					<?php for ( $g = 1; $g <= 4; $g++ ) :
 						$min = isset( $format_ranges[ $g ]['min'] ) ? $format_ranges[ $g ]['min'] : 2;
 						$max = isset( $format_ranges[ $g ]['max'] ) ? $format_ranges[ $g ]['max'] : 2;
+						// translators: %d is the number of groups.
+						$group_count_label = sprintf( _n( '%d Group', '%d Groups', $g, 'table-tennis-tournament-for-clubs' ), $g );
 						?>
 						<tr>
-							<td><strong><?php echo esc_html( sprintf( _n( '%d Group', '%d Groups', $g, 'table-tennis-tournament-for-clubs' ), $g ) ); ?></strong></td>
+							<td><strong><?php echo esc_html( $group_count_label ); ?></strong></td>
 							<td><input type="number" class="small-text" min="2" step="1" name="tttc_format_ranges[<?php echo esc_attr( $g ); ?>][min]" value="<?php echo esc_attr( $min ); ?>" required <?php disabled( $has_scores ); ?>></td>
 							<td><input type="number" class="small-text" min="2" step="1" name="tttc_format_ranges[<?php echo esc_attr( $g ); ?>][max]" value="<?php echo esc_attr( $max ); ?>" required <?php disabled( $has_scores ); ?>></td>
 						</tr>
@@ -716,7 +720,11 @@ final class TTTC_Admin {
 			<?php if ( $this->score_error ) : ?><div class="notice notice-error"><p><?php echo esc_html( $this->score_error ); ?></p></div><?php endif; ?>
 			<?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Tournament scores updated.', 'table-tennis-tournament-for-clubs' ); ?></p></div><?php endif; ?>
 			<?php if ( empty( $schedule ) ) : ?>
-				<p><?php echo esc_html( sprintf( __( 'A score sheet is available when the tournament has %1$d to %2$d assigned active players.', 'table-tennis-tournament-for-clubs' ), $min_players, $max_players ) ); ?></p>
+				<?php
+				// translators: 1: minimum number of players, 2: maximum number of players.
+				$player_range_message = sprintf( __( 'A score sheet is available when the tournament has %1$d to %2$d assigned active players.', 'table-tennis-tournament-for-clubs' ), $min_players, $max_players );
+				?>
+				<p><?php echo esc_html( $player_range_message ); ?></p>
 			<?php else : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form">
 					<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
@@ -725,18 +733,32 @@ final class TTTC_Admin {
 						<button type="button" class="button tttc-print-button" onclick="window.print(); return false;"><?php esc_html_e( 'Print current group', 'table-tennis-tournament-for-clubs' ); ?></button>
 					</div>
 					<div class="tttc-public-group-tabs tttc-admin-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?>">
-						<?php foreach ( $schedule as $group_index => $group_schedule ) : $tab_id = 'tttc-score-group-tab-' . ( $group_index + 1 ); $panel_id = 'tttc-score-group-panel-' . ( $group_index + 1 ); ?>
-							<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-admin-group-tab<?php echo 0 === $group_index ? ' is-active' : ''; ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="<?php echo 0 === $group_index ? 'true' : 'false'; ?>" tabindex="<?php echo 0 === $group_index ? '0' : '-1'; ?>"><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 ) ); ?></button>
+						<?php foreach ( $schedule as $group_index => $group_schedule ) :
+							$tab_id   = 'tttc-score-group-tab-' . ( $group_index + 1 );
+							$panel_id = 'tttc-score-group-panel-' . ( $group_index + 1 );
+							// translators: %d is the group number.
+							$group_label = sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 );
+							?>
+							<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-admin-group-tab<?php echo 0 === $group_index ? ' is-active' : ''; ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="<?php echo 0 === $group_index ? 'true' : 'false'; ?>" tabindex="<?php echo 0 === $group_index ? '0' : '-1'; ?>"><?php echo esc_html( $group_label ); ?></button>
 						<?php endforeach; ?>
 					</div>
-					<?php foreach ( $schedule as $group_index => $group_schedule ) : ?>
+					<?php foreach ( $schedule as $group_index => $group_schedule ) :
+						// translators: %d is the group number.
+						$group_label = sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 );
+						?>
 						<section id="<?php echo esc_attr( 'tttc-score-group-panel-' . ( $group_index + 1 ) ); ?>" class="tttc-public-group tttc-admin-group<?php echo 0 === $group_index ? ' is-active' : ''; ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( 'tttc-score-group-tab-' . ( $group_index + 1 ) ); ?>"<?php echo 0 === $group_index ? '' : ' hidden'; ?>>
-						<h2><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 ) ); ?></h2>
+						<h2><?php echo esc_html( $group_label ); ?></h2>
 						<div class="tttc-public-round-grid">
-						<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
+						<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) :
+							// translators: %d is the round number.
+							$round_label = sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 );
+							?>
 							<div class="tttc-public-round">
-								<h3 class="tttc-public-round-title"><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></h3>
-								<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?></tr></thead><tbody>
+								<h3 class="tttc-public-round-title"><?php echo esc_html( $round_label ); ?></h3>
+								<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) :
+									// translators: %d is the game number.
+									$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game );
+									?><th><?php echo esc_html( $game_label ); ?></th><?php endfor; ?></tr></thead><tbody>
 								<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); ?>
 									<tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][0] ) ? $saved_scores[ $match_key ][ $game ][0] : '' ); ?>"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][1] ) ? $saved_scores[ $match_key ][ $game ][1] : '' ); ?>"></span></td><?php endfor; ?></tr>
 								<?php endforeach; ?></tbody></table></div>
@@ -748,7 +770,10 @@ final class TTTC_Admin {
 					<?php foreach ( $ordered_stages as $stage ) : ?>
 						<section class="tttc-crossover-stage">
 							<h2><?php echo esc_html( __( $stage['label'], 'table-tennis-tournament-for-clubs' ) ); ?></h2>
-							<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?></tr></thead><tbody>
+							<div class="tttc-scores-table-wrap"><table class="widefat striped tttc-scores-table"><thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) :
+								// translators: %d is the game number.
+								$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game );
+								?><th><?php echo esc_html( $game_label ); ?></th><?php endfor; ?></tr></thead><tbody>
 							<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $score_key = $match['score_key']; ?>
 								<tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( isset( $saved_scores[ $score_key ][ $game ][0] ) ? $saved_scores[ $score_key ][ $game ][0] : '' ); ?>"<?php disabled( ! $available ); ?>><input class="small-text" type="number" min="0" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( isset( $saved_scores[ $score_key ][ $game ][1] ) ? $saved_scores[ $score_key ][ $game ][1] : '' ); ?>"<?php disabled( ! $available ); ?>></span></td><?php endfor; ?></tr>
 							<?php endforeach; ?></tbody></table></div>
@@ -891,6 +916,7 @@ final class TTTC_Admin {
 		}
 
 		if ( $has_score && max( $wins ) < $required ) {
+			// translators: 1: maximum number of games, 2: games required to win.
 			return new WP_Error( 'incomplete_match', sprintf( __( 'A Best of %d match must have a winner with at least %d games won.', 'table-tennis-tournament-for-clubs' ), $games, $required ) );
 		}
 
