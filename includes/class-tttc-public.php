@@ -389,8 +389,59 @@ final class TTTC_Public {
 						</div>
 						<div class="tttc-public-group-grid">
 							<?php foreach ( $schedule as $index => $group_schedule ) : ?>
+								<?php
+								$group_matrix   = $this->group_schedule_matrix( $group_schedule );
+								$group_ranks    = array();
+								$group_complete = ! empty( $competition['groups'][ $index ]['complete'] );
+								if ( $group_complete ) {
+									foreach ( $competition['groups'][ $index ]['standings'] as $rank => $standing ) {
+										$group_ranks[ (int) $standing['player']->ID ] = $rank + 1;
+									}
+								}
+								?>
 								<section id="<?php echo esc_attr( 'tttc-group-panel-' . ( $index + 1 ) ); ?>" class="tttc-public-group<?php echo 0 === $index ? ' is-active' : ''; ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( 'tttc-group-tab-' . ( $index + 1 ) ); ?>"<?php echo 0 === $index ? '' : ' hidden'; ?>>
 									<h3><?php echo esc_html( sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $index + 1 ) ); ?></h3>
+									<table class="tttc-public-matches">
+										<thead>
+											<tr>
+												<th><?php esc_html_e( 'No.', 'table-tennis-tournament-for-clubs' ); ?></th>
+												<th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th>
+												<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
+													<th><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></th>
+												<?php endforeach; ?>
+												<th><?php esc_html_e( 'Results', 'table-tennis-tournament-for-clubs' ); ?></th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php foreach ( $group_schedule['players'] as $player_index => $player ) : ?>
+												<tr>
+													<td><?php echo esc_html( $player_index + 1 ); ?></td>
+													<td><a href="<?php echo esc_url( $this->player_url( $player->ID, $tournament_id ) ); ?>"><?php echo esc_html( $player->post_title ); ?></a></td>
+													<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
+														<?php $matrix_entry = $group_matrix[ (int) $player->ID ][ $round_number ]; ?>
+														<?php if ( null === $matrix_entry ) : ?>
+															<td class="is-bye"></td>
+														<?php else : ?>
+															<?php
+															$match_result = '';
+															$match_key    = $this->match_key( $player->ID, $matrix_entry['opponent']->ID );
+															if ( isset( $scores[ $match_key ] ) ) {
+																$match_games_won = $this->games_won( $scores[ $match_key ], $games );
+																if ( array_sum( $match_games_won ) > 0 ) {
+																	$player_side   = $matrix_entry['side'];
+																	$opponent_side = 1 - $player_side;
+																	$match_result = $match_games_won[ $player_side ] . '-' . $match_games_won[ $opponent_side ];
+																}
+															}
+															?>
+															<td><?php echo esc_html( $match_result ); ?></td>
+														<?php endif; ?>
+													<?php endforeach; ?>
+													<td><?php echo isset( $group_ranks[ (int) $player->ID ] ) ? esc_html( $this->format_ordinal( $group_ranks[ (int) $player->ID ] ) ) : ''; ?></td>
+												</tr>
+											<?php endforeach; ?>
+										</tbody>
+									</table>
 									<ul class="tttc-public-group__players">
 										<?php foreach ( $group_schedule['players'] as $player ) : ?><li><?php echo esc_html( $player->post_title ); ?></li><?php endforeach; ?>
 									</ul>
@@ -816,6 +867,42 @@ final class TTTC_Public {
 		}
 
 		return $won;
+	}
+
+	private function group_schedule_matrix( $group_schedule ) {
+		$round_count = count( $group_schedule['rounds'] );
+		$matrix      = array();
+		foreach ( $group_schedule['players'] as $player ) {
+			$matrix[ (int) $player->ID ] = array_fill( 0, $round_count, null );
+		}
+
+		foreach ( $group_schedule['rounds'] as $round_number => $round ) {
+			foreach ( $round as $match ) {
+				$first_id  = (int) $match[0]->ID;
+				$second_id = (int) $match[1]->ID;
+				$matrix[ $first_id ][ $round_number ] = array(
+					'opponent' => $match[1],
+					'side'     => 0,
+				);
+				$matrix[ $second_id ][ $round_number ] = array(
+					'opponent' => $match[0],
+					'side'     => 1,
+				);
+			}
+		}
+
+		return $matrix;
+	}
+
+	private function format_ordinal( $number ) {
+		$number   = absint( $number );
+		$ordinals = array(
+			1 => __( '1st', 'table-tennis-tournament-for-clubs' ),
+			2 => __( '2nd', 'table-tennis-tournament-for-clubs' ),
+			3 => __( '3rd', 'table-tennis-tournament-for-clubs' ),
+		);
+
+		return isset( $ordinals[ $number ] ) ? $ordinals[ $number ] : sprintf( __( '%dth', 'table-tennis-tournament-for-clubs' ), $number );
 	}
 
 	private function match_key( $player_one_id, $player_two_id ) {
