@@ -73,11 +73,9 @@ final class TTTC_Public {
 	}
 
 	private function is_tv_mode() {
-		if ( ! isset( $_GET['showtv'] ) ) {
-			return false;
-		}
+		$show_tv = get_query_var( 'showtv' );
 
-		return in_array( strtolower( sanitize_text_field( wp_unslash( $_GET['showtv'] ) ) ), array( 'true', '1' ), true );
+		return in_array( strtolower( sanitize_text_field( $show_tv ) ), array( 'true', '1' ), true );
 	}
 
 	public function enqueue_assets() {
@@ -98,6 +96,7 @@ final class TTTC_Public {
 		$vars[] = 'tttc_tournament_date';
 		$vars[] = 'tttc_player';
 		$vars[] = 'tttc_player_id';
+		$vars[] = 'showtv';
 
 		return $vars;
 	}

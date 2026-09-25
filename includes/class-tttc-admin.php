@@ -432,6 +432,10 @@ final class TTTC_Admin {
 			return $data;
 		}
 
+		if ( ! isset( $_POST['tttc_player_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_player_nonce'] ) ), 'tttc_save_player' ) ) {
+			return $data;
+		}
+
 		if ( ! isset( $_POST['tttc_email'] ) ) {
 			return $data;
 		}
