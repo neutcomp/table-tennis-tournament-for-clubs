@@ -26,8 +26,8 @@ Player emails are stored for club administration and are not shown in public sho
 * Score validation requiring 11 points (with a 2+ point margin) or a deuce win with exactly two points lead, plus a completed Best of 3 or Best of 5 match without superfluous or skipped games.
 * Automatic crossover rounds after all group matches are complete. Two groups produce a final and third-place match, three groups produce a round-robin among the group winners, and four groups produce semi-finals followed by a final and third-place match.
 * Group and crossover standings are ordered by match wins, game difference, point difference, and then a stable player-order fallback.
-* Match scores are stored for administrators and are not shown on public tournament pages.
-* Public tournament pages with groups and round-robin match schedules.
+* Public tournament pages with groups, round-robin match schedules, and match scores.
+* TV mode (`?showtv=true`) for showing live scores full-screen on a TV, with automatic slide cycling and live refresh when scores are saved.
 * Public player pages at `/speler/{player-name}/{player-id}` with player details, played tournaments, and finalized top-three positions.
 * Public shortcodes for tournament and active player lists.
 
@@ -61,6 +61,17 @@ Optional attributes:
 Optional attribute:
 
 * `[tttc_players limit="50"]`
+
+== TV mode ==
+
+Add `?showtv=true` to a public tournament page, for example `/toernooi/{tournament-name}/{DD-MM-YYYY}/?showtv=true`, to show a bare full-screen scoreboard without the theme header, footer, breadcrumbs, QR code, player list, or signup form.
+
+* Each group is shown as one slide with all of its rounds and, once the group is complete, its standings. Crossover rounds, the final, and the final places follow as separate slides.
+* When there is more than one slide, the page cycles to the next slide every 20 seconds.
+* Every 10 seconds the page checks `/wp-json/tttc/v1/tournaments/{id}/version`. When scores, players, or the tournament status change in the admin, the page reloads automatically and stays on the current slide.
+* Tournaments that are not active or completed yet show a notice and switch to the scoreboard automatically once the schedule becomes available.
+
+If a page cache or CDN is used, exclude the TV URL or the REST endpoint from caching for the fastest updates.
 
 == Tournament statuses ==
 

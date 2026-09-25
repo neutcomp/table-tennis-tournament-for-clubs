@@ -23,6 +23,61 @@ final class TTTC_Public {
 		add_filter( 'query_vars', array( $this, 'query_vars' ) );
 		add_action( 'template_redirect', array( $this, 'render_tournament_page' ) );
 		add_action( 'template_redirect', array( $this, 'render_player_page' ) );
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+	}
+
+	public function register_rest_routes() {
+		register_rest_route(
+			'tttc/v1',
+			'/tournaments/(?P<id>\d+)/version',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'rest_score_version' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'id' => array( 'sanitize_callback' => 'absint' ),
+				),
+			)
+		);
+	}
+
+	public function rest_score_version( $request ) {
+		$tournament_id = absint( $request['id'] );
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) || 'publish' !== get_post_status( $tournament_id ) ) {
+			return new WP_Error( 'tttc_not_found', __( 'Tournament not found.', 'table-tennis-tournament-for-clubs' ), array( 'status' => 404 ) );
+		}
+
+		$response = rest_ensure_response( array( 'version' => $this->score_version( $tournament_id ) ) );
+		$response->header( 'Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0' );
+
+		return $response;
+	}
+
+	private function score_version( $tournament_id ) {
+		global $wpdb;
+		$score_state  = $wpdb->get_row( $wpdb->prepare( 'SELECT COUNT(*) AS total, MAX( updated_at ) AS updated FROM ' . TTTC_Plugin::scores_table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+		$player_state = $wpdb->get_var( $wpdb->prepare( "SELECT GROUP_CONCAT( CONCAT_WS( ':', player_id, COALESCE( seed, 0 ), COALESCE( rating, 0 ) ) ORDER BY player_id ) FROM " . TTTC_Plugin::table_name() . ' WHERE tournament_id = %d', $tournament_id ) );
+
+		return md5(
+			implode(
+				'|',
+				array(
+					$score_state ? $score_state->total : 0,
+					$score_state ? $score_state->updated : '',
+					(string) $player_state,
+					get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true ),
+					get_post_field( 'post_modified_gmt', $tournament_id ),
+				)
+			)
+		);
+	}
+
+	private function is_tv_mode() {
+		if ( ! isset( $_GET['showtv'] ) ) {
+			return false;
+		}
+
+		return in_array( strtolower( sanitize_text_field( wp_unslash( $_GET['showtv'] ) ) ), array( 'true', '1' ), true );
 	}
 
 	public function enqueue_assets() {
@@ -165,6 +220,11 @@ final class TTTC_Public {
 			return;
 		}
 
+		if ( $this->is_tv_mode() ) {
+			$this->render_tv_page( $tournament_id );
+			exit;
+		}
+
 		$this->handle_signup( $tournament_id );
 
 		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
@@ -173,6 +233,143 @@ final class TTTC_Public {
 		$this->render_tournament_detail( $tournament_id );
 		get_footer();
 		exit;
+	}
+
+	private function render_tv_page( $tournament_id ) {
+		nocache_headers();
+		show_admin_bar( false );
+		wp_register_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
+		wp_register_script( 'tttc-public', TTTC_URL . 'assets/public.js', array(), TTTC_VERSION, true );
+		?><!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+<meta charset="<?php bloginfo( 'charset' ); ?>">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title><?php echo esc_html( get_the_title( $tournament_id ) ); ?></title>
+<?php wp_print_styles( array( 'tttc-public' ) ); ?>
+</head>
+<body class="tttc-tv">
+<?php $this->render_tv_view( $tournament_id ); ?>
+<?php wp_print_scripts( array( 'tttc-public' ) ); ?>
+</body>
+</html>
+		<?php
+	}
+
+	private function render_tv_view( $tournament_id ) {
+		$status      = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+		$schedule    = $this->tournament_schedule( $tournament_id );
+		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
+		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$scores      = $this->saved_scores( $tournament_id );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
+		$has_slides  = in_array( $status, array( 'active', 'completed' ), true ) && ! empty( $schedule );
+		?>
+		<main class="tttc-tv-screen" data-tttc-tv data-tournament="<?php echo esc_attr( $tournament_id ); ?>" data-version="<?php echo esc_attr( $this->score_version( $tournament_id ) ); ?>" data-version-url="<?php echo esc_url( rest_url( 'tttc/v1/tournaments/' . $tournament_id . '/version' ) ); ?>" data-interval="20000" data-poll="10000">
+			<header class="tttc-tv-header">
+				<h1><?php echo esc_html( get_the_title( $tournament_id ) ); ?></h1>
+				<span class="tttc-tv-date"><?php echo esc_html( $this->display_date( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ); ?></span>
+				<span class="tttc-tv-indicator" aria-live="polite"></span>
+			</header>
+			<div class="tttc-tv-slides">
+				<?php if ( ! $has_slides ) : ?>
+					<section class="tttc-tv-slide tttc-tv-slide--notice" data-tttc-label="">
+						<p class="tttc-tv-notice"><?php esc_html_e( 'The match schedule is not available yet.', 'table-tennis-tournament-for-clubs' ); ?></p>
+					</section>
+				<?php else : ?>
+					<?php foreach ( $schedule as $index => $group_schedule ) : $group_label = sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $index + 1 ); ?>
+						<section class="tttc-tv-slide" data-tttc-label="<?php echo esc_attr( $group_label ); ?>"<?php echo 0 === $index ? '' : ' hidden'; ?>>
+							<h2><?php echo esc_html( $group_label ); ?></h2>
+							<div class="tttc-tv-grid">
+								<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
+									<div class="tttc-tv-card">
+										<h3><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) ); ?></h3>
+										<?php
+										$rows = array();
+										foreach ( $round as $match ) {
+											$match_key = $this->match_key( $match[0]->ID, $match[1]->ID );
+											$rows[]    = array( $match[0]->post_title, $match[1]->post_title, isset( $scores[ $match_key ] ) ? $scores[ $match_key ] : array() );
+										}
+										$this->render_tv_match_table( $rows, $games );
+										?>
+									</div>
+								<?php endforeach; ?>
+								<?php if ( ! empty( $competition['groups'][ $index ]['complete'] ) ) : ?>
+									<div class="tttc-tv-card tttc-tv-card--standings">
+										<h3><?php esc_html_e( 'Standings', 'table-tennis-tournament-for-clubs' ); ?></h3>
+										<table class="tttc-tv-table">
+											<thead><tr><th><?php esc_html_e( 'Pos', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Wins', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Losses', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Games', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Points', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead>
+											<tbody>
+												<?php foreach ( $competition['groups'][ $index ]['standings'] as $rank => $standing ) : ?>
+													<tr><td><?php echo esc_html( $rank + 1 ); ?></td><td class="tttc-tv-name"><?php echo esc_html( $standing['player']->post_title ); ?></td><td><?php echo esc_html( $standing['wins'] ); ?></td><td><?php echo esc_html( $standing['losses'] ); ?></td><td><?php echo esc_html( $standing['games_for'] . '-' . $standing['games_against'] ); ?></td><td><?php echo esc_html( $standing['points_for'] . '-' . $standing['points_against'] ); ?></td></tr>
+												<?php endforeach; ?>
+											</tbody>
+										</table>
+									</div>
+								<?php endif; ?>
+							</div>
+						</section>
+					<?php endforeach; ?>
+					<?php if ( count( $schedule ) > 1 ) : ?>
+						<?php
+						$stages = array_merge(
+							array_filter( $competition['stages'], function ( $stage ) {
+								return 'final' !== $stage['id'];
+							} ),
+							array_filter( $competition['stages'], function ( $stage ) {
+								return 'final' === $stage['id'];
+							} )
+						);
+						?>
+						<?php foreach ( $stages as $stage ) : $stage_label = __( $stage['label'], 'table-tennis-tournament-for-clubs' ); ?>
+							<section class="tttc-tv-slide" data-tttc-label="<?php echo esc_attr( $stage_label ); ?>" hidden>
+								<h2><?php echo esc_html( $stage_label ); ?></h2>
+								<div class="tttc-tv-card tttc-tv-card--wide">
+									<?php
+									$rows    = array();
+									$waiting = __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' );
+									foreach ( $stage['matches'] as $match ) {
+										$available = $match['players'][0] && $match['players'][1];
+										$rows[]    = array( $available ? $match['players'][0]->post_title : $waiting, $available ? $match['players'][1]->post_title : $waiting, isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array() );
+									}
+									$this->render_tv_match_table( $rows, $games );
+									?>
+								</div>
+							</section>
+						<?php endforeach; ?>
+					<?php endif; ?>
+					<?php if ( ! empty( $competition['places'] ) ) : ?>
+						<section class="tttc-tv-slide" data-tttc-label="<?php esc_attr_e( 'Final places', 'table-tennis-tournament-for-clubs' ); ?>" hidden>
+							<h2><?php esc_html_e( 'Final places', 'table-tennis-tournament-for-clubs' ); ?></h2>
+							<ol class="tttc-tv-places"><?php foreach ( $competition['places'] as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol>
+						</section>
+					<?php endif; ?>
+				<?php endif; ?>
+			</div>
+		</main>
+		<?php
+	}
+
+	private function render_tv_match_table( $rows, $games ) {
+		$required = (int) ceil( $games / 2 );
+		?>
+		<table class="tttc-tv-table">
+			<thead><tr><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead>
+			<tbody>
+				<?php foreach ( $rows as $row ) : list( $first_name, $second_name, $match_scores ) = $row; $games_won = $this->games_won( $match_scores, $games ); ?>
+					<tr>
+						<td class="tttc-tv-name<?php echo $games_won[0] >= $required ? ' is-winner' : ''; ?>"><?php echo esc_html( $first_name ); ?></td>
+						<td class="tttc-tv-name<?php echo $games_won[1] >= $required ? ' is-winner' : ''; ?>"><?php echo esc_html( $second_name ); ?></td>
+						<?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
+							<td class="tttc-tv-score"><?php echo '' === (string) $game_score[0] && '' === (string) $game_score[1] ? '' : esc_html( $game_score[0] . '-' . $game_score[1] ); ?></td>
+						<?php endfor; ?>
+						<td class="tttc-tv-result"><?php echo array_sum( $games_won ) > 0 ? esc_html( $games_won[0] . '-' . $games_won[1] ) : ''; ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php
 	}
 
 	public function render_player_page() {

@@ -528,3 +528,9 @@ msgstr "Games"
 
 msgid "Points"
 msgstr "Punten"
+
+msgid "Tournament not found."
+msgstr "Toernooi niet gevonden."
+
+msgid "The match schedule is not available yet."
+msgstr "Het wedstrijdschema is nog niet beschikbaar."
