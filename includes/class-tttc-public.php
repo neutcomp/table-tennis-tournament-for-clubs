@@ -96,6 +96,9 @@ final class TTTC_Public {
 		$vars[] = 'tttc_tournament_date';
 		$vars[] = 'tttc_player';
 		$vars[] = 'tttc_player_id';
+		$vars[] = 'tttc_tournament_id';
+		$vars[] = 'tournament_id';
+		$vars[] = 'tttc_signup';
 		$vars[] = 'showtv';
 
 		return $vars;
@@ -458,7 +461,7 @@ final class TTTC_Public {
 		$gender_abbreviation = 'female' === $gender ? _x( 'F', 'female gender abbreviation', 'table-tennis-tournament-for-clubs' ) : _x( 'M', 'male gender abbreviation', 'table-tennis-tournament-for-clubs' );
 		$type         = 'youth' === $type ? __( 'Youth', 'table-tennis-tournament-for-clubs' ) : __( 'Senior', 'table-tennis-tournament-for-clubs' );
 		$tournaments  = $this->player_tournaments( $player_id );
-		$tournament_param = isset( $_GET['tttc_tournament_id'] ) ? absint( wp_unslash( $_GET['tttc_tournament_id'] ) ) : ( isset( $_GET['tournament_id'] ) ? absint( wp_unslash( $_GET['tournament_id'] ) ) : 0 );
+		$tournament_param = absint( get_query_var( 'tttc_tournament_id', get_query_var( 'tournament_id' ) ) );
 		$active_tournament = null;
 		if ( $tournament_param && TTTC_Plugin::TOURNAMENT_POST_TYPE === get_post_type( $tournament_param ) && 'publish' === get_post_status( $tournament_param ) ) {
 			$active_tournament = get_post( $tournament_param );
@@ -910,6 +913,11 @@ final class TTTC_Public {
 			return;
 		}
 
+		if ( ! isset( $_POST['tttc_signup_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_signup_nonce'] ) ), 'tttc_signup_' . $tournament_id ) ) {
+			$this->signup_error = __( 'The signup could not be verified. Please try again.', 'table-tennis-tournament-for-clubs' );
+			return;
+		}
+
 		if ( 'upcoming' !== get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true ) || ! isset( $_POST['tttc_signup_tournament'] ) || $tournament_id !== absint( $_POST['tttc_signup_tournament'] ) ) {
 			return;
 		}
@@ -921,12 +929,6 @@ final class TTTC_Public {
 			'gender' => isset( $_POST['tttc_signup_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_gender'] ) ) : 'male',
 			'type'   => isset( $_POST['tttc_signup_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_type'] ) ) : 'senior',
 		);
-
-		if ( ! isset( $_POST['tttc_signup_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_signup_nonce'] ) ), 'tttc_signup_' . $tournament_id ) ) {
-			$this->signup_error = __( 'The signup could not be verified. Please try again.', 'table-tennis-tournament-for-clubs' );
-			return;
-		}
-
 		if ( '' === $this->signup_form['name'] ) {
 			$this->signup_error = __( 'Please enter your name.', 'table-tennis-tournament-for-clubs' );
 			return;
@@ -1022,7 +1024,7 @@ final class TTTC_Public {
 <section class="tttc-public-tournament__signup" aria-labelledby="tttc-signup-heading">
 	<h2 id="tttc-signup-heading">
 		<?php esc_html_e( 'Sign up for this tournament', 'table-tennis-tournament-for-clubs' ); ?></h2>
-	<?php if ( isset( $_GET['tttc_signup'] ) && 'success' === sanitize_key( wp_unslash( $_GET['tttc_signup'] ) ) ) : ?><p
+	<?php if ( 'success' === sanitize_key( get_query_var( 'tttc_signup' ) ) ) : ?><p
 		class="tttc-public-notice tttc-public-notice--success" role="status">
 		<?php esc_html_e( 'Your signup was successful.', 'table-tennis-tournament-for-clubs' ); ?></p><?php endif; ?>
 	<?php if ( $this->signup_error ) : ?><p class="tttc-public-notice" role="alert">
