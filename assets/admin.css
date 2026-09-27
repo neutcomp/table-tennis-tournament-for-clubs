@@ -373,6 +373,7 @@
   .tttc-scores-toolbar,
   .tttc-admin-group-tabs,
   .tttc-crossover-stage,
+  .tttc-round-save,
   .tttc-scores-form > p {
     display: none !important;
   }

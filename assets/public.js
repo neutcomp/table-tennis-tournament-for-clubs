@@ -50,6 +50,18 @@
 				selectTab(tabs[nextIndex], true);
 			});
 		});
+
+		// Reopen the group containing the anchor after a per-round save.
+		var target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null;
+		var targetPanel = target ? target.closest('[role="tabpanel"]') : null;
+		if (targetPanel) {
+			tabs.forEach(function (tab) {
+				if (tab.getAttribute('aria-controls') === targetPanel.id) {
+					selectTab(tab, false);
+					target.scrollIntoView();
+				}
+			});
+		}
 	}
 
 	function initializeTv(root) {

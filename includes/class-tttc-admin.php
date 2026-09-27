@@ -1020,7 +1020,7 @@ final class TTTC_Admin {
 							// translators: %d is the round number.
 							$round_label = sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 );
 							?>
-				<div class="tttc-public-round">
+				<div class="tttc-public-round" id="<?php echo esc_attr( 'tttc-score-group-' . ( $group_index + 1 ) . '-round-' . ( $round_number + 1 ) ); ?>">
 					<h3 class="tttc-public-round-title"><?php echo esc_html( $round_label ); ?></h3>
 					<div class="tttc-scores-table-wrap">
 						<table class="widefat striped tttc-scores-table">
@@ -1059,13 +1059,16 @@ final class TTTC_Admin {
 							</tbody>
 						</table>
 					</div>
+					<p class="tttc-round-save"><button class="button button-primary" name="tttc_return_to"
+							value="<?php echo esc_attr( 'tttc-score-group-' . ( $group_index + 1 ) . '-round-' . ( $round_number + 1 ) ); ?>"><?php esc_html_e( 'Save scores', 'table-tennis-tournament-for-clubs' ); ?></button>
+					</p>
 				</div>
 				<?php endforeach; ?>
 			</div>
 		</section>
 		<?php endforeach; ?>
-		<?php foreach ( $ordered_stages as $stage ) : ?>
-		<section class="tttc-crossover-stage">
+		<?php foreach ( $ordered_stages as $stage_index => $stage ) : ?>
+		<section class="tttc-crossover-stage" id="<?php echo esc_attr( 'tttc-score-stage-' . ( $stage_index + 1 ) ); ?>">
 			<h2><?php echo esc_html( $stage['label'] ); ?></h2>
 			<div class="tttc-scores-table-wrap">
 				<table class="widefat striped tttc-scores-table">
@@ -1106,11 +1109,11 @@ final class TTTC_Admin {
 					</tbody>
 				</table>
 			</div>
+			<p class="tttc-round-save"><button class="button button-primary" name="tttc_return_to"
+					value="<?php echo esc_attr( 'tttc-score-stage-' . ( $stage_index + 1 ) ); ?>"><?php esc_html_e( 'Save scores', 'table-tennis-tournament-for-clubs' ); ?></button>
+			</p>
 		</section>
 		<?php endforeach; ?>
-		<p><button
-				class="button button-primary"><?php esc_html_e( 'Save scores', 'table-tennis-tournament-for-clubs' ); ?></button>
-		</p>
 	</form>
 	<?php endif; ?>
 </div>
@@ -1196,7 +1199,9 @@ final class TTTC_Admin {
 			}
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&updated=1' ) );
+		$return_to = isset( $_POST['tttc_return_to'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_return_to'] ) ) : '';
+		$anchor    = preg_match( '/^tttc-score-[a-z0-9-]+$/', $return_to ) ? '#' . $return_to : '';
+		wp_safe_redirect( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&updated=1' . $anchor ) );
 		exit;
 	}
 
