@@ -67,6 +67,7 @@ final class TTTC_Admin {
 		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_DEFAULT_TYPE, array( 'sanitize_callback' => array( $this, 'sanitize_type_setting' ) ) );
 		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_FORMAT_RANGES, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_format_ranges' ) ) );
 		register_setting( 'tttc_tv_settings', TTTC_Plugin::OPTION_TV_INTERVAL, array( 'sanitize_callback' => array( $this, 'sanitize_tv_interval_setting' ) ) );
+		register_setting( 'tttc_url_settings', TTTC_Plugin::OPTION_TOURNAMENT_URL_BASE, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_tournament_url_base' ) ) );
 
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_FROM, array( 'sanitize_callback' => 'sanitize_email' ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
@@ -75,6 +76,7 @@ final class TTTC_Admin {
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_DEFAULT_TYPE, array( 'sanitize_callback' => array( $this, 'sanitize_type_setting' ) ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_FORMAT_RANGES, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_format_ranges' ) ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_TV_INTERVAL, array( 'sanitize_callback' => array( $this, 'sanitize_tv_interval_setting' ) ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_TOURNAMENT_URL_BASE, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_tournament_url_base' ) ) );
 	}
 
 	public function sanitize_games_setting( $value ) {
@@ -99,7 +101,7 @@ final class TTTC_Admin {
 		}
 
 		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'email';
-		if ( ! in_array( $active_tab, array( 'email', 'formats', 'tv' ), true ) ) {
+		if ( ! in_array( $active_tab, array( 'email', 'formats', 'tv', 'urls' ), true ) ) {
 			$active_tab = 'email';
 		}
 		?>
@@ -112,6 +114,8 @@ final class TTTC_Admin {
 			class="nav-tab <?php echo 'formats' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Tournament Formats', 'table-tennis-tournament-for-clubs' ); ?></a>
 		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=tv' ) ); ?>"
 			class="nav-tab <?php echo 'tv' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'TV Display', 'table-tennis-tournament-for-clubs' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=urls' ) ); ?>"
+			class="nav-tab <?php echo 'urls' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'URLs', 'table-tennis-tournament-for-clubs' ); ?></a>
 	</nav>
 
 	<?php if ( 'email' === $active_tab ) :
@@ -251,7 +255,7 @@ final class TTTC_Admin {
 		</table>
 		<?php submit_button(); ?>
 	</form>
-	<?php else :
+	<?php elseif ( 'tv' === $active_tab ) :
 		$tv_interval = get_option( TTTC_Plugin::OPTION_TV_INTERVAL, 20 );
 		?>
 	<p>
@@ -268,6 +272,27 @@ final class TTTC_Admin {
 						value="<?php echo esc_attr( $tv_interval ); ?>" min="5" max="300" step="1" required>
 					<span><?php esc_html_e( 'seconds', 'table-tennis-tournament-for-clubs' ); ?></span>
 					<p class="description"><?php esc_html_e( 'Choose between 5 and 300 seconds. The default is 20 seconds.', 'table-tennis-tournament-for-clubs' ); ?></p>
+				</td>
+			</tr>
+		</table>
+		<?php submit_button(); ?>
+	</form>
+	<?php else :
+		$tournament_url_base = TTTC_Plugin::get_tournament_url_base();
+		?>
+	<p>
+		<?php esc_html_e( 'Configure the path segment used in public tournament URLs.', 'table-tennis-tournament-for-clubs' ); ?>
+	</p>
+	<form method="post" action="options.php">
+		<?php settings_fields( 'tttc_url_settings' ); ?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="tttc-tournament-url-base"><?php esc_html_e( 'Tournament URL base', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+				<td>
+					<input type="text" class="regular-text" id="tttc-tournament-url-base"
+						name="<?php echo esc_attr( TTTC_Plugin::OPTION_TOURNAMENT_URL_BASE ); ?>"
+						value="<?php echo esc_attr( $tournament_url_base ); ?>" required>
+					<p class="description"><?php esc_html_e( 'Use one URL path segment without slashes. The default is toernooi. Changing this value replaces the previous tournament URL base.', 'table-tennis-tournament-for-clubs' ); ?></p>
 				</td>
 			</tr>
 		</table>
@@ -884,7 +909,7 @@ final class TTTC_Admin {
 		$date        = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
 		$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
 
-		return $date_object ? home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $post_id ) . '/' . $date_object->format( 'd-m-Y' ) ) ) : '';
+		return $date_object ? home_url( user_trailingslashit( TTTC_Plugin::get_tournament_url_base() . '/' . get_post_field( 'post_name', $post_id ) . '/' . $date_object->format( 'd-m-Y' ) ) ) : '';
 	}
 
 	public function scores_page( $submitted_tournament_id = 0 ) {

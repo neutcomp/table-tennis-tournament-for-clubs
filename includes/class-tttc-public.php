@@ -20,6 +20,7 @@ final class TTTC_Public {
 		add_shortcode( 'tttc_players', array( $this, 'players_shortcode' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'init', array( $this, 'register_rewrite' ) );
+		add_action( 'init', array( $this, 'flush_pending_tournament_rewrite_rules' ), 99 );
 		add_filter( 'query_vars', array( $this, 'query_vars' ) );
 		add_action( 'template_redirect', array( $this, 'render_tournament_page' ) );
 		add_action( 'template_redirect', array( $this, 'render_player_page' ) );
@@ -87,8 +88,18 @@ final class TTTC_Public {
 	}
 
 	public static function register_rewrite() {
-		add_rewrite_rule( '^toernooi/([^/]+)/([0-9]{2}-[0-9]{2}-[0-9]{4})/?$', 'index.php?tttc_tournament=$matches[1]&tttc_tournament_date=$matches[2]', 'top' );
+		$url_base = preg_quote( TTTC_Plugin::get_tournament_url_base(), '#' );
+		add_rewrite_rule( '^' . $url_base . '/([^/]+)/([0-9]{2}-[0-9]{2}-[0-9]{4})/?$', 'index.php?tttc_tournament=$matches[1]&tttc_tournament_date=$matches[2]', 'top' );
 		add_rewrite_rule( '^speler/([^/]+)/([0-9]+)/?$', 'index.php?tttc_player=$matches[1]&tttc_player_id=$matches[2]', 'top' );
+	}
+
+	public function flush_pending_tournament_rewrite_rules() {
+		if ( ! get_transient( TTTC_Plugin::TRANSIENT_FLUSH_TOURNAMENT_REWRITES ) ) {
+			return;
+		}
+
+		delete_transient( TTTC_Plugin::TRANSIENT_FLUSH_TOURNAMENT_REWRITES );
+		flush_rewrite_rules( false );
 	}
 
 	public function query_vars( $vars ) {
@@ -115,7 +126,7 @@ final class TTTC_Public {
 			return '';
 		}
 
-		return home_url( user_trailingslashit( 'toernooi/' . get_post_field( 'post_name', $tournament_id ) . '/' . $date_object->format( 'd-m-Y' ) ) );
+		return home_url( user_trailingslashit( TTTC_Plugin::get_tournament_url_base() . '/' . get_post_field( 'post_name', $tournament_id ) . '/' . $date_object->format( 'd-m-Y' ) ) );
 	}
 
 	public function player_url( $player_id, $tournament_id = 0 ) {

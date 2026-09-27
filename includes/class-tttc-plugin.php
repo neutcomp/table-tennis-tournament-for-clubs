@@ -30,6 +30,9 @@ final class TTTC_Plugin {
 	const OPTION_DEFAULT_TYPE = 'tttc_default_type';
 	const OPTION_FORMAT_RANGES = 'tttc_format_ranges';
 	const OPTION_TV_INTERVAL = 'tttc_tv_interval';
+	const OPTION_TOURNAMENT_URL_BASE = 'tttc_tournament_url_base';
+	const DEFAULT_TOURNAMENT_URL_BASE = 'toernooi';
+	const TRANSIENT_FLUSH_TOURNAMENT_REWRITES = 'tttc_flush_tournament_rewrites';
 
 	private static $instance;
 
@@ -45,8 +48,30 @@ final class TTTC_Plugin {
 		add_action( 'init', array( $this, 'register_post_types' ) );
 		add_action( 'before_delete_post', array( $this, 'delete_assignments' ) );
 		add_action( 'admin_init', array( $this, 'maybe_upgrade' ) );
+		add_action( 'added_option', array( $this, 'schedule_tournament_rewrite_flush' ), 10, 2 );
+		add_action( 'updated_option', array( $this, 'schedule_tournament_rewrite_flush' ), 10, 3 );
 		new TTTC_Admin();
 		new TTTC_Public();
+	}
+
+	public static function sanitize_tournament_url_base( $value ) {
+		$value = sanitize_title( (string) $value );
+
+		if ( '' === $value || 'speler' === $value ) {
+			return self::DEFAULT_TOURNAMENT_URL_BASE;
+		}
+
+		return $value;
+	}
+
+	public static function get_tournament_url_base() {
+		return self::sanitize_tournament_url_base( get_option( self::OPTION_TOURNAMENT_URL_BASE, self::DEFAULT_TOURNAMENT_URL_BASE ) );
+	}
+
+	public function schedule_tournament_rewrite_flush( $option ) {
+		if ( self::OPTION_TOURNAMENT_URL_BASE === $option ) {
+			set_transient( self::TRANSIENT_FLUSH_TOURNAMENT_REWRITES, 1 );
+		}
 	}
 
 	public static function activate() {

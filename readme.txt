@@ -45,7 +45,7 @@ After every group match has a completed score, the Scores screen reveals the app
 
 `[tttc_tournaments]` displays published tournaments and their assigned players.
 
-Each published tournament title links to `/toernooi/{tournament-name}/{DD-MM-YYYY}`. The public tournament page lists active assigned players by rating, distributes them into groups using the tournament group rules, and shows every round-robin match in each group. Schedules are available for 4 to 28 players.
+Each published tournament title links to `/{tournament-url-base}/{tournament-name}/{DD-MM-YYYY}`. The default URL base is `toernooi`; change it under Settings > Table Tennis > URLs. The public tournament page lists active assigned players by rating, distributes them into groups using the tournament group rules, and shows every round-robin match in each group. Schedules are available for 4 to 28 players.
 
 Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced.
 
@@ -64,7 +64,7 @@ Optional attribute:
 
 == TV mode ==
 
-Add `?showtv=true` to a public tournament page, for example `/toernooi/{tournament-name}/{DD-MM-YYYY}/?showtv=true`, to show a bare full-screen scoreboard without the theme header, footer, breadcrumbs, QR code, player list, or signup form.
+Add `?showtv=true` to a public tournament page, for example `/{tournament-url-base}/{tournament-name}/{DD-MM-YYYY}/?showtv=true` (the default base is `toernooi`), to show a bare full-screen scoreboard without the theme header, footer, breadcrumbs, QR code, player list, or signup form.
 
 * Each group is shown as one slide with all of its rounds and, once the group is complete, its standings. Crossover rounds, the final, and the final places follow as separate slides.
 * When there is more than one slide, the page cycles to the next slide at the interval configured under Settings > Table Tennis > TV Display (20 seconds by default).
