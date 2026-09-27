@@ -47,7 +47,7 @@ final class TTTC_Admin {
 			'edit_posts',
 			'tttc-dashboard',
 			array( $this, 'dashboard' ),
-			'dashicons-awards'
+			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0yMS42IDUuNWMtOC45IDMuMS0xMy42IDEyLjktMTAuNSAyMS44IDIuMSA2IDcuMyAxMC4xIDEzLjMgMTEuM2w3LjEgMTcuMmMuOCAxLjkgMyAyLjggNC45IDJsNC4xLTEuN2MxLjktLjggMi44LTMgMi00LjlsLTcuMS0xNy4yYzQuOS0zLjYgNy41LTkuNiA2LjUtMTUuOUM0MC40IDkuMSAzMC41IDIuNCAyMS42IDUuNVoiLz48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0ibTQwLjcgMzkuNCA0LjItMS43IDcuMSAxNy4yLTQuMiAxLjd6Ii8+PGNpcmNsZSBjeD0iNTIiIGN5PSIxNCIgcj0iNSIgZmlsbD0id2hpdGUiLz48L3N2Zz4='
 		);
 		add_submenu_page( 'tttc-dashboard', __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-dashboard', array( $this, 'dashboard' ) );
 		add_submenu_page( 'tttc-dashboard', __( 'Players', 'table-tennis-tournament-for-clubs' ), __( 'Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE );
