@@ -362,6 +362,9 @@ msgstr "Scores opslaan"
 msgid "Tournament scores updated."
 msgstr "Toernooiscores bijgewerkt."
 
+msgid "You only need to enter the lowest score of each game; the other field is filled in automatically."
+msgstr "Je hoeft per game alleen de laagste score in te vullen; het andere veld wordt automatisch ingevuld."
+
 msgid "Select the active players who will participate in this tournament."
 msgstr "Selecteer de actieve spelers die aan dit toernooi deelnemen."
 

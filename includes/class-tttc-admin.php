@@ -970,6 +970,9 @@ final class TTTC_Admin {
 	<h1>
 		<?php echo esc_html( get_the_title( $tournament_id ) . ' - ' . __( 'Scores', 'table-tennis-tournament-for-clubs' ) ); ?>
 	</h1>
+	<p class="description tttc-scores-help">
+		<?php esc_html_e( 'You only need to enter the lowest score of each game; the other field is filled in automatically.', 'table-tennis-tournament-for-clubs' ); ?>
+	</p>
 	<?php if ( $this->score_error ) : ?><div class="notice notice-error">
 		<p><?php echo esc_html( $this->score_error ); ?></p>
 	</div><?php endif; ?>
