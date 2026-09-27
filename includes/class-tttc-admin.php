@@ -1019,14 +1019,17 @@ final class TTTC_Admin {
 							<tbody>
 								<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); ?>
 								<tr>
-									<td><?php echo esc_html( $match_number + 1 ); ?></td>
-									<td><?php echo esc_html( $match[0]->post_title ); ?></td>
-									<td><?php echo esc_html( $match[1]->post_title ); ?></td>
-									<?php for ( $game = 0; $game < $games; $game++ ) : ?><td><span class="tttc-score-pair"><input
-												class="small-text" type="number" min="0"
+									<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>"><?php echo esc_html( $match_number + 1 ); ?></td>
+									<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>"><?php echo esc_html( $match[0]->post_title ); ?></td>
+									<td data-label="<?php esc_attr_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?>"><?php echo esc_html( $match[1]->post_title ); ?></td>
+									<?php for ( $game = 0; $game < $games; $game++ ) :
+										// translators: %d is the game number.
+										$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game + 1 );
+										?><td data-label="<?php echo esc_attr( $game_label ); ?>"><span class="tttc-score-pair"><input
+												class="small-text" type="number" min="0" inputmode="numeric"
 												name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][0]"
 												value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][0] ) ? $saved_scores[ $match_key ][ $game ][0] : '' ); ?>"><input
-												class="small-text" type="number" min="0"
+												class="small-text" type="number" min="0" inputmode="numeric"
 												name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][1]"
 												value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][1] ) ? $saved_scores[ $match_key ][ $game ][1] : '' ); ?>"></span>
 									</td><?php endfor; ?>
@@ -1058,17 +1061,20 @@ final class TTTC_Admin {
 					<tbody>
 						<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $score_key = $match['score_key']; ?>
 						<tr>
-							<td><?php echo esc_html( $match_number + 1 ); ?></td>
-							<td>
+							<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>"><?php echo esc_html( $match_number + 1 ); ?></td>
+							<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>">
 								<?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?>
 							</td>
-							<td>
+							<td data-label="<?php esc_attr_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?>">
 								<?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?>
-							</td><?php for ( $game = 0; $game < $games; $game++ ) : ?><td><span class="tttc-score-pair"><input
-										class="small-text" type="number" min="0"
+							</td><?php for ( $game = 0; $game < $games; $game++ ) :
+								// translators: %d is the game number.
+								$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game + 1 );
+								?><td data-label="<?php echo esc_attr( $game_label ); ?>"><span class="tttc-score-pair"><input
+										class="small-text" type="number" min="0" inputmode="numeric"
 										name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][0]"
 										value="<?php echo esc_attr( isset( $saved_scores[ $score_key ][ $game ][0] ) ? $saved_scores[ $score_key ][ $game ][0] : '' ); ?>"
-										<?php disabled( ! $available ); ?>><input class="small-text" type="number" min="0"
+										<?php disabled( ! $available ); ?>><input class="small-text" type="number" min="0" inputmode="numeric"
 										name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][1]"
 										value="<?php echo esc_attr( isset( $saved_scores[ $score_key ][ $game ][1] ) ? $saved_scores[ $score_key ][ $game ][1] : '' ); ?>"
 										<?php disabled( ! $available ); ?>></span></td><?php endfor; ?>

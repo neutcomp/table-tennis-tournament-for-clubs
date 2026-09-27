@@ -9,6 +9,20 @@
 		$('.tttc-assignment-form table').toggleClass('tttc-show-all-players-active', this.checked);
 	});
 
+	$(document).on('input', '.tttc-score-pair input', function () {
+		var value = $.trim($(this).val());
+		if (!/^\d+$/.test(value)) {
+			return;
+		}
+
+		var score = Number(value);
+		if (!isFinite(score) || Math.floor(score) !== score) {
+			return;
+		}
+
+		$(this).siblings('input').val(score <= 9 ? 11 : score + 2);
+	});
+
 	$(document).ready(function () {
 		var $seedList = $('.tttc-seed-list').not('.tttc-seed-list--locked');
 		if ($seedList.length && $.fn.sortable) {
