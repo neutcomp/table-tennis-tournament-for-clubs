@@ -19,7 +19,7 @@ Player emails are stored for club administration and are not shown in public sho
 == Features ==
 
 * Player records with name, rating, email, and active status.
-* Tournament records with name, date, best of, player type, and status.
+* Tournament records with name, date, time, best of, player type, and status.
 * Tournament Players screen for adding and removing participants.
 * Inactive players cannot be assigned to new tournaments.
 * Tournament Scores screen with three or five score fields per generated match.
@@ -37,7 +37,7 @@ Player emails are stored for club administration and are not shown in public sho
 2. Activate the plugin from Plugins in WordPress.
 3. Use the Table Tennis menu to create players and tournaments.
 4. Open Tournament Players, select a tournament, and save its participants.
-5. Select Best of 3 or Best of 5 when creating a tournament, then use Scores in the tournament overview to enter match scores.
+5. Set the tournament date and optional start time, select Best of 3 or Best of 5 when creating a tournament, then use Scores in the tournament overview to enter match scores.
 
 After every group match has a completed score, the Scores screen reveals the applicable crossover matches. Later four-group matches remain unavailable until their semi-finals are complete. Public tournament pages show the crossover results and final places when the deciding matches have been completed.
 
@@ -49,7 +49,7 @@ Each published tournament title links to `/{tournament-url-base}/{tournament-nam
 
 Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced.
 
-Players must provide an email address when signing up. After a successful signup, the plugin sends a confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. The subject and body support the merge fields `[tournament-name]` and `[tournament-date]`. Email delivery does not undo a saved signup.
+Players must provide an email address when signing up. After a successful signup, the plugin sends a confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. Tournament times use the 24-hour `HH:MM` format. The subject and body support the merge fields `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
 
 Optional attributes:
 

@@ -107,6 +107,9 @@ msgstr "Website"
 msgid "Date"
 msgstr "Datum"
 
+msgid "Time"
+msgstr "Tijd"
+
 msgid "Best of"
 msgstr "Best of"
 
@@ -401,8 +404,8 @@ msgstr "Onderwerp"
 msgid "Body"
 msgstr "Inhoud"
 
-msgid "Available merge fields: [tournament-name] and [tournament-date]."
-msgstr "Beschikbare samenvoegvelden: [tournament-name] en [tournament-date]."
+msgid "Available merge fields: [tournament-name], [tournament-date], [tournament-time], and [tournament-link]."
+msgstr "Beschikbare samenvoegvelden: [tournament-name], [tournament-date], [tournament-time] en [tournament-link]."
 
 msgid "Merge Players"
 msgstr "Spelers samenvoegen"

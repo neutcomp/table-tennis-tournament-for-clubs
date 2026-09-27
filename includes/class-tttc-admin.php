@@ -121,7 +121,7 @@ final class TTTC_Admin {
 	<?php if ( 'email' === $active_tab ) :
 				$from    = get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) );
 				$subject = get_option( TTTC_Plugin::OPTION_EMAIL_SUBJECT, __( 'Signup confirmed for [tournament-name]', 'table-tennis-tournament-for-clubs' ) );
-				$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] has been received.\n\nView the tournament: [tournament-link]\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
+				$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] at [tournament-time] has been received.\n\nView the tournament: [tournament-link]\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
 				?>
 	<p>
 		<?php esc_html_e( 'Configure the confirmation email sent after a player signs up for an Upcoming tournament.', 'table-tennis-tournament-for-clubs' ); ?>
@@ -147,7 +147,7 @@ final class TTTC_Admin {
 						name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_SUBJECT ); ?>"
 						value="<?php echo esc_attr( $subject ); ?>" required>
 					<p class="description">
-						<?php esc_html_e( 'Available merge fields: [tournament-name], [tournament-date], and [tournament-link].', 'table-tennis-tournament-for-clubs' ); ?>
+						<?php esc_html_e( 'Available merge fields: [tournament-name], [tournament-date], [tournament-time], and [tournament-link].', 'table-tennis-tournament-for-clubs' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -158,7 +158,7 @@ final class TTTC_Admin {
 						name="<?php echo esc_attr( TTTC_Plugin::OPTION_EMAIL_BODY ); ?>"
 						required><?php echo esc_textarea( $body ); ?></textarea>
 					<p class="description">
-						<?php esc_html_e( 'Available merge fields: [tournament-name], [tournament-date], and [tournament-link].', 'table-tennis-tournament-for-clubs' ); ?>
+						<?php esc_html_e( 'Available merge fields: [tournament-name], [tournament-date], [tournament-time], and [tournament-link].', 'table-tennis-tournament-for-clubs' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -531,6 +531,7 @@ final class TTTC_Admin {
 	public function tournament_meta_box( $post ) {
 		wp_nonce_field( 'tttc_save_tournament', 'tttc_tournament_nonce' );
 		$date   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_DATE, true );
+		$time   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIME, true );
 		$games  = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$status = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$type   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
@@ -557,6 +558,9 @@ final class TTTC_Admin {
 <p><label
 		for="tttc-date"><strong><?php esc_html_e( 'Date', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input
 		type="date" id="tttc-date" name="tttc_date" value="<?php echo esc_attr( $date ); ?>" required></p>
+<p><label
+		for="tttc-time"><strong><?php esc_html_e( 'Time', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input
+		type="time" id="tttc-time" name="tttc_time" value="<?php echo esc_attr( $time ); ?>" step="60"></p>
 <p><label
 		for="tttc-games"><strong><?php esc_html_e( 'Best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
 		id="tttc-games" name="tttc_games" required <?php disabled( $has_scores ); ?>>
@@ -704,9 +708,14 @@ final class TTTC_Admin {
 			return;
 		}
 		$date   = isset( $_POST['tttc_date'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_date'] ) ) : '';
+		$time   = isset( $_POST['tttc_time'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_time'] ) ) : '';
 		$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
 		if ( ! $date_object || $date_object->format( 'Y-m-d' ) !== $date ) {
 			$date = '';
+		}
+		$time_object = '' === $time ? false : DateTime::createFromFormat( 'H:i', $time );
+		if ( '' !== $time && ( ! $time_object || $time_object->format( 'H:i' ) !== $time ) ) {
+			$time = '';
 		}
 		$type   = isset( $_POST['tttc_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_type'] ) ) : 'both';
 		$status = isset( $_POST['tttc_status'] ) ? sanitize_key( $_POST['tttc_status'] ) : 'draft';
@@ -717,6 +726,7 @@ final class TTTC_Admin {
 			$status = 'draft';
 		}
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, $date );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIME, $time );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TYPE, $type );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
 
