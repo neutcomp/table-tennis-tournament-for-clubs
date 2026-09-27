@@ -812,7 +812,7 @@ final class TTTC_Admin {
 			}
 		} elseif ( 'tttc_scores' === $column ) {
 			$status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
-			if ( ! in_array( $status, array( 'draft', 'completed' ), true ) ) {
+			if ( 'active' === $status ) {
 				echo '<a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Enter scores', 'table-tennis-tournament-for-clubs' ) . '</a>';
 			}
 		}
