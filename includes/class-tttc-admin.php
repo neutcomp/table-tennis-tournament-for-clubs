@@ -265,13 +265,17 @@ final class TTTC_Admin {
 		<?php settings_fields( 'tttc_tv_settings' ); ?>
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><label for="tttc-tv-interval"><?php esc_html_e( 'Slide duration', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+				<th scope="row"><label
+						for="tttc-tv-interval"><?php esc_html_e( 'Slide duration', 'table-tennis-tournament-for-clubs' ); ?></label>
+				</th>
 				<td>
 					<input type="number" class="small-text" id="tttc-tv-interval"
 						name="<?php echo esc_attr( TTTC_Plugin::OPTION_TV_INTERVAL ); ?>"
 						value="<?php echo esc_attr( $tv_interval ); ?>" min="5" max="300" step="1" required>
 					<span><?php esc_html_e( 'seconds', 'table-tennis-tournament-for-clubs' ); ?></span>
-					<p class="description"><?php esc_html_e( 'Choose between 5 and 300 seconds. The default is 20 seconds.', 'table-tennis-tournament-for-clubs' ); ?></p>
+					<p class="description">
+						<?php esc_html_e( 'Choose between 5 and 300 seconds. The default is 20 seconds.', 'table-tennis-tournament-for-clubs' ); ?>
+					</p>
 				</td>
 			</tr>
 		</table>
@@ -287,12 +291,16 @@ final class TTTC_Admin {
 		<?php settings_fields( 'tttc_url_settings' ); ?>
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><label for="tttc-tournament-url-base"><?php esc_html_e( 'Tournament URL base', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+				<th scope="row"><label
+						for="tttc-tournament-url-base"><?php esc_html_e( 'Tournament URL base', 'table-tennis-tournament-for-clubs' ); ?></label>
+				</th>
 				<td>
 					<input type="text" class="regular-text" id="tttc-tournament-url-base"
 						name="<?php echo esc_attr( TTTC_Plugin::OPTION_TOURNAMENT_URL_BASE ); ?>"
 						value="<?php echo esc_attr( $tournament_url_base ); ?>" required>
-					<p class="description"><?php esc_html_e( 'Use one URL path segment without slashes. The default is toernooi. Changing this value replaces the previous tournament URL base.', 'table-tennis-tournament-for-clubs' ); ?></p>
+					<p class="description">
+						<?php esc_html_e( 'Use one URL path segment without slashes. The default is toernooi. Changing this value replaces the previous tournament URL base.', 'table-tennis-tournament-for-clubs' ); ?>
+					</p>
 				</td>
 			</tr>
 		</table>
@@ -1019,9 +1027,12 @@ final class TTTC_Admin {
 							<tbody>
 								<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); ?>
 								<tr>
-									<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>"><?php echo esc_html( $match_number + 1 ); ?></td>
-									<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>"><?php echo esc_html( $match[0]->post_title ); ?></td>
-									<td data-label="<?php esc_attr_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?>"><?php echo esc_html( $match[1]->post_title ); ?></td>
+									<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>">
+										<?php echo esc_html( $match_number + 1 ); ?></td>
+									<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>">
+										<?php echo esc_html( $match[0]->post_title ); ?></td>
+									<td data-label="<?php esc_attr_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?>">
+										<?php echo esc_html( $match[1]->post_title ); ?></td>
 									<?php for ( $game = 0; $game < $games; $game++ ) :
 										// translators: %d is the game number.
 										$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game + 1 );
@@ -1061,7 +1072,8 @@ final class TTTC_Admin {
 					<tbody>
 						<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $score_key = $match['score_key']; ?>
 						<tr>
-							<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>"><?php echo esc_html( $match_number + 1 ); ?></td>
+							<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>">
+								<?php echo esc_html( $match_number + 1 ); ?></td>
 							<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>">
 								<?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?>
 							</td>
@@ -1074,7 +1086,8 @@ final class TTTC_Admin {
 										class="small-text" type="number" min="0" inputmode="numeric"
 										name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][0]"
 										value="<?php echo esc_attr( isset( $saved_scores[ $score_key ][ $game ][0] ) ? $saved_scores[ $score_key ][ $game ][0] : '' ); ?>"
-										<?php disabled( ! $available ); ?>><input class="small-text" type="number" min="0" inputmode="numeric"
+										<?php disabled( ! $available ); ?>><input class="small-text" type="number" min="0"
+										inputmode="numeric"
 										name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][1]"
 										value="<?php echo esc_attr( isset( $saved_scores[ $score_key ][ $game ][1] ) ? $saved_scores[ $score_key ][ $game ][1] : '' ); ?>"
 										<?php disabled( ! $available ); ?>></span></td><?php endfor; ?>
