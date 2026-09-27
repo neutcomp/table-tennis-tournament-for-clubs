@@ -29,6 +29,7 @@ final class TTTC_Plugin {
 	const OPTION_DEFAULT_GAMES = 'tttc_default_games';
 	const OPTION_DEFAULT_TYPE = 'tttc_default_type';
 	const OPTION_FORMAT_RANGES = 'tttc_format_ranges';
+	const OPTION_TV_INTERVAL = 'tttc_tv_interval';
 
 	private static $instance;
 

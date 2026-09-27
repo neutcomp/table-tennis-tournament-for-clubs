@@ -66,6 +66,7 @@ final class TTTC_Admin {
 		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_DEFAULT_GAMES, array( 'sanitize_callback' => array( $this, 'sanitize_games_setting' ) ) );
 		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_DEFAULT_TYPE, array( 'sanitize_callback' => array( $this, 'sanitize_type_setting' ) ) );
 		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_FORMAT_RANGES, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_format_ranges' ) ) );
+		register_setting( 'tttc_tv_settings', TTTC_Plugin::OPTION_TV_INTERVAL, array( 'sanitize_callback' => array( $this, 'sanitize_tv_interval_setting' ) ) );
 
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_FROM, array( 'sanitize_callback' => 'sanitize_email' ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
@@ -73,6 +74,7 @@ final class TTTC_Admin {
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_DEFAULT_GAMES, array( 'sanitize_callback' => array( $this, 'sanitize_games_setting' ) ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_DEFAULT_TYPE, array( 'sanitize_callback' => array( $this, 'sanitize_type_setting' ) ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_FORMAT_RANGES, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_format_ranges' ) ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_TV_INTERVAL, array( 'sanitize_callback' => array( $this, 'sanitize_tv_interval_setting' ) ) );
 	}
 
 	public function sanitize_games_setting( $value ) {
@@ -87,13 +89,17 @@ final class TTTC_Admin {
 		return in_array( $value, array( 'senior', 'youth', 'both' ), true ) ? $value : 'both';
 	}
 
+	public function sanitize_tv_interval_setting( $value ) {
+		return min( 300, max( 5, absint( $value ) ) );
+	}
+
 	public function settings_page() {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
 		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'email';
-		if ( ! in_array( $active_tab, array( 'email', 'formats' ), true ) ) {
+		if ( ! in_array( $active_tab, array( 'email', 'formats', 'tv' ), true ) ) {
 			$active_tab = 'email';
 		}
 		?>
@@ -104,6 +110,8 @@ final class TTTC_Admin {
 			class="nav-tab <?php echo 'email' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></a>
 		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=formats' ) ); ?>"
 			class="nav-tab <?php echo 'formats' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Tournament Formats', 'table-tennis-tournament-for-clubs' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=tv' ) ); ?>"
+			class="nav-tab <?php echo 'tv' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'TV Display', 'table-tennis-tournament-for-clubs' ); ?></a>
 	</nav>
 
 	<?php if ( 'email' === $active_tab ) :
@@ -153,7 +161,7 @@ final class TTTC_Admin {
 		</table>
 		<?php submit_button(); ?>
 	</form>
-	<?php else :
+	<?php elseif ( 'formats' === $active_tab ) :
 				$default_games = get_option( TTTC_Plugin::OPTION_DEFAULT_GAMES, '3' );
 				$default_type  = get_option( TTTC_Plugin::OPTION_DEFAULT_TYPE, 'both' );
 				$format_ranges = TTTC_Plugin::get_format_ranges();
@@ -238,6 +246,28 @@ final class TTTC_Admin {
 							<?php endfor; ?>
 						</tbody>
 					</table>
+				</td>
+			</tr>
+		</table>
+		<?php submit_button(); ?>
+	</form>
+	<?php else :
+		$tv_interval = get_option( TTTC_Plugin::OPTION_TV_INTERVAL, 20 );
+		?>
+	<p>
+		<?php esc_html_e( 'Configure how long each slide is shown in TV mode before advancing to the next slide.', 'table-tennis-tournament-for-clubs' ); ?>
+	</p>
+	<form method="post" action="options.php">
+		<?php settings_fields( 'tttc_tv_settings' ); ?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="tttc-tv-interval"><?php esc_html_e( 'Slide duration', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+				<td>
+					<input type="number" class="small-text" id="tttc-tv-interval"
+						name="<?php echo esc_attr( TTTC_Plugin::OPTION_TV_INTERVAL ); ?>"
+						value="<?php echo esc_attr( $tv_interval ); ?>" min="5" max="300" step="1" required>
+					<span><?php esc_html_e( 'seconds', 'table-tennis-tournament-for-clubs' ); ?></span>
+					<p class="description"><?php esc_html_e( 'Choose between 5 and 300 seconds. The default is 20 seconds.', 'table-tennis-tournament-for-clubs' ); ?></p>
 				</td>
 			</tr>
 		</table>

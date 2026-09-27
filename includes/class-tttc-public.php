@@ -278,11 +278,12 @@ final class TTTC_Public {
 		$scores      = $this->saved_scores( $tournament_id );
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
 		$has_slides  = in_array( $status, array( 'active', 'completed' ), true ) && ! empty( $schedule );
+		$tv_interval = absint( get_option( TTTC_Plugin::OPTION_TV_INTERVAL, 20 ) );
 		?>
 <main class="tttc-tv-screen" data-tttc-tv data-tournament="<?php echo esc_attr( $tournament_id ); ?>"
 	data-version="<?php echo esc_attr( $this->score_version( $tournament_id ) ); ?>"
 	data-version-url="<?php echo esc_url( rest_url( 'tttc/v1/tournaments/' . $tournament_id . '/version' ) ); ?>"
-	data-interval="20000" data-poll="10000">
+	data-interval="<?php echo esc_attr( $tv_interval * 1000 ); ?>" data-poll="10000">
 	<header class="tttc-tv-header">
 		<div class="tttc-tv-header__title">
 			<h1><?php echo esc_html( get_the_title( $tournament_id ) ); ?></h1>
