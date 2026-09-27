@@ -384,7 +384,12 @@ final class TTTC_Public {
 							} )
 						);
 						?>
-		<?php foreach ( $stages as $stage ) : $stage_label = $stage['label']; ?>
+		<?php foreach ( $stages as $stage ) :
+			if ( in_array( $stage['id'], array( 'final', 'third-place' ), true ) && ( ! $stage['matches'][0]['players'][0] || ! $stage['matches'][0]['players'][1] ) ) {
+				continue;
+			}
+			$stage_label = $stage['label'];
+			?>
 		<section class="tttc-tv-slide" data-tttc-label="<?php echo esc_attr( $stage_label ); ?>" hidden>
 			<h2><?php echo esc_html( $stage_label ); ?></h2>
 			<div class="tttc-tv-card tttc-tv-card--wide">

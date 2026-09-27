@@ -66,7 +66,7 @@ Optional attribute:
 
 Add `?showtv=true` to a public tournament page, for example `/{tournament-url-base}/{tournament-name}/{DD-MM-YYYY}/?showtv=true` (the default base is `toernooi`), to show a bare full-screen scoreboard without the theme header, footer, breadcrumbs, QR code, player list, or signup form.
 
-* Each group is shown as one slide with all of its rounds and, once the group is complete, its standings. Crossover rounds, the final, and the final places follow as separate slides.
+* Each group is shown as one slide with all of its rounds and, once the group is complete, its standings. Crossover rounds, the final, and the final places follow as separate slides. The final and third-place match appear only when both players are known.
 * When there is more than one slide, the page cycles to the next slide at the interval configured under Settings > Table Tennis > TV Display (20 seconds by default).
 * Every 10 seconds the page checks `/wp-json/tttc/v1/tournaments/{id}/version`. When scores, players, or the tournament status change in the admin, the page reloads automatically and stays on the current slide.
 * Tournaments that are not active or completed yet show a notice and switch to the scoreboard automatically once the schedule becomes available.
