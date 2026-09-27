@@ -1,3 +1,13 @@
+.tttc-status-feedback {
+  display: block;
+  font-size: 12px;
+  color: #008a20;
+}
+
+.tttc-status-feedback.is-error {
+  color: #d63638;
+}
+
 .tttc-summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

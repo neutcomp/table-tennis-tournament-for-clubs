@@ -78,4 +78,49 @@
 			}
 		});
 	});
+
+	$(document).on('focus', '.tttc-status-select', function () {
+		$(this).data('previous', $(this).val());
+	});
+
+	$(document).on('change', '.tttc-status-select', function () {
+		if (typeof tttcStatusData === 'undefined') {
+			return;
+		}
+
+		var $select = $(this);
+		var $row = $select.closest('tr');
+		var $feedback = $select.siblings('.tttc-status-feedback');
+		var previous = $select.data('previous');
+		var onError = function () {
+			if (previous !== undefined) {
+				$select.val(previous);
+			}
+			$feedback.addClass('is-error').text(tttcStatusData.error);
+		};
+
+		$select.prop('disabled', true);
+		$feedback.removeClass('is-error').text('');
+
+		$.post(tttcStatusData.ajaxUrl, {
+			action: 'tttc_quick_status',
+			post_id: $select.data('post-id'),
+			nonce: $select.data('nonce'),
+			status: $select.val()
+		}).done(function (response) {
+			if (!response || !response.success) {
+				onError();
+				return;
+			}
+			$row.find('td.column-tttc_players').html(response.data.tttc_players);
+			$row.find('td.column-tttc_scores').html(response.data.tttc_scores);
+			$select.data('previous', $select.val());
+			$feedback.text(tttcStatusData.saved);
+			setTimeout(function () {
+				$feedback.text('');
+			}, 2000);
+		}).fail(onError).always(function () {
+			$select.prop('disabled', false);
+		});
+	});
 }(jQuery));

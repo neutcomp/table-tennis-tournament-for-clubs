@@ -31,6 +31,7 @@ final class TTTC_Admin {
 		add_action( 'admin_post_tttc_reorder_players', array( $this, 'reorder_players' ) );
 		add_action( 'admin_post_tttc_save_scores', array( $this, 'save_scores' ) );
 		add_action( 'admin_post_tttc_merge_players', array( $this, 'merge_players' ) );
+		add_action( 'wp_ajax_tttc_quick_status', array( $this, 'ajax_quick_status' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'redirect_post_location', array( $this, 'redirect_after_post_save' ), 10, 2 );
 		add_filter( 'bulk_actions-edit-' . TTTC_Plugin::PLAYER_POST_TYPE, array( $this, 'player_bulk_actions' ) );
@@ -795,8 +796,18 @@ final class TTTC_Admin {
 		} elseif ( 'tttc_games' === $column ) {
 			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true ) );
 		} elseif ( 'tttc_status' === $column ) {
-			$status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
-			echo esc_html( isset( TTTC_Plugin::statuses()[ $status ] ) ? TTTC_Plugin::statuses()[ $status ] : $status );
+			$status   = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+			$statuses = TTTC_Plugin::statuses();
+			if ( ! current_user_can( 'edit_post', $post_id ) ) {
+				echo esc_html( isset( $statuses[ $status ] ) ? $statuses[ $status ] : $status );
+				return;
+			}
+			$status = $status ? $status : 'draft';
+			echo '<select class="tttc-status-select" aria-label="' . esc_attr__( 'Status', 'table-tennis-tournament-for-clubs' ) . '" data-post-id="' . esc_attr( $post_id ) . '" data-nonce="' . esc_attr( wp_create_nonce( 'tttc_quick_status_' . $post_id ) ) . '">';
+			foreach ( $statuses as $key => $label ) {
+				echo '<option value="' . esc_attr( $key ) . '"' . selected( $status, $key, false ) . '>' . esc_html( $label ) . '</option>';
+			}
+			echo '</select> <span class="tttc-status-feedback" aria-live="polite"></span>';
 		} elseif ( 'tttc_players' === $column ) {
 			$count = $this->assigned_player_ids( $post_id );
 			$status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
@@ -816,6 +827,27 @@ final class TTTC_Admin {
 				echo '<a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Enter scores', 'table-tennis-tournament-for-clubs' ) . '</a>';
 			}
 		}
+	}
+
+	public function ajax_quick_status() {
+		$post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
+		check_ajax_referer( 'tttc_quick_status_' . $post_id, 'nonce' );
+		if ( ! $post_id || TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
+			wp_send_json_error( null, 403 );
+		}
+		$status = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
+		if ( ! array_key_exists( $status, TTTC_Plugin::statuses() ) ) {
+			wp_send_json_error( null, 400 );
+		}
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
+
+		$cells = array();
+		foreach ( array( 'tttc_players', 'tttc_scores' ) as $column ) {
+			ob_start();
+			$this->tournament_column( $column, $post_id );
+			$cells[ $column ] = ob_get_clean();
+		}
+		wp_send_json_success( $cells );
 	}
 
 	private function tournament_url( $post_id ) {
@@ -1678,6 +1710,18 @@ final class TTTC_Admin {
 						'players'       => $player_data,
 						'currentPostId' => $current_post_id,
 						'duplicateMsg'  => __( 'A player with this name and email already exists.', 'table-tennis-tournament-for-clubs' ),
+					)
+				);
+			}
+
+			if ( TTTC_Plugin::TOURNAMENT_POST_TYPE === $screen_post_type && 'edit.php' === $hook ) {
+				wp_localize_script(
+					'tttc-admin',
+					'tttcStatusData',
+					array(
+						'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+						'saved'   => __( 'Saved', 'table-tennis-tournament-for-clubs' ),
+						'error'   => __( 'Could not save status.', 'table-tennis-tournament-for-clubs' ),
 					)
 				);
 			}

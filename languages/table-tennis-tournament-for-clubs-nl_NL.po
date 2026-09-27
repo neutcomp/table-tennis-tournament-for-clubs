@@ -113,6 +113,12 @@ msgstr "Best of"
 msgid "Status"
 msgstr "Status"
 
+msgid "Saved"
+msgstr "Opgeslagen"
+
+msgid "Could not save status."
+msgstr "Status kon niet worden opgeslagen."
+
 msgid "Manage"
 msgstr "Beheren"
 
