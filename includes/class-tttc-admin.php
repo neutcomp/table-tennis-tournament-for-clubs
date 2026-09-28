@@ -859,8 +859,9 @@ final class TTTC_Admin {
 	}
 
 	public function tournament_columns( $columns ) {
-		$status_label = __( 'Status', 'table-tennis-tournament-for-clubs' ) . ' <button type="button" class="tttc-status-info dashicons dashicons-info-outline" aria-haspopup="dialog" aria-controls="tttc-status-info-modal" aria-label="' . esc_attr__( 'What can I do in each status?', 'table-tennis-tournament-for-clubs' ) . '"></button>';
-		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_time' => __( 'Time', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => $status_label, 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'tttc_scores' => __( 'Scores', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
+		$status_label = __( 'Status', 'table-tennis-tournament-for-clubs' ) . ' <button type="button" class="tttc-info-trigger dashicons dashicons-info-outline" aria-haspopup="dialog" aria-controls="tttc-status-info-modal" aria-label="' . esc_attr__( 'What can I do in each status?', 'table-tennis-tournament-for-clubs' ) . '"></button>';
+		$players_label = __( 'Players', 'table-tennis-tournament-for-clubs' ) . ' <button type="button" class="tttc-info-trigger dashicons dashicons-info-outline" aria-haspopup="dialog" aria-controls="tttc-players-info-modal" aria-label="' . esc_attr__( 'What does the Players column show?', 'table-tennis-tournament-for-clubs' ) . '"></button>';
+		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_time' => __( 'Time', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => $status_label, 'tttc_players' => $players_label, 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'tttc_scores' => __( 'Scores', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
 	}
 
 	public function render_status_info_modal() {
@@ -903,6 +904,26 @@ final class TTTC_Admin {
 		<p class="tttc-modal-note">
 			<?php esc_html_e( 'The Website link is shown whenever the tournament date is set, regardless of status.', 'table-tennis-tournament-for-clubs' ); ?>
 		</p>
+	</div>
+</div>
+<div id="tttc-players-info-modal" class="tttc-modal" hidden>
+	<div class="tttc-modal-overlay"></div>
+	<div class="tttc-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="tttc-players-info-title">
+		<button type="button" class="tttc-modal-close dashicons dashicons-no-alt"
+			aria-label="<?php echo esc_attr__( 'Close', 'table-tennis-tournament-for-clubs' ); ?>"></button>
+		<h2 id="tttc-players-info-title">
+			<?php esc_html_e( 'Players column explained', 'table-tennis-tournament-for-clubs' ); ?></h2>
+		<ul class="tttc-modal-icon-list">
+			<li>
+				<?php esc_html_e( 'The number shown is how many players are signed up for the tournament.', 'table-tennis-tournament-for-clubs' ); ?>
+			</li>
+			<li><span class="dashicons dashicons-groups" aria-hidden="true"></span>
+				<?php esc_html_e( 'Add or remove players for the tournament.', 'table-tennis-tournament-for-clubs' ); ?>
+			</li>
+			<li><span class="dashicons dashicons-sort" aria-hidden="true"></span>
+				<?php esc_html_e( 'Order the players by strength.', 'table-tennis-tournament-for-clubs' ); ?>
+			</li>
+		</ul>
 	</div>
 </div>
 <?php

@@ -164,19 +164,19 @@
 		});
 	});
 
-	$(document).on('click', '.tttc-status-info', function () {
-		var $modal = $('#tttc-status-info-modal');
+	$(document).on('click', '.tttc-info-trigger', function () {
+		var $modal = $('#' + $(this).attr('aria-controls'));
 		$modal.prop('hidden', false);
 		$modal.find('.tttc-modal-close').trigger('focus');
 	});
 
 	$(document).on('click', '.tttc-modal-close, .tttc-modal-overlay', function () {
-		$('#tttc-status-info-modal').prop('hidden', true);
+		$(this).closest('.tttc-modal').prop('hidden', true);
 	});
 
 	$(document).on('keydown', function (e) {
 		if (e.key === 'Escape' || e.keyCode === 27) {
-			$('#tttc-status-info-modal:not([hidden])').prop('hidden', true);
+			$('.tttc-modal:not([hidden])').prop('hidden', true);
 		}
 	});
 }(jQuery));

@@ -8,7 +8,7 @@
   color: #d63638;
 }
 
-.tttc-status-info {
+.tttc-info-trigger {
   background: none;
   border: none;
   padding: 0;
@@ -18,8 +18,8 @@
   vertical-align: text-bottom;
 }
 
-.tttc-status-info:hover,
-.tttc-status-info:focus {
+.tttc-info-trigger:hover,
+.tttc-info-trigger:focus {
   color: #2271b1;
 }
 
@@ -87,6 +87,25 @@
   margin-top: 12px;
   font-style: italic;
   color: #646970;
+}
+
+.tttc-modal-icon-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tttc-modal-icon-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #dcdcde;
+}
+
+.tttc-modal-icon-list .dashicons {
+  flex-shrink: 0;
+  color: #2271b1;
 }
 
 .tttc-summary-grid {
