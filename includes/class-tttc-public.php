@@ -247,7 +247,27 @@ final class TTTC_Public {
 		$this->handle_signup( $tournament_id );
 
 		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
-		wp_enqueue_script( 'tttc-public', TTTC_URL . 'assets/public.js', array(), TTTC_VERSION, true );
+		wp_enqueue_script(
+			'tttc-qrcode',
+			TTTC_URL . 'assets/vendor/qrcode.js',
+			array(),
+			TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/vendor/qrcode.js' ),
+			true
+		);
+		wp_enqueue_script(
+			'tttc-qrcode-utf8',
+			TTTC_URL . 'assets/vendor/qrcode_UTF8.js',
+			array( 'tttc-qrcode' ),
+			TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/vendor/qrcode_UTF8.js' ),
+			true
+		);
+		wp_enqueue_script(
+			'tttc-public',
+			TTTC_URL . 'assets/public.js',
+			array( 'tttc-qrcode-utf8' ),
+			TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.js' ),
+			true
+		);
 		get_header();
 		$this->render_tournament_detail( $tournament_id );
 		get_footer();
@@ -621,7 +641,6 @@ final class TTTC_Public {
 		$scores      = $this->saved_scores( $tournament_id );
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
 		$page_url    = $this->tournament_url( $tournament_id );
-		$qr_url      = $page_url ? 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . rawurlencode( $page_url ) : '';
 		$breadcrumbs = array(
 			array(
 				'label' => __( 'Home', 'table-tennis-tournament-for-clubs' ),
@@ -647,8 +666,8 @@ final class TTTC_Public {
 				<h1><?php echo esc_html( $title ); ?></h1>
 				<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date( $stored_date ) ); ?></p>
 			</div>
-			<?php if ( $qr_url ) : ?>
-			<img class="tttc-public-tournament__qr" src="<?php echo esc_url( $qr_url ); ?>" width="200" height="200"
+			<?php if ( $page_url ) : ?>
+			<img class="tttc-public-tournament__qr" data-tttc-qr="<?php echo esc_attr( $page_url ); ?>" width="200" height="200"
 				alt="<?php esc_attr_e( 'QR code linking to this tournament page', 'table-tennis-tournament-for-clubs' ); ?>"
 				loading="lazy">
 			<?php endif; ?>

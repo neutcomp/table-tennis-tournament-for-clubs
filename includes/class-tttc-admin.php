@@ -1026,7 +1026,8 @@ final class TTTC_Admin {
 							// translators: %d is the round number.
 							$round_label = sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 );
 							?>
-				<div class="tttc-public-round" id="<?php echo esc_attr( 'tttc-score-group-' . ( $group_index + 1 ) . '-round-' . ( $round_number + 1 ) ); ?>">
+				<div class="tttc-public-round"
+					id="<?php echo esc_attr( 'tttc-score-group-' . ( $group_index + 1 ) . '-round-' . ( $round_number + 1 ) ); ?>">
 					<h3 class="tttc-public-round-title"><?php echo esc_html( $round_label ); ?></h3>
 					<div class="tttc-scores-table-wrap">
 						<table class="widefat striped tttc-scores-table">

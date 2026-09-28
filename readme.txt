@@ -80,3 +80,5 @@ Draft, Upcoming, Active, Completed, and Cancelled are available. Draft tournamen
 == Privacy ==
 
 Player email addresses are available to administrators in WordPress and are never rendered by the public shortcodes.
+
+Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.

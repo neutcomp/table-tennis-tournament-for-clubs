@@ -393,6 +393,10 @@ ul.tttc-breadcrumbs__list > li::after {
   width: auto;
 }
 
+.tttc-public-tournament__qr:not([src]) {
+  visibility: hidden;
+}
+
 .tttc-public-tournament__eyebrow {
   color: #646970;
   font-size: 12px;

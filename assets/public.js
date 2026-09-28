@@ -1,6 +1,29 @@
 (function () {
 	'use strict';
 
+	function initializeQrCodes() {
+		if (typeof qrcode !== 'function') {
+			return;
+		}
+
+		document.querySelectorAll('[data-tttc-qr]').forEach(function (image) {
+			var url = image.getAttribute('data-tttc-qr');
+
+			if (!url) {
+				return;
+			}
+
+			try {
+				var qr = qrcode(0, 'M');
+				qr.addData(url, 'Byte');
+				qr.make();
+				image.src = qr.createDataURL(4, 0);
+			} catch (error) {
+				image.remove();
+			}
+		});
+	}
+
 	function initializeGroupTabs(tablist) {
 		var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
 
@@ -154,6 +177,7 @@
 		}, poll);
 	}
 
+	initializeQrCodes();
 	document.querySelectorAll('.tttc-public-group-tabs').forEach(initializeGroupTabs);
 	document.querySelectorAll('[data-tttc-tv]').forEach(initializeTv);
 }());
