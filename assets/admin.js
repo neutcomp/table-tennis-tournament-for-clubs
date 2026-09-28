@@ -1,6 +1,16 @@
 (function ($) {
 	'use strict';
 
+	// Force new-tab navigation even if something else on the page intercepts the click.
+	$(document).on('click', 'a[target="_blank"]', function (e) {
+		var href = $(this).attr('href');
+		if (!href) {
+			return;
+		}
+		e.preventDefault();
+		window.open(href, '_blank', 'noopener,noreferrer');
+	});
+
 	$(document).on('change', '.tttc-select-all', function () {
 		$('.tttc-assignment-form tbody input[type="checkbox"]:not(:disabled)').prop('checked', this.checked);
 	});
