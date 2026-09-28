@@ -77,6 +77,14 @@ If a page cache or CDN is used, exclude the TV URL or the REST endpoint from cac
 
 Draft, Upcoming, Active, Completed, and Cancelled are available. Draft tournaments are managed in the admin area but are not shown by public shortcodes.
 
+== External services ==
+
+When a visitor successfully signs up for an upcoming tournament, the plugin uses WordPress's `wp_mail()` function to send a confirmation email. It passes the visitor's email address, the configured sender address, and the configured email subject and message to WordPress. The message can include the tournament name, date, time, and public tournament URL. The email is sent only after the signup has been saved.
+
+The website's mail transport is configured by the site owner and may be the hosting provider or a separately installed mail service. This plugin does not select or connect to a specific email provider, so the applicable provider's terms of service and privacy policy depend on the website's configuration.
+
+Tournament QR codes are generated in the visitor's browser using JavaScript bundled with the plugin. The tournament URL is not sent to a QR-code service.
+
 == Privacy ==
 
 Player email addresses are available to administrators in WordPress and are never rendered by the public shortcodes.
