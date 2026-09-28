@@ -27,6 +27,7 @@ final class TTTC_Admin {
 		add_action( 'pre_get_posts', array( $this, 'filter_players' ) );
 		add_filter( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_columns', array( $this, 'tournament_columns' ) );
 		add_action( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_custom_column', array( $this, 'tournament_column' ), 10, 2 );
+		add_action( 'admin_footer-edit.php', array( $this, 'render_status_info_modal' ) );
 		add_action( 'admin_post_tttc_update_players', array( $this, 'update_players' ) );
 		add_action( 'admin_post_tttc_reorder_players', array( $this, 'reorder_players' ) );
 		add_action( 'admin_post_tttc_save_scores', array( $this, 'save_scores' ) );
@@ -858,7 +859,49 @@ final class TTTC_Admin {
 	}
 
 	public function tournament_columns( $columns ) {
-		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => __( 'Status', 'table-tennis-tournament-for-clubs' ), 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'tttc_scores' => __( 'Scores', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
+		$status_label = __( 'Status', 'table-tennis-tournament-for-clubs' ) . ' <button type="button" class="tttc-status-info dashicons dashicons-info-outline" aria-haspopup="dialog" aria-controls="tttc-status-info-modal" aria-label="' . esc_attr__( 'What can I do in each status?', 'table-tennis-tournament-for-clubs' ) . '"></button>';
+		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => $status_label, 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'tttc_scores' => __( 'Scores', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
+	}
+
+	public function render_status_info_modal() {
+		$screen = get_current_screen();
+		if ( ! $screen || TTTC_Plugin::TOURNAMENT_POST_TYPE !== $screen->post_type ) {
+			return;
+		}
+
+		$rows = array(
+			__( 'Draft', 'table-tennis-tournament-for-clubs' ) => __( 'Manage and Order player links are available. No score entry yet.', 'table-tennis-tournament-for-clubs' ),
+			__( 'Upcoming', 'table-tennis-tournament-for-clubs' ) => __( 'Manage and Order player links are available. No score entry yet.', 'table-tennis-tournament-for-clubs' ),
+			__( 'Active', 'table-tennis-tournament-for-clubs' ) => __( 'Players are locked (no Manage/Order links). The Enter scores link is available.', 'table-tennis-tournament-for-clubs' ),
+			__( 'Completed', 'table-tennis-tournament-for-clubs' ) => __( 'Players are locked and score entry is closed.', 'table-tennis-tournament-for-clubs' ),
+			__( 'Cancelled', 'table-tennis-tournament-for-clubs' ) => __( 'Manage and Order player links are available. No score entry.', 'table-tennis-tournament-for-clubs' ),
+		);
+		?>
+		<div id="tttc-status-info-modal" class="tttc-modal" hidden>
+			<div class="tttc-modal-overlay"></div>
+			<div class="tttc-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="tttc-status-info-title">
+				<button type="button" class="tttc-modal-close dashicons dashicons-no-alt" aria-label="<?php echo esc_attr__( 'Close', 'table-tennis-tournament-for-clubs' ); ?>"></button>
+				<h2 id="tttc-status-info-title"><?php esc_html_e( 'Status and available actions', 'table-tennis-tournament-for-clubs' ); ?></h2>
+				<table>
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Status', 'table-tennis-tournament-for-clubs' ); ?></th>
+							<th><?php esc_html_e( 'What you can do', 'table-tennis-tournament-for-clubs' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $rows as $status_label => $description ) : ?>
+						<tr>
+							<td><?php echo esc_html( $status_label ); ?></td>
+							<td><?php echo esc_html( $description ); ?></td>
+						</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+				<p class="tttc-modal-note"><?php esc_html_e( 'The Website link is shown whenever the tournament date is set, regardless of status.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			</div>
+		</div>
+		<?php
 	}
 
 	public function tournament_column( $column, $post_id ) {

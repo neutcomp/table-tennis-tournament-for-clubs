@@ -8,6 +8,80 @@
   color: #d63638;
 }
 
+.tttc-status-info {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 4px;
+  cursor: pointer;
+  color: #646970;
+  vertical-align: text-bottom;
+}
+
+.tttc-status-info:hover,
+.tttc-status-info:focus {
+  color: #2271b1;
+}
+
+.tttc-modal[hidden] {
+  display: none;
+}
+
+.tttc-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100000;
+}
+
+.tttc-modal-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100001;
+  background: #fff;
+  padding: 24px;
+  max-width: 560px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.tttc-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #646970;
+}
+
+.tttc-modal-dialog table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.tttc-modal-dialog th,
+.tttc-modal-dialog td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #dcdcde;
+  vertical-align: top;
+}
+
+.tttc-modal-note {
+  margin-top: 12px;
+  font-style: italic;
+  color: #646970;
+}
+
 .tttc-summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
