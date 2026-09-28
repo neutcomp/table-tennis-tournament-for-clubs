@@ -1799,8 +1799,8 @@ final class TTTC_Admin {
 		}
 
 		if ( false !== strpos( $hook, 'tttc-' ) || in_array( $screen_post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) {
-			wp_enqueue_style( 'tttc-admin', TTTC_URL . 'assets/admin.css', array(), TTTC_VERSION );
-			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery', 'jquery-ui-sortable' ), TTTC_VERSION, true );
+			wp_enqueue_style( 'tttc-admin', TTTC_URL . 'assets/admin.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.css' ) );
+			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery', 'jquery-ui-sortable' ), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.js' ), true );
 
 			if ( TTTC_Plugin::PLAYER_POST_TYPE === $screen_post_type && in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 				$existing_players = get_posts( array(
