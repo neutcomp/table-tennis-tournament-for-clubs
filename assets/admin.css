@@ -23,6 +23,13 @@
   color: #2271b1;
 }
 
+.tttc-icon-link .dashicons {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
 .tttc-modal[hidden] {
   display: none;
 }

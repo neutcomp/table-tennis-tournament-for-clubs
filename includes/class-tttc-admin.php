@@ -935,13 +935,15 @@ final class TTTC_Admin {
 			$status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 			echo esc_html( count( $count ) );
 			if ( ! in_array( $status, array( 'active', 'completed' ), true ) ) {
-				echo ' <a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Manage', 'table-tennis-tournament-for-clubs' ) . '</a>';
-				echo ' <a class="button-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-order&tournament_id=' . $post_id ) ) . '">' . esc_html__( 'Order', 'table-tennis-tournament-for-clubs' ) . '</a>';
+				echo ' <a class="button-link tttc-icon-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '" title="' . esc_attr__( 'Manage', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-groups" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Manage', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
+				echo ' <a class="button-link tttc-icon-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-order&tournament_id=' . $post_id ) ) . '" title="' . esc_attr__( 'Order', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-sort" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Order', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
 			}
 		} elseif ( 'tttc_url' === $column ) {
 			$website_url = $this->tournament_url( $post_id );
 			if ( $website_url ) {
-				echo '<a class="button-link" href="' . esc_url( $website_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Website', 'table-tennis-tournament-for-clubs' ) . '</a>';
+				$tv_url = add_query_arg( 'showtv', 'true', $website_url );
+				echo '<a class="button-link tttc-icon-link" href="' . esc_url( $website_url ) . '" target="_blank" rel="noopener noreferrer" title="' . esc_attr__( 'Website', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Website', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
+				echo ' <a class="button-link tttc-icon-link" href="' . esc_url( $tv_url ) . '" target="_blank" rel="noopener noreferrer" title="' . esc_attr__( 'TV view', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-desktop" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'TV view', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
 			}
 		} elseif ( 'tttc_scores' === $column ) {
 			$status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
