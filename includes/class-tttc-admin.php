@@ -40,7 +40,7 @@ final class TTTC_Admin {
 	}
 
 	public function register_menu() {
-		add_options_page( __( 'Table Tennis Settings', 'table-tennis-tournament-for-clubs' ), __( 'Table Tennis', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-settings', array( $this, 'settings_page' ) );
+		add_options_page( __( 'Table Tennis Settings', 'table-tennis-tournament-for-clubs' ), __( 'Table Tennis', 'table-tennis-tournament-for-clubs' ), 'manage_options', 'tttc-settings', array( $this, 'settings_page' ) );
 		add_menu_page(
 			__( 'Table Tennis Clubs', 'table-tennis-tournament-for-clubs' ),
 			__( 'Table Tennis', 'table-tennis-tournament-for-clubs' ),
@@ -96,7 +96,7 @@ final class TTTC_Admin {
 	}
 
 	public function settings_page() {
-		if ( ! current_user_can( 'edit_posts' ) ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
@@ -939,6 +939,9 @@ final class TTTC_Admin {
 		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
 			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
 		}
+		if ( ! current_user_can( 'edit_post', $tournament_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
 
 		$games         = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$games         = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
@@ -1324,10 +1327,16 @@ final class TTTC_Admin {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 		$tournament_id = isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0;
-		$tournament_type = $tournament_id ? get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TYPE, true ) : 'both';
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		if ( ! current_user_can( 'edit_post', $tournament_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		$tournament_type = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
 		$tournament_type = in_array( $tournament_type, array( 'senior', 'youth', 'both' ), true ) ? $tournament_type : 'both';
 		$players         = get_posts( array( 'post_type' => TTTC_Plugin::PLAYER_POST_TYPE, 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC', 'meta_query' => array( array( 'key' => TTTC_Plugin::PLAYER_META_ACTIVE, 'value' => '1' ) ) ) );
-		$assigned      = $tournament_id ? $this->assigned_player_ids( $tournament_id ) : array();
+		$assigned      = $this->assigned_player_ids( $tournament_id );
 		?>
 <div class="wrap">
 	<h1><?php esc_html_e( 'Tournament Players', 'table-tennis-tournament-for-clubs' ); ?></h1>
@@ -1338,7 +1347,7 @@ final class TTTC_Admin {
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-assignment-form">
 		<input type="hidden" name="action" value="tttc_update_players"><input type="hidden" name="tournament_id"
 			value="<?php echo esc_attr( $tournament_id ); ?>">
-		<?php wp_nonce_field( 'tttc_update_players', 'tttc_assignment_nonce' ); ?>
+		<?php wp_nonce_field( 'tttc_update_players_' . $tournament_id, 'tttc_assignment_nonce' ); ?>
 		<h2><?php echo esc_html( get_the_title( $tournament_id ) ); ?></h2>
 		<p>
 			<?php esc_html_e( 'Select the active players who will participate in this tournament.', 'table-tennis-tournament-for-clubs' ); ?>
@@ -1392,6 +1401,9 @@ final class TTTC_Admin {
 		$tournament_id = isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0;
 		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
 			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		if ( ! current_user_can( 'edit_post', $tournament_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
 		}
 		?>
 <div class="wrap">
@@ -1449,10 +1461,13 @@ final class TTTC_Admin {
 	}
 
 	public function update_players() {
-		if ( ! current_user_can( 'edit_posts' ) || ! isset( $_POST['tttc_assignment_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_assignment_nonce'] ) ), 'tttc_update_players' ) ) {
+		$tournament_id = isset( $_POST['tournament_id'] ) ? absint( $_POST['tournament_id'] ) : 0;
+		if ( ! current_user_can( 'edit_posts' ) || ! isset( $_POST['tttc_assignment_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_assignment_nonce'] ) ), 'tttc_update_players_' . $tournament_id ) ) {
 			wp_die( esc_html__( 'The security check failed.', 'table-tennis-tournament-for-clubs' ) );
 		}
-		$tournament_id = isset( $_POST['tournament_id'] ) ? absint( $_POST['tournament_id'] ) : 0;
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) || ! current_user_can( 'edit_post', $tournament_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
 		$player_ids    = isset( $_POST['player_ids'] ) ? array_map( 'absint', (array) $_POST['player_ids'] ) : array();
 		$active_ids    = array();
 		foreach ( $player_ids as $player_id ) {
@@ -1501,7 +1516,7 @@ final class TTTC_Admin {
 		if ( ! current_user_can( 'edit_posts' ) || ! isset( $_POST['tttc_reorder_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_reorder_nonce'] ) ), 'tttc_reorder_players_' . $tournament_id ) ) {
 			wp_die( esc_html__( 'The security check failed.', 'table-tennis-tournament-for-clubs' ) );
 		}
-		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) || TTTC_Plugin::has_scores( $tournament_id ) ) {
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) || ! current_user_can( 'edit_post', $tournament_id ) || TTTC_Plugin::has_scores( $tournament_id ) ) {
 			wp_die( esc_html__( 'The seeding order can not be changed for this tournament.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
@@ -1610,6 +1625,9 @@ final class TTTC_Admin {
 			if ( TTTC_Plugin::PLAYER_POST_TYPE !== get_post_type( $player_id ) ) {
 				wp_die( esc_html__( 'The selected players could not be found.', 'table-tennis-tournament-for-clubs' ) );
 			}
+			if ( ! current_user_can( 'edit_post', $player_id ) ) {
+				wp_die( esc_html__( 'You do not have permission to merge these players.', 'table-tennis-tournament-for-clubs' ) );
+			}
 		}
 		?>
 <div class="wrap">
@@ -1672,7 +1690,7 @@ final class TTTC_Admin {
 	}
 
 	public function merge_players() {
-		if ( ! isset( $_POST['tttc_merge_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_merge_nonce'] ) ), 'tttc_merge_players' ) ) {
+		if ( ! current_user_can( 'edit_posts' ) || ! isset( $_POST['tttc_merge_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_merge_nonce'] ) ), 'tttc_merge_players' ) ) {
 			wp_die( esc_html__( 'The security check failed.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
