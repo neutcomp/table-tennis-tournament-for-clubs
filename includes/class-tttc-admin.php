@@ -877,31 +877,35 @@ final class TTTC_Admin {
 			__( 'Cancelled', 'table-tennis-tournament-for-clubs' ) => __( 'Manage and Order player links are available. No score entry.', 'table-tennis-tournament-for-clubs' ),
 		);
 		?>
-		<div id="tttc-status-info-modal" class="tttc-modal" hidden>
-			<div class="tttc-modal-overlay"></div>
-			<div class="tttc-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="tttc-status-info-title">
-				<button type="button" class="tttc-modal-close dashicons dashicons-no-alt" aria-label="<?php echo esc_attr__( 'Close', 'table-tennis-tournament-for-clubs' ); ?>"></button>
-				<h2 id="tttc-status-info-title"><?php esc_html_e( 'Status and available actions', 'table-tennis-tournament-for-clubs' ); ?></h2>
-				<table>
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Status', 'table-tennis-tournament-for-clubs' ); ?></th>
-							<th><?php esc_html_e( 'What you can do', 'table-tennis-tournament-for-clubs' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $rows as $status_label => $description ) : ?>
-						<tr>
-							<td><?php echo esc_html( $status_label ); ?></td>
-							<td><?php echo esc_html( $description ); ?></td>
-						</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-				<p class="tttc-modal-note"><?php esc_html_e( 'The Website link is shown whenever the tournament date is set, regardless of status.', 'table-tennis-tournament-for-clubs' ); ?></p>
-			</div>
-		</div>
-		<?php
+<div id="tttc-status-info-modal" class="tttc-modal" hidden>
+	<div class="tttc-modal-overlay"></div>
+	<div class="tttc-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="tttc-status-info-title">
+		<button type="button" class="tttc-modal-close dashicons dashicons-no-alt"
+			aria-label="<?php echo esc_attr__( 'Close', 'table-tennis-tournament-for-clubs' ); ?>"></button>
+		<h2 id="tttc-status-info-title">
+			<?php esc_html_e( 'Status and available actions', 'table-tennis-tournament-for-clubs' ); ?></h2>
+		<table>
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Status', 'table-tennis-tournament-for-clubs' ); ?></th>
+					<th><?php esc_html_e( 'What you can do', 'table-tennis-tournament-for-clubs' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $rows as $status_label => $description ) : ?>
+				<tr>
+					<td><?php echo esc_html( $status_label ); ?></td>
+					<td><?php echo esc_html( $description ); ?></td>
+				</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<p class="tttc-modal-note">
+			<?php esc_html_e( 'The Website link is shown whenever the tournament date is set, regardless of status.', 'table-tennis-tournament-for-clubs' ); ?>
+		</p>
+	</div>
+</div>
+<?php
 	}
 
 	public function tournament_column( $column, $post_id ) {
@@ -1402,10 +1406,12 @@ final class TTTC_Admin {
 			aria-label="<?php esc_attr_e( 'Player type', 'table-tennis-tournament-for-clubs' ); ?>">
 			<button type="button"
 				class="nav-tab tttc-player-type-tab <?php echo 'senior' === $tournament_type ? 'nav-tab-active' : ''; ?>"
-				data-player-type="senior" aria-pressed="<?php echo 'senior' === $tournament_type ? 'true' : 'false'; ?>"><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></button>
+				data-player-type="senior"
+				aria-pressed="<?php echo 'senior' === $tournament_type ? 'true' : 'false'; ?>"><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></button>
 			<button type="button"
 				class="nav-tab tttc-player-type-tab <?php echo 'youth' === $tournament_type ? 'nav-tab-active' : ''; ?>"
-				data-player-type="youth" aria-pressed="<?php echo 'youth' === $tournament_type ? 'true' : 'false'; ?>"><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></button>
+				data-player-type="youth"
+				aria-pressed="<?php echo 'youth' === $tournament_type ? 'true' : 'false'; ?>"><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></button>
 		</div>
 		<table class="widefat striped" data-tournament-type="<?php echo esc_attr( $tournament_type ); ?>">
 			<thead>
