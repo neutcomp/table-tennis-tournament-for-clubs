@@ -860,7 +860,7 @@ final class TTTC_Admin {
 
 	public function tournament_columns( $columns ) {
 		$status_label = __( 'Status', 'table-tennis-tournament-for-clubs' ) . ' <button type="button" class="tttc-status-info dashicons dashicons-info-outline" aria-haspopup="dialog" aria-controls="tttc-status-info-modal" aria-label="' . esc_attr__( 'What can I do in each status?', 'table-tennis-tournament-for-clubs' ) . '"></button>';
-		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => $status_label, 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'tttc_scores' => __( 'Scores', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
+		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_date' => __( 'Date', 'table-tennis-tournament-for-clubs' ), 'tttc_time' => __( 'Time', 'table-tennis-tournament-for-clubs' ), 'tttc_games' => __( 'Best of', 'table-tennis-tournament-for-clubs' ), 'tttc_status' => $status_label, 'tttc_players' => __( 'Players', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'tttc_scores' => __( 'Scores', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
 	}
 
 	public function render_status_info_modal() {
@@ -909,6 +909,8 @@ final class TTTC_Admin {
 			$date        = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
 			$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
 			echo esc_html( $date_object ? $date_object->format( 'd-m-Y' ) : $date );
+		} elseif ( 'tttc_time' === $column ) {
+			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIME, true ) );
 		} elseif ( 'tttc_games' === $column ) {
 			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true ) );
 		} elseif ( 'tttc_status' === $column ) {
