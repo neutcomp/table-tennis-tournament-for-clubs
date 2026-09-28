@@ -5,8 +5,24 @@
 		$('.tttc-assignment-form tbody input[type="checkbox"]:not(:disabled)').prop('checked', this.checked);
 	});
 
-	$(document).on('change', '.tttc-show-all-players', function () {
-		$('.tttc-assignment-form table').toggleClass('tttc-show-all-players-active', this.checked);
+	$(document).on('click', '.tttc-player-type-tab', function () {
+		var $tab = $(this);
+		var $form = $tab.closest('.tttc-assignment-form');
+		var showAll = $tab.attr('aria-pressed') === 'true';
+		var activeType = showAll ? '' : $tab.data('player-type');
+
+		$form.find('.tttc-player-type-tab')
+			.removeClass('nav-tab-active')
+			.attr('aria-pressed', 'false');
+
+		if (activeType) {
+			$tab.addClass('nav-tab-active').attr('aria-pressed', 'true');
+		}
+
+		$form.find('tbody tr').each(function () {
+			var isHidden = activeType && $(this).data('type') !== activeType;
+			$(this).toggleClass('tttc-row-hidden-by-type', Boolean(isHidden));
+		});
 	});
 
 	$(document).on('input', '.tttc-score-pair input', function () {

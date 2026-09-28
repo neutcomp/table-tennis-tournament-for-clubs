@@ -1353,11 +1353,15 @@ final class TTTC_Admin {
 		<p>
 			<?php esc_html_e( 'Select the active players who will participate in this tournament.', 'table-tennis-tournament-for-clubs' ); ?>
 		</p>
-		<?php if ( 'both' !== $tournament_type ) : ?>
-		<p><label><input type="checkbox" class="tttc-show-all-players">
-				<?php esc_html_e( 'Show all players (including other player types)', 'table-tennis-tournament-for-clubs' ); ?></label>
-		</p>
-		<?php endif; ?>
+		<div class="nav-tab-wrapper tttc-player-type-tabs" role="group"
+			aria-label="<?php esc_attr_e( 'Player type', 'table-tennis-tournament-for-clubs' ); ?>">
+			<button type="button"
+				class="nav-tab tttc-player-type-tab <?php echo 'senior' === $tournament_type ? 'nav-tab-active' : ''; ?>"
+				data-player-type="senior" aria-pressed="<?php echo 'senior' === $tournament_type ? 'true' : 'false'; ?>"><?php esc_html_e( 'Senior', 'table-tennis-tournament-for-clubs' ); ?></button>
+			<button type="button"
+				class="nav-tab tttc-player-type-tab <?php echo 'youth' === $tournament_type ? 'nav-tab-active' : ''; ?>"
+				data-player-type="youth" aria-pressed="<?php echo 'youth' === $tournament_type ? 'true' : 'false'; ?>"><?php esc_html_e( 'Youth', 'table-tennis-tournament-for-clubs' ); ?></button>
+		</div>
 		<table class="widefat striped" data-tournament-type="<?php echo esc_attr( $tournament_type ); ?>">
 			<thead>
 				<tr>
@@ -1376,7 +1380,7 @@ final class TTTC_Admin {
 						$type_mismatch = 'both' !== $tournament_type && $player_type !== $tournament_type;
 						?>
 				<tr data-type="<?php echo esc_attr( $player_type ); ?>"
-					class="<?php echo $type_mismatch && ! $is_assigned ? 'tttc-row-hidden-by-type' : ''; ?>">
+					class="<?php echo $type_mismatch ? 'tttc-row-hidden-by-type' : ''; ?>">
 					<th class="check-column"><input type="checkbox" name="player_ids[]"
 							value="<?php echo esc_attr( $player->ID ); ?>" <?php checked( $is_assigned ); ?>></th>
 					<td><?php echo esc_html( $player->post_title ); ?></td>

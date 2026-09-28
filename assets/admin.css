@@ -144,14 +144,16 @@
   margin-top: 28px;
 }
 
-.tttc-assignment-form tr.tttc-row-hidden-by-type {
-  display: none;
+.tttc-player-type-tabs {
+  margin-top: 16px;
 }
 
-.tttc-assignment-form
-  table.tttc-show-all-players-active
-  tr.tttc-row-hidden-by-type {
-  display: table-row;
+.tttc-player-type-tabs .tttc-player-type-tab {
+  cursor: pointer;
+}
+
+.tttc-assignment-form tr.tttc-row-hidden-by-type {
+  display: none;
 }
 
 .tttc-scores-form {
