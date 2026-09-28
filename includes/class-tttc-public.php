@@ -319,7 +319,7 @@ final class TTTC_Public {
 		<div class="tttc-tv-header__title">
 			<h1><?php echo esc_html( get_the_title( $tournament_id ) ); ?></h1>
 			<span
-				class="tttc-tv-date"><?php echo esc_html( $this->display_date( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ); ?></span>
+				class="tttc-tv-date"><?php echo esc_html( $this->display_date_time( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ), get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIME, true ) ) ); ?></span>
 		</div>
 		<div class="tttc-tv-header__meta">
 			<?php if ( 'active' === $status ) : ?><span
@@ -571,7 +571,7 @@ final class TTTC_Public {
 					<div><a
 							href="<?php echo esc_url( $this->tournament_url( $tournament->ID ) ); ?>"><?php echo esc_html( get_the_title( $tournament->ID ) ); ?></a>
 						<span
-							class="tttc-public-player__tournament-date"><?php echo esc_html( $this->display_date( get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ); ?></span>
+							class="tttc-public-player__tournament-date"><?php echo esc_html( $this->display_date_time( get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_DATE, true ), get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_TIME, true ) ) ); ?></span>
 					</div>
 					<?php if ( $position_label ) : ?><span><?php echo esc_html( $position_label ); ?></span><?php endif; ?>
 				</li>
@@ -623,7 +623,7 @@ final class TTTC_Public {
 			} elseif ( 'completed' === $status ) {
 				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--completed">' . esc_html__( 'Show results', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
 			}
-			$output .= '<article class="tttc-tournament tttc-tournament--' . esc_attr( $status ) . '"><header class="tttc-tournament__header"><h3>' . $title . '</h3></header><dl class="tttc-tournament__details"><div class="tttc-tournament__detail-item"><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $this->display_date( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ) ) ) . '</dd></div></dl>' . $action_link . '</article>';
+			$output .= '<article class="tttc-tournament tttc-tournament--' . esc_attr( $status ) . '"><header class="tttc-tournament__header"><h3>' . $title . '</h3></header><dl class="tttc-tournament__details"><div class="tttc-tournament__detail-item"><dt>' . esc_html__( 'Date', 'table-tennis-tournament-for-clubs' ) . '</dt><dd>' . esc_html( $this->display_date_time( get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, true ), get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIME, true ) ) ) . '</dd></div></dl>' . $action_link . '</article>';
 		}
 		wp_reset_postdata();
 		return $output . '</div>';
@@ -632,7 +632,9 @@ final class TTTC_Public {
 	private function render_tournament_detail( $tournament_id ) {
 		$title       = get_the_title( $tournament_id );
 		$stored_date = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
+		$stored_time = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIME, true );
 		$status      = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+		$is_active   = 'active' === $status;
 		$players     = $this->assigned_players( $tournament_id );
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
@@ -664,15 +666,16 @@ final class TTTC_Public {
 				<p class="tttc-public-tournament__eyebrow">
 					<?php esc_html_e( 'Table tennis tournament', 'table-tennis-tournament-for-clubs' ); ?></p>
 				<h1><?php echo esc_html( $title ); ?></h1>
-				<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date( $stored_date ) ); ?></p>
+				<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date_time( $stored_date, $stored_time ) ); ?></p>
 			</div>
-			<?php if ( $page_url ) : ?>
+			<?php if ( $page_url && ! $is_active ) : ?>
 			<img class="tttc-public-tournament__qr" data-tttc-qr="<?php echo esc_attr( $page_url ); ?>" width="200" height="200"
 				alt="<?php esc_attr_e( 'QR code linking to this tournament page', 'table-tennis-tournament-for-clubs' ); ?>"
 				loading="lazy">
 			<?php endif; ?>
 		</header>
 		<?php if ( 'upcoming' === $status ) : $this->render_signup_form( $tournament_id ); endif; ?>
+		<?php if ( ! $is_active ) : ?>
 		<details class="tttc-public-tournament__players">
 			<summary><span><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?></span> <span
 					class="tttc-players-expand-label"><?php esc_html_e( 'expand', 'table-tennis-tournament-for-clubs' ); ?></span><span
@@ -693,6 +696,7 @@ final class TTTC_Public {
 			</ol>
 			<?php endif; ?>
 		</details>
+		<?php endif; ?>
 		<?php if ( in_array( $status, array( 'active', 'completed' ), true ) && ! empty( $schedule ) ) : ?>
 		<section class="tttc-public-groups" aria-labelledby="tttc-groups-heading">
 			<h2 id="tttc-groups-heading"><?php esc_html_e( 'Groups and matches', 'table-tennis-tournament-for-clubs' ); ?>
@@ -1421,6 +1425,18 @@ final class TTTC_Public {
 		$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
 
 		return $date_object ? $date_object->format( 'd-m-Y' ) : $date;
+	}
+
+	private function display_date_time( $date, $time ) {
+		$formatted_date = $this->display_date( $date );
+		$time_object    = DateTime::createFromFormat( 'H:i', trim( (string) $time ) );
+
+		if ( ! $time_object ) {
+			return $formatted_date;
+		}
+
+		// translators: 1: tournament date, 2: tournament start time.
+		return sprintf( __( '%1$s at %2$s', 'table-tennis-tournament-for-clubs' ), $formatted_date, $time_object->format( 'H:i' ) );
 	}
 
 	public function players_shortcode( $atts ) {

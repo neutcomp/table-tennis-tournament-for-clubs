@@ -110,6 +110,10 @@ msgstr "Datum"
 msgid "Time"
 msgstr "Tijd"
 
+#. translators: 1: tournament date, 2: tournament start time.
+msgid "%1$s at %2$s"
+msgstr "%1$s om %2$s"
+
 msgid "Best of"
 msgstr "Best of"
 
