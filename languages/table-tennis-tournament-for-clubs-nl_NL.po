@@ -107,6 +107,13 @@ msgstr "Website"
 msgid "Date"
 msgstr "Datum"
 
+msgid "Time"
+msgstr "Tijd"
+
+#. translators: 1: tournament date, 2: tournament start time.
+msgid "%1$s at %2$s"
+msgstr "%1$s om %2$s"
+
 msgid "Best of"
 msgstr "Best of"
 
@@ -359,6 +366,9 @@ msgstr "Scores opslaan"
 msgid "Tournament scores updated."
 msgstr "Toernooiscores bijgewerkt."
 
+msgid "You only need to enter the lowest score of each game; the other field is filled in automatically."
+msgstr "Je hoeft per game alleen de laagste score in te vullen; het andere veld wordt automatisch ingevuld."
+
 msgid "Select the active players who will participate in this tournament."
 msgstr "Selecteer de actieve spelers die aan dit toernooi deelnemen."
 
@@ -401,8 +411,8 @@ msgstr "Onderwerp"
 msgid "Body"
 msgstr "Inhoud"
 
-msgid "Available merge fields: [tournament-name] and [tournament-date]."
-msgstr "Beschikbare samenvoegvelden: [tournament-name] en [tournament-date]."
+msgid "Available merge fields: [tournament-name], [tournament-date], [tournament-time], and [tournament-link]."
+msgstr "Beschikbare samenvoegvelden: [tournament-name], [tournament-date], [tournament-time] en [tournament-link]."
 
 msgid "Merge Players"
 msgstr "Spelers samenvoegen"

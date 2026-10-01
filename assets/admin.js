@@ -1,12 +1,52 @@
 (function ($) {
 	'use strict';
 
+	// Force new-tab navigation even if something else on the page intercepts the click.
+	$(document).on('click', 'a[target="_blank"]', function (e) {
+		var href = $(this).attr('href');
+		if (!href) {
+			return;
+		}
+		e.preventDefault();
+		window.open(href, '_blank', 'noopener,noreferrer');
+	});
+
 	$(document).on('change', '.tttc-select-all', function () {
 		$('.tttc-assignment-form tbody input[type="checkbox"]:not(:disabled)').prop('checked', this.checked);
 	});
 
-	$(document).on('change', '.tttc-show-all-players', function () {
-		$('.tttc-assignment-form table').toggleClass('tttc-show-all-players-active', this.checked);
+	$(document).on('click', '.tttc-player-type-tab', function () {
+		var $tab = $(this);
+		var $form = $tab.closest('.tttc-assignment-form');
+		var showAll = $tab.attr('aria-pressed') === 'true';
+		var activeType = showAll ? '' : $tab.data('player-type');
+
+		$form.find('.tttc-player-type-tab')
+			.removeClass('nav-tab-active')
+			.attr('aria-pressed', 'false');
+
+		if (activeType) {
+			$tab.addClass('nav-tab-active').attr('aria-pressed', 'true');
+		}
+
+		$form.find('tbody tr').each(function () {
+			var isHidden = activeType && $(this).data('type') !== activeType;
+			$(this).toggleClass('tttc-row-hidden-by-type', Boolean(isHidden));
+		});
+	});
+
+	$(document).on('input', '.tttc-score-pair input', function () {
+		var value = $.trim($(this).val());
+		if (!/^\d+$/.test(value)) {
+			return;
+		}
+
+		var score = Number(value);
+		if (!isFinite(score) || Math.floor(score) !== score) {
+			return;
+		}
+
+		$(this).siblings('input').val(score <= 9 ? 11 : score + 2);
 	});
 
 	$(document).ready(function () {
@@ -122,5 +162,21 @@
 		}).fail(onError).always(function () {
 			$select.prop('disabled', false);
 		});
+	});
+
+	$(document).on('click', '.tttc-info-trigger', function () {
+		var $modal = $('#' + $(this).attr('aria-controls'));
+		$modal.prop('hidden', false);
+		$modal.find('.tttc-modal-close').trigger('focus');
+	});
+
+	$(document).on('click', '.tttc-modal-close, .tttc-modal-overlay', function () {
+		$(this).closest('.tttc-modal').prop('hidden', true);
+	});
+
+	$(document).on('keydown', function (e) {
+		if (e.key === 'Escape' || e.keyCode === 27) {
+			$('.tttc-modal:not([hidden])').prop('hidden', true);
+		}
 	});
 }(jQuery));

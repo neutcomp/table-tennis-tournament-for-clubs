@@ -1,6 +1,29 @@
 (function () {
 	'use strict';
 
+	function initializeQrCodes() {
+		if (typeof qrcode !== 'function') {
+			return;
+		}
+
+		document.querySelectorAll('[data-tttc-qr]').forEach(function (image) {
+			var url = image.getAttribute('data-tttc-qr');
+
+			if (!url) {
+				return;
+			}
+
+			try {
+				var qr = qrcode(0, 'M');
+				qr.addData(url, 'Byte');
+				qr.make();
+				image.src = qr.createDataURL(4, 0);
+			} catch (error) {
+				image.remove();
+			}
+		});
+	}
+
 	function initializeGroupTabs(tablist) {
 		var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
 
@@ -50,6 +73,18 @@
 				selectTab(tabs[nextIndex], true);
 			});
 		});
+
+		// Reopen the group containing the anchor after a per-round save.
+		var target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null;
+		var targetPanel = target ? target.closest('[role="tabpanel"]') : null;
+		if (targetPanel) {
+			tabs.forEach(function (tab) {
+				if (tab.getAttribute('aria-controls') === targetPanel.id) {
+					selectTab(tab, false);
+					target.scrollIntoView();
+				}
+			});
+		}
 	}
 
 	function initializeTv(root) {
@@ -142,6 +177,7 @@
 		}, poll);
 	}
 
+	initializeQrCodes();
 	document.querySelectorAll('.tttc-public-group-tabs').forEach(initializeGroupTabs);
 	document.querySelectorAll('[data-tttc-tv]').forEach(initializeTv);
 }());
