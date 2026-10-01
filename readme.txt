@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.8
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,3 +80,12 @@ Draft, Upcoming, Active, Completed, and Cancelled are available. Draft tournamen
 == Privacy ==
 
 Player email addresses are available to administrators in WordPress and are never rendered by the public shortcodes.
+
+== Changelog ==
+
+= 1.0.1 =
+* Fixed the Stable tag.
+* Added release history.
+
+= 1.0 =
+* First release.
