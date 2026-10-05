@@ -940,13 +940,18 @@ final class TTTC_Public {
 <?php
 	}
 
+	private function signup_default_player_type( $tournament_id ) {
+		return 'youth' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TYPE, true ) ? 'youth' : 'senior';
+	}
+
 	private function handle_signup( $tournament_id ) {
+		$default_player_type = $this->signup_default_player_type( $tournament_id );
 		$this->signup_form = array(
 			'name'   => '',
 			'rating' => '',
 			'email'  => '',
 			'gender' => 'male',
-			'type'   => 'senior',
+			'type'   => $default_player_type,
 		);
 
 		if ( ! isset( $_POST['tttc_signup_action'] ) || 'tttc_signup' !== sanitize_key( wp_unslash( $_POST['tttc_signup_action'] ) ) ) {
@@ -967,7 +972,7 @@ final class TTTC_Public {
 			'rating' => isset( $_POST['tttc_signup_rating'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_rating'] ) ) : '',
 			'email'  => isset( $_POST['tttc_signup_email'] ) ? strtolower( sanitize_email( wp_unslash( $_POST['tttc_signup_email'] ) ) ) : '',
 			'gender' => isset( $_POST['tttc_signup_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_gender'] ) ) : 'male',
-			'type'   => isset( $_POST['tttc_signup_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_type'] ) ) : 'senior',
+			'type'   => isset( $_POST['tttc_signup_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_type'] ) ) : $default_player_type,
 		);
 		if ( '' === $this->signup_form['name'] ) {
 			$this->signup_error = __( 'Please enter your name.', 'table-tennis-tournament-for-clubs' );
@@ -1059,7 +1064,7 @@ final class TTTC_Public {
 	}
 
 	private function render_signup_form( $tournament_id ) {
-		$form = wp_parse_args( $this->signup_form, array( 'name' => '', 'rating' => '', 'email' => '', 'gender' => 'male', 'type' => 'senior' ) );
+		$form = wp_parse_args( $this->signup_form, array( 'name' => '', 'rating' => '', 'email' => '', 'gender' => 'male', 'type' => $this->signup_default_player_type( $tournament_id ) ) );
 		?>
 <section class="tttc-public-tournament__signup" aria-labelledby="tttc-signup-heading">
 	<h2 id="tttc-signup-heading">
