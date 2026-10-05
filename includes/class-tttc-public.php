@@ -593,7 +593,7 @@ final class TTTC_Public {
 			'posts_per_page' => max( 1, absint( $atts['limit'] ) ),
 			'orderby'        => 'meta_value',
 			'meta_key'       => TTTC_Plugin::TOURNAMENT_META_DATE,
-			'order'          => 'ASC',
+			'order'          => 'DESC',
 			'meta_query'     => array(
 				array(
 					'key'     => TTTC_Plugin::TOURNAMENT_META_STATUS,
