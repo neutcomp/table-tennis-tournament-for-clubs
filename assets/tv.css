@@ -31,10 +31,25 @@ body.tttc-tv {
   overflow: hidden;
   color: var(--tttc-tv-text);
   background:
-    radial-gradient(ellipse at 15% -10%, rgba(255, 122, 26, 0.18), transparent 55%),
-    radial-gradient(ellipse at 110% 110%, rgba(56, 189, 248, 0.12), transparent 50%),
+    radial-gradient(
+      ellipse at 15% -10%,
+      rgba(255, 122, 26, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 110% 110%,
+      rgba(56, 189, 248, 0.12),
+      transparent 50%
+    ),
     var(--tttc-tv-bg);
-  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    "Segoe UI",
+    -apple-system,
+    BlinkMacSystemFont,
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
   font-size: clamp(15px, 1.15vw, 36px);
   line-height: 1.3;
   -webkit-font-smoothing: antialiased;
@@ -145,7 +160,11 @@ body.tttc-tv {
   display: block;
   width: 0;
   height: 100%;
-  background: linear-gradient(90deg, var(--tttc-tv-accent), var(--tttc-tv-gold));
+  background: linear-gradient(
+    90deg,
+    var(--tttc-tv-accent),
+    var(--tttc-tv-gold)
+  );
 }
 
 .tttc-tv-progress span.is-running {
@@ -221,7 +240,11 @@ body.tttc-tv {
 
 .tttc-tv-card--standings {
   border-color: rgba(255, 122, 26, 0.35);
-  background: linear-gradient(180deg, var(--tttc-tv-accent-soft), var(--tttc-tv-surface) 60%);
+  background: linear-gradient(
+    180deg,
+    var(--tttc-tv-accent-soft),
+    var(--tttc-tv-surface) 60%
+  );
 }
 
 .tttc-tv-card--standings h3 {
@@ -432,7 +455,11 @@ body.tttc-tv {
   width: min(100%, 70rem);
   min-width: 0;
   border-color: rgba(251, 191, 36, 0.5);
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), var(--tttc-tv-surface));
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.22),
+    var(--tttc-tv-surface)
+  );
   font-size: 2.2em;
 }
 
@@ -482,13 +509,22 @@ body.tttc-tv {
 }
 
 @keyframes tttc-tv-progress {
-  from { width: 0; }
-  to { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes tttc-tv-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
