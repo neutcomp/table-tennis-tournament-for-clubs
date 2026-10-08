@@ -496,6 +496,10 @@
     display: none !important;
   }
 
+  .tttc-print-all-groups .tttc-admin-group[hidden] {
+    display: block !important;
+  }
+
   .tttc-admin-group {
     border: 0 !important;
     box-shadow: none !important;

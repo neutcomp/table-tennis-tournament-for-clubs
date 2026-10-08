@@ -135,6 +135,9 @@ msgstr "Volgorde"
 msgid "Enter scores"
 msgstr "Scores invoeren"
 
+msgid "Print all groups"
+msgstr "Alle groepen afdrukken"
+
 msgid "The tournament could not be found."
 msgstr "Het toernooi kon niet worden gevonden."
 

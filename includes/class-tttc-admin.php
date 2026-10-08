@@ -970,6 +970,7 @@ final class TTTC_Admin {
 			$status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 			if ( 'active' === $status ) {
 				echo '<a class="button-link tttc-icon-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $post_id ) ) . '" title="' . esc_attr__( 'Enter scores', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-edit" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Enter scores', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
+				echo ' <a class="button-link tttc-icon-link" href="' . esc_url( add_query_arg( array( 'page' => 'tttc-scores', 'tournament_id' => $post_id, 'print' => 'all' ), admin_url( 'admin.php' ) ) ) . '" title="' . esc_attr__( 'Print all groups', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-printer" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Print all groups', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
 			}
 		}
 	}
@@ -1008,6 +1009,7 @@ final class TTTC_Admin {
 		}
 
 		$tournament_id = $submitted_tournament_id ? absint( $submitted_tournament_id ) : ( isset( $_GET['tournament_id'] ) ? absint( $_GET['tournament_id'] ) : 0 );
+		$print_all_groups = isset( $_GET['print'] ) && is_string( $_GET['print'] ) && 'all' === sanitize_key( wp_unslash( $_GET['print'] ) );
 		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
 			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
 		}
@@ -1061,7 +1063,7 @@ final class TTTC_Admin {
 				?>
 	<p><?php echo esc_html( $player_range_message ); ?></p>
 	<?php else : ?>
-	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form">
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form<?php echo $print_all_groups ? ' tttc-print-all-groups' : ''; ?>">
 		<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id"
 			value="<?php echo esc_attr( $tournament_id ); ?>">
 		<?php wp_nonce_field( 'tttc_save_scores', 'tttc_scores_nonce' ); ?>

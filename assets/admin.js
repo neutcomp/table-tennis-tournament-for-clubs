@@ -50,6 +50,10 @@
 	});
 
 	$(document).ready(function () {
+		if ($('.tttc-scores-form.tttc-print-all-groups').length) {
+			window.print();
+		}
+
 		var $seedList = $('.tttc-seed-list').not('.tttc-seed-list--locked');
 		if ($seedList.length && $.fn.sortable) {
 			$seedList.sortable({
