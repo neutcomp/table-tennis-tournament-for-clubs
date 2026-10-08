@@ -572,4 +572,46 @@
   .tttc-score-pair {
     gap: 2px;
   }
+
+  /* Undo the mobile card layout so the sheet stays one row per match. */
+  .tttc-scores-table {
+    display: table !important;
+  }
+
+  .tttc-scores-table thead {
+    clip: auto !important;
+    display: table-header-group !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    position: static !important;
+    width: auto !important;
+  }
+
+  .tttc-scores-table tbody {
+    display: table-row-group !important;
+  }
+
+  .tttc-scores-table tr {
+    border: 0 !important;
+    display: table-row !important;
+    margin: 0 !important;
+  }
+
+  .tttc-scores-table th,
+  .tttc-scores-table td {
+    display: table-cell !important;
+  }
+
+  .tttc-scores-table td::before {
+    content: none !important;
+  }
+
+  .tttc-print-only {
+    display: table-cell !important;
+  }
+}
+
+.tttc-print-only {
+  display: none;
 }

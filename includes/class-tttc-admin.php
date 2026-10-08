@@ -1110,10 +1110,11 @@ final class TTTC_Admin {
 									<th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) :
 									// translators: %d is the game number.
 									$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game );
-									?><th><?php echo esc_html( $game_label ); ?></th><?php endfor; ?>
+									?><th><?php echo esc_html( $game_label ); ?></th><?php endfor; ?><th class="tttc-print-only"><?php esc_html_e( 'Counter', 'table-tennis-tournament-for-clubs' ); ?></th>
 								</tr>
 							</thead>
 							<tbody>
+								<?php $counters = TTTC_Public::instance()->round_counters( $group_schedule['players'], $round ); ?>
 								<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); ?>
 								<tr>
 									<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>">
@@ -1133,6 +1134,7 @@ final class TTTC_Admin {
 												name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][1]"
 												value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][1] ) ? $saved_scores[ $match_key ][ $game ][1] : '' ); ?>"></span>
 									</td><?php endfor; ?>
+									<td class="tttc-print-only"><?php echo esc_html( $counters[ $match_number ] ); ?></td>
 								</tr>
 								<?php endforeach; ?>
 							</tbody>

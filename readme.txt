@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,6 +91,10 @@ Player email addresses are available to administrators in WordPress and are neve
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 1.0.3 =
+* Added a counter column to the printed score sheet and the TV view.
+* Keep each match on one row when printing from a mobile device.
 
 = 1.0.2 =
 * Show tournaments in descending date order.

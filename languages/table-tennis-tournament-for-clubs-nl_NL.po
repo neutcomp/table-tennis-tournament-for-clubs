@@ -144,6 +144,13 @@ msgstr "Groep %d"
 msgid "Match"
 msgstr "Wedstrijd"
 
+msgid "Counter"
+msgstr "Teller"
+
+#. translators: %s is the name of the player who counts.
+msgid "Counter: %s"
+msgstr "Teller: %s"
+
 msgid "Player 1"
 msgstr "Speler 1"
 

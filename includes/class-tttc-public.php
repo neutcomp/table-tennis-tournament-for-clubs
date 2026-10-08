@@ -217,6 +217,29 @@ final class TTTC_Public {
 		return $schedule;
 	}
 
+	// Counters are players without a match this round, handed out in order; empty when everyone plays.
+	public function round_counters( $players, $round ) {
+		$playing = array();
+		foreach ( $round as $match ) {
+			$playing[ $match[0]->ID ] = true;
+			$playing[ $match[1]->ID ] = true;
+		}
+
+		$idle = array();
+		foreach ( $players as $player ) {
+			if ( ! isset( $playing[ $player->ID ] ) ) {
+				$idle[] = $player->post_title;
+			}
+		}
+
+		$counters = array();
+		foreach ( array_keys( $round ) as $position => $match_index ) {
+			$counters[ $match_index ] = isset( $idle[ $position ] ) ? $idle[ $position ] : '';
+		}
+
+		return $counters;
+	}
+
 	public function render_tournament_page() {
 		$slug = get_query_var( 'tttc_tournament' );
 		$date = get_query_var( 'tttc_tournament_date' );
@@ -352,10 +375,11 @@ final class TTTC_Public {
 				<div class="tttc-tv-card">
 					<h3><?php echo esc_html( $round_label ); ?></h3>
 					<?php
-										$rows = array();
-										foreach ( $round as $match ) {
+										$rows     = array();
+										$counters = $this->round_counters( $group_schedule['players'], $round );
+										foreach ( $round as $match_index => $match ) {
 											$match_key = $this->match_key( $match[0]->ID, $match[1]->ID );
-											$rows[]    = array( $match[0]->post_title, $match[1]->post_title, isset( $scores[ $match_key ] ) ? $scores[ $match_key ] : array() );
+											$rows[]    = array( $match[0]->post_title, $match[1]->post_title, isset( $scores[ $match_key ] ) ? $scores[ $match_key ] : array(), $counters[ $match_index ] );
 										}
 										$this->render_tv_match_table( $rows, $games );
 										?>
@@ -444,11 +468,17 @@ final class TTTC_Public {
 	}
 
 	private function render_tv_match_table( $rows, $games ) {
-		$required = (int) ceil( $games / 2 );
+		$required     = (int) ceil( $games / 2 );
+		$has_counters = false;
+		foreach ( $rows as $row ) {
+			if ( ! empty( $row[3] ) ) {
+				$has_counters = true;
+			}
+		}
 		?>
 <table class="tttc-tv-matches">
 	<tbody>
-		<?php foreach ( $rows as $row ) : list( $first_name, $second_name, $match_scores ) = $row; $games_won = $this->games_won( $match_scores, $games ); $played = array_sum( $games_won ) > 0; ?>
+		<?php foreach ( $rows as $row ) : list( $first_name, $second_name, $match_scores ) = $row; $counter = isset( $row[3] ) ? $row[3] : ''; $games_won = $this->games_won( $match_scores, $games ); $played = array_sum( $games_won ) > 0; ?>
 		<tr class="<?php echo $played ? 'is-played' : 'is-pending'; ?>">
 			<td class="tttc-tv-name tttc-tv-name--home<?php echo $games_won[0] >= $required ? ' is-winner' : ''; ?>">
 				<?php echo esc_html( $first_name ); ?></td>
@@ -465,6 +495,9 @@ final class TTTC_Public {
 				<?php endif; ?>
 				<?php endfor; ?>
 			</td>
+			<?php if ( $has_counters ) : ?>
+			<td class="tttc-tv-counter"><?php echo '' !== $counter ? esc_html( sprintf( __( 'Counter: %s', 'table-tennis-tournament-for-clubs' ), $counter ) ) : ''; ?></td>
+			<?php endif; ?>
 		</tr>
 		<?php endforeach; ?>
 	</tbody>

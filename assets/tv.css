@@ -256,6 +256,14 @@ body.tttc-tv {
   border-radius: 0 10px 10px 0;
 }
 
+.tttc-tv-counter {
+  max-width: 10em;
+  overflow: hidden;
+  color: var(--tttc-tv-muted);
+  font-size: 0.78em;
+  text-overflow: ellipsis;
+}
+
 .tttc-tv-name {
   max-width: 10em;
   overflow: hidden;
