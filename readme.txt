@@ -95,6 +95,7 @@ Tournament QR codes are generated in the visitor's browser using JavaScript incl
 = 1.0.3 =
 * Added a counter column to the printed score sheet and the TV view.
 * Keep each match on one row when printing from a mobile device.
+* Add print icon on tournament overview
 
 = 1.0.2 =
 * Show tournaments in descending date order.
