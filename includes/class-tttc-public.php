@@ -328,7 +328,7 @@ final class TTTC_Public {
 		$status      = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$schedule    = $this->tournament_schedule( $tournament_id );
 		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$games       = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (int) $games : 3;
 		$scores      = $this->saved_scores( $tournament_id );
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
 		$has_slides  = in_array( $status, array( 'active', 'completed' ), true ) && ! empty( $schedule );
@@ -672,7 +672,7 @@ final class TTTC_Public {
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
 		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$games       = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (int) $games : 3;
 		$scores      = $this->saved_scores( $tournament_id );
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
 		$page_url    = $this->tournament_url( $tournament_id );
@@ -1247,7 +1247,7 @@ final class TTTC_Public {
 
 	private function tournament_places( $tournament_id ) {
 		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games       = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$games       = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (int) $games : 3;
 		$schedule    = $this->tournament_schedule( $tournament_id );
 		$scores      = $this->saved_scores( $tournament_id );
 		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );

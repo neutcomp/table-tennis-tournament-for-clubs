@@ -22,8 +22,8 @@ Player emails are stored for club administration and are not shown in public sho
 * Tournament records with name, date, time, best of, player type, and status.
 * Tournament Players screen for adding and removing participants.
 * Inactive players cannot be assigned to new tournaments.
-* Tournament Scores screen with three or five score fields per generated match.
-* Score validation requiring 11 points (with a 2+ point margin) or a deuce win with exactly two points lead, plus a completed Best of 3 or Best of 5 match without superfluous or skipped games.
+* Tournament Scores screen with one, three, or five score fields per generated match.
+* Score validation requiring 11 points (with a 2+ point margin) or a deuce win with exactly two points lead, plus a completed Best of 1, Best of 3, or Best of 5 match without superfluous or skipped games.
 * Automatic crossover rounds after all group matches are complete. Two groups produce a final and third-place match, three groups produce a round-robin among the group winners, and four groups produce semi-finals followed by a final and third-place match.
 * Group and crossover standings are ordered by match wins, game difference, point difference, and then a stable player-order fallback.
 * Public tournament pages with groups, round-robin match schedules, and match scores.
@@ -37,7 +37,7 @@ Player emails are stored for club administration and are not shown in public sho
 2. Activate the plugin from Plugins in WordPress.
 3. Use the Table Tennis menu to create players and tournaments.
 4. Open Tournament Players, select a tournament, and save its participants.
-5. Set the tournament date and optional start time, select Best of 3 or Best of 5 when creating a tournament, then use Scores in the tournament overview to enter match scores.
+5. Set the tournament date and optional start time, select Best of 1, Best of 3, or Best of 5 when creating a tournament, then use Scores in the tournament overview to enter match scores.
 
 After every group match has a completed score, the Scores screen reveals the applicable crossover matches. Later four-group matches remain unavailable until their semi-finals are complete. Public tournament pages show the crossover results and final places when the deciding matches have been completed.
 
@@ -96,6 +96,7 @@ Tournament QR codes are generated in the visitor's browser using JavaScript incl
 * Added a counter column to the printed score sheet and the TV view.
 * Keep each match on one row when printing from a mobile device.
 * Add print icon on tournament overview
+* Add Best of 1 game
 
 = 1.0.2 =
 * Show tournaments in descending date order.

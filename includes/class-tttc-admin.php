@@ -83,7 +83,7 @@ final class TTTC_Admin {
 	public function sanitize_games_setting( $value ) {
 		$value = sanitize_key( (string) $value );
 
-		return in_array( $value, array( '3', '5' ), true ) ? $value : '3';
+		return in_array( $value, array( '1', '3', '5' ), true ) ? $value : '3';
 	}
 
 	public function sanitize_type_setting( $value ) {
@@ -183,6 +183,7 @@ final class TTTC_Admin {
 				</th>
 				<td>
 					<select id="tttc-default-games" name="<?php echo esc_attr( TTTC_Plugin::OPTION_DEFAULT_GAMES ); ?>">
+						<option value="1" <?php selected( $default_games, '1' ); ?>>1</option>
 						<option value="3" <?php selected( $default_games, '3' ); ?>>3</option>
 						<option value="5" <?php selected( $default_games, '5' ); ?>>5</option>
 					</select>
@@ -544,7 +545,7 @@ final class TTTC_Admin {
 		if ( '' === $games ) {
 			$games = get_option( TTTC_Plugin::OPTION_DEFAULT_GAMES, '3' );
 		}
-		$games = in_array( (string) $games, array( '3', '5' ), true ) ? (string) $games : '3';
+		$games = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (string) $games : '3';
 
 		$format_ranges = TTTC_Plugin::get_format_ranges( $post->ID );
 		$has_scores    = TTTC_Plugin::has_scores( $post->ID );
@@ -565,6 +566,7 @@ final class TTTC_Admin {
 <p><label
 		for="tttc-games"><strong><?php esc_html_e( 'Best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
 		id="tttc-games" name="tttc_games" required <?php disabled( $has_scores ); ?>>
+		<option value="1" <?php selected( $games, '1' ); ?>>1</option>
 		<option value="3" <?php selected( $games, '3' ); ?>>3</option>
 		<option value="5" <?php selected( $games, '5' ); ?>>5</option>
 	</select></p>
@@ -734,7 +736,7 @@ final class TTTC_Admin {
 		$has_scores = TTTC_Plugin::has_scores( $post_id );
 		if ( ! $has_scores ) {
 			$games = isset( $_POST['tttc_games'] ) ? sanitize_key( wp_unslash( $_POST['tttc_games'] ) ) : '3';
-			if ( ! in_array( $games, array( '3', '5' ), true ) ) {
+			if ( ! in_array( $games, array( '1', '3', '5' ), true ) ) {
 				$games = '3';
 			}
 			update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GAMES, $games );
@@ -1018,7 +1020,7 @@ final class TTTC_Admin {
 		}
 
 		$games         = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games         = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$games         = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (int) $games : 3;
 		$schedule      = TTTC_Public::instance()->tournament_schedule( $tournament_id );
 		$format_ranges = TTTC_Plugin::get_format_ranges( $tournament_id );
 		$min_players   = isset( $format_ranges[1]['min'] ) ? $format_ranges[1]['min'] : 4;
@@ -1214,7 +1216,7 @@ final class TTTC_Admin {
 		}
 
 		$games         = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games         = in_array( (string) $games, array( '3', '5' ), true ) ? (int) $games : 3;
+		$games         = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (int) $games : 3;
 		$schedule      = TTTC_Public::instance()->tournament_schedule( $tournament_id );
 		$submitted     = isset( $_POST['scores'] ) && is_array( $_POST['scores'] ) ? wp_unslash( $_POST['scores'] ) : array();
 		$validated     = array();
