@@ -1,6 +1,36 @@
 (function ($) {
 	"use strict";
 
+	$(document).on("click", ".tttc-select-tikkie-qr", () => {
+		if (typeof wp === "undefined" || !wp.media) {
+			return;
+		}
+
+		var $button = $(this);
+		var frame = wp.media({
+			title: $button.data("title"),
+			button: { text: $button.data("select") },
+			library: { type: "image" },
+			multiple: false,
+		});
+
+		frame.on("select", () => {
+			var image = frame.state().get("selection").first().toJSON();
+			var preview = image.sizes?.medium?.url || image.url;
+			$("#tttc-tikkie-qr").val(image.id);
+			$(".tttc-tikkie-qr-preview").attr("src", preview).show();
+			$(".tttc-remove-tikkie-qr").prop("disabled", false);
+		});
+
+		frame.open();
+	});
+
+	$(document).on("click", ".tttc-remove-tikkie-qr", () => {
+		$("#tttc-tikkie-qr").val("");
+		$(".tttc-tikkie-qr-preview").attr("src", "").hide();
+		$(this).prop("disabled", true);
+	});
+
 	// Force new-tab navigation even if something else on the page intercepts the click.
 	$(document).on("click", 'a[target="_blank"]', function (e) {
 		var href = $(this).attr("href");

@@ -12,6 +12,93 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Copilot\n"
 
+msgid "Payments"
+msgstr "Betalingen"
+
+msgid "Configure the bank account shown in payment instructions after signup."
+msgstr "Stel de bankrekening in die na inschrijving bij de betaalinstructies wordt getoond."
+
+msgid "Bankaccount"
+msgstr "Bankrekening"
+
+msgid "Phone number"
+msgstr "Telefoonnummer"
+
+msgid "Description"
+msgstr "Beschrijving"
+
+msgid "Require a phone number when signing up"
+msgstr "Telefoonnummer verplicht bij inschrijving"
+
+msgid "QR-Code Tikkie"
+msgstr "Tikkie QR-code"
+
+msgid "Tikkie QR image"
+msgstr "Tikkie QR-afbeelding"
+
+msgid "Select a QR image"
+msgstr "Selecteer een QR-codeafbeelding"
+
+msgid "Use this image"
+msgstr "Deze afbeelding gebruiken"
+
+msgid "Select QR image"
+msgstr "Selecteer QR-afbeelding"
+
+msgid "Remove image"
+msgstr "Afbeelding verwijderen"
+
+msgid "Registration fee (EUR)"
+msgstr "Inschrijfgeld (EUR)"
+
+msgid "Direct payment link (optional)"
+msgstr "Directe betaallink (optioneel)"
+
+msgid "Signup closed"
+msgstr "Inschrijving gesloten"
+
+msgid "Signup is closed for this tournament."
+msgstr "De inschrijving voor dit toernooi is gesloten."
+
+msgid "Please enter your phone number."
+msgstr "Vul je telefoonnummer in."
+
+msgid "Thanks for registering! 🏓"
+msgstr "Bedankt voor je inschrijving! 🏓"
+
+msgid "We have successfully received your details."
+msgstr "We hebben je gegevens goed ontvangen."
+
+msgid "To finalize your registration, please pay the registration fee of €%s."
+msgstr "Maak je inschrijving compleet door het inschrijfgeld van €%s te betalen."
+
+msgid "Pay easily via the QR code"
+msgstr "Betaal eenvoudig via de QR-code"
+
+msgid "Scan the QR code below using your phone’s camera or your banking app to make an immediate payment."
+msgstr "Scan de QR-code hieronder met de camera van je telefoon of met je bankieren-app om direct te betalen."
+
+msgid "Tikkie payment QR code"
+msgstr "Tikkie-betaal QR-code"
+
+msgid "Having trouble scanning the QR code?"
+msgstr "Lukt het scannen van de QR-code niet?"
+
+msgid "Payment link:"
+msgstr "Betaallink:"
+
+msgid "Click here to pay directly"
+msgstr "Klik hier om direct te betalen"
+
+msgid "Manual bank transfer: Please transfer €%1$s to %2$s, payable to %3$s."
+msgstr "Handmatige bankoverschrijving: Maak €%1$s over naar %2$s, ten name van %3$s."
+
+msgid "Important: Please include the participant’s first and last name with your payment so that we can correctly link it to your registration."
+msgstr "Belangrijk: Vermeld bij de betaling de voor- en achternaam van de deelnemer, zodat we de betaling aan de inschrijving kunnen koppelen."
+
+msgid "See you soon at the tournament!"
+msgstr "Tot snel op het toernooi!"
+
 msgid "Table Tennis Settings"
 msgstr "Tafeltennisinstellingen"
 

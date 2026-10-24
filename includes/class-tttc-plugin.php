@@ -15,6 +15,7 @@ final class TTTC_Plugin {
 	const TOURNAMENT_POST_TYPE = 'tttc_tournament';
 	const PLAYER_META_RATING = '_tttc_rating';
 	const PLAYER_META_EMAIL = '_tttc_email';
+	const PLAYER_META_PHONE = '_tttc_phone';
 	const PLAYER_META_ACTIVE = '_tttc_active';
 	const PLAYER_META_GENDER = '_tttc_gender';
 	const PLAYER_META_TYPE = '_tttc_type';
@@ -24,6 +25,12 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_STATUS = '_tttc_status';
 	const TOURNAMENT_META_TYPE = '_tttc_tournament_type';
 	const TOURNAMENT_META_FORMAT_RANGES = '_tttc_format_ranges';
+	const TOURNAMENT_META_DESCRIPTION = '_tttc_description';
+	const TOURNAMENT_META_PHONE_REQUIRED = '_tttc_phone_required';
+	const TOURNAMENT_META_TIKKIE_ENABLED = '_tttc_tikkie_enabled';
+	const TOURNAMENT_META_TIKKIE_QR = '_tttc_tikkie_qr';
+	const TOURNAMENT_META_TIKKIE_AMOUNT = '_tttc_tikkie_amount';
+	const TOURNAMENT_META_TIKKIE_URL = '_tttc_tikkie_url';
 	const OPTION_EMAIL_FROM = 'tttc_email_from';
 	const OPTION_EMAIL_SUBJECT = 'tttc_email_subject';
 	const OPTION_EMAIL_BODY = 'tttc_email_body';
@@ -32,6 +39,7 @@ final class TTTC_Plugin {
 	const OPTION_FORMAT_RANGES = 'tttc_format_ranges';
 	const OPTION_TV_INTERVAL = 'tttc_tv_interval';
 	const OPTION_TOURNAMENT_URL_BASE = 'tttc_tournament_url_base';
+	const OPTION_BANK_ACCOUNT = 'tttc_bank_account';
 	const DEFAULT_TOURNAMENT_URL_BASE = 'toernooi';
 	const TRANSIENT_FLUSH_TOURNAMENT_REWRITES = 'tttc_flush_tournament_rewrites';
 

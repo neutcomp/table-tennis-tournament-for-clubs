@@ -78,6 +78,7 @@ final class TTTC_Admin {
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_FORMAT_RANGES, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_format_ranges' ) ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_TV_INTERVAL, array( 'sanitize_callback' => array( $this, 'sanitize_tv_interval_setting' ) ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_TOURNAMENT_URL_BASE, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_tournament_url_base' ) ) );
+		register_setting( 'tttc_payment_settings', TTTC_Plugin::OPTION_BANK_ACCOUNT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
 	public function sanitize_games_setting( $value ) {
@@ -102,7 +103,7 @@ final class TTTC_Admin {
 		}
 
 		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'email';
-		if ( ! in_array( $active_tab, array( 'email', 'formats', 'tv', 'urls' ), true ) ) {
+		if ( ! in_array( $active_tab, array( 'email', 'formats', 'tv', 'urls', 'payments' ), true ) ) {
 			$active_tab = 'email';
 		}
 		?>
@@ -117,6 +118,8 @@ final class TTTC_Admin {
 			class="nav-tab <?php echo 'tv' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'TV Display', 'table-tennis-tournament-for-clubs' ); ?></a>
 		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=urls' ) ); ?>"
 			class="nav-tab <?php echo 'urls' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'URLs', 'table-tennis-tournament-for-clubs' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=payments' ) ); ?>"
+			class="nav-tab <?php echo 'payments' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Payments', 'table-tennis-tournament-for-clubs' ); ?></a>
 	</nav>
 
 	<?php if ( 'email' === $active_tab ) :
@@ -283,7 +286,7 @@ final class TTTC_Admin {
 		</table>
 		<?php submit_button(); ?>
 	</form>
-	<?php else :
+	<?php elseif ( 'urls' === $active_tab ) :
 		$tournament_url_base = TTTC_Plugin::get_tournament_url_base();
 		?>
 	<p>
@@ -304,6 +307,22 @@ final class TTTC_Admin {
 						<?php esc_html_e( 'Use one URL path segment without slashes. The default is toernooi. Changing this value replaces the previous tournament URL base.', 'table-tennis-tournament-for-clubs' ); ?>
 					</p>
 				</td>
+			</tr>
+		</table>
+		<?php submit_button(); ?>
+	</form>
+	<?php else :
+		$bank_account = get_option( TTTC_Plugin::OPTION_BANK_ACCOUNT, '' );
+		?>
+	<p><?php esc_html_e( 'Configure the bank account shown in payment instructions after signup.', 'table-tennis-tournament-for-clubs' ); ?></p>
+	<form method="post" action="options.php">
+		<?php settings_fields( 'tttc_payment_settings' ); ?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="tttc-bank-account"><?php esc_html_e( 'Bankaccount', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+				<td><input type="text" class="regular-text" id="tttc-bank-account"
+					name="<?php echo esc_attr( TTTC_Plugin::OPTION_BANK_ACCOUNT ); ?>"
+					value="<?php echo esc_attr( $bank_account ); ?>"></td>
 			</tr>
 		</table>
 		<?php submit_button(); ?>
@@ -494,6 +513,7 @@ final class TTTC_Admin {
 		wp_nonce_field( 'tttc_save_player', 'tttc_player_nonce' );
 		$rating = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_RATING, true );
 		$email  = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_EMAIL, true );
+		$phone  = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_PHONE, true );
 		$active = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_ACTIVE, true );
 		$gender = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_GENDER, true );
 		$type   = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_TYPE, true );
@@ -508,6 +528,9 @@ final class TTTC_Admin {
 <p><label
 		for="tttc-email"><strong><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input
 		class="regular-text" type="email" id="tttc-email" name="tttc_email" value="<?php echo esc_attr( $email ); ?>"></p>
+<p><label
+		for="tttc-phone"><strong><?php esc_html_e( 'Phone number', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input
+		class="regular-text" type="tel" id="tttc-phone" name="tttc_phone" value="<?php echo esc_attr( $phone ); ?>"></p>
 <p><label
 		for="tttc-gender"><strong><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
 		id="tttc-gender" name="tttc_gender">
@@ -537,6 +560,13 @@ final class TTTC_Admin {
 		$games  = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$status = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$type   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
+		$description = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, true );
+		$phone_required = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, true );
+		$tikkie_enabled = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_ENABLED, true );
+		$tikkie_qr = absint( get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_QR, true ) );
+		$tikkie_amount = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_AMOUNT, true );
+		$tikkie_url = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_URL, true );
+		$tikkie_qr_url = $tikkie_qr ? wp_get_attachment_image_url( $tikkie_qr, 'medium' ) : '';
 		$status = $status ? $status : 'draft';
 		if ( '' === $type ) {
 			$type = get_option( TTTC_Plugin::OPTION_DEFAULT_TYPE, 'both' );
@@ -563,6 +593,8 @@ final class TTTC_Admin {
 <p><label
 		for="tttc-time"><strong><?php esc_html_e( 'Time', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input
 		type="time" id="tttc-time" name="tttc_time" value="<?php echo esc_attr( $time ); ?>" step="60"></p>
+<p><label for="tttc-description"><strong><?php esc_html_e( 'Description', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
+	<textarea class="large-text" rows="4" id="tttc-description" name="tttc_description"><?php echo esc_textarea( $description ); ?></textarea></p>
 <p><label
 		for="tttc-games"><strong><?php esc_html_e( 'Best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
 		id="tttc-games" name="tttc_games" required <?php disabled( $has_scores ); ?>>
@@ -588,6 +620,25 @@ final class TTTC_Admin {
 			<?php echo esc_html( $label ); ?></option>
 		<?php endforeach; ?>
 	</select></p>
+
+<p><label><input type="checkbox" name="tttc_phone_required" value="1" <?php checked( '1', $phone_required ); ?>>
+		<?php esc_html_e( 'Require a phone number when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
+<div class="tttc-tikkie-settings">
+	<p><label><input type="checkbox" name="tttc_tikkie_enabled" value="1" <?php checked( '1', $tikkie_enabled ); ?>>
+			<?php esc_html_e( 'QR-Code Tikkie', 'table-tennis-tournament-for-clubs' ); ?></label></p>
+	<p><strong><?php esc_html_e( 'Tikkie QR image', 'table-tennis-tournament-for-clubs' ); ?></strong><br>
+		<input type="hidden" id="tttc-tikkie-qr" name="tttc_tikkie_qr" value="<?php echo esc_attr( $tikkie_qr ); ?>">
+		<button type="button" class="button tttc-select-tikkie-qr"
+			data-title="<?php esc_attr_e( 'Select a QR image', 'table-tennis-tournament-for-clubs' ); ?>"
+			data-select="<?php esc_attr_e( 'Use this image', 'table-tennis-tournament-for-clubs' ); ?>"><?php esc_html_e( 'Select QR image', 'table-tennis-tournament-for-clubs' ); ?></button>
+		<button type="button" class="button tttc-remove-tikkie-qr" <?php disabled( ! $tikkie_qr ); ?>><?php esc_html_e( 'Remove image', 'table-tennis-tournament-for-clubs' ); ?></button>
+		<br><img class="tttc-tikkie-qr-preview" src="<?php echo esc_url( $tikkie_qr_url ? $tikkie_qr_url : '' ); ?>" alt="" style="max-width: 180px; height: auto; margin-top: 8px;<?php echo $tikkie_qr_url ? '' : ' display: none;'; ?>">
+	</p>
+	<p><label for="tttc-tikkie-amount"><strong><?php esc_html_e( 'Registration fee (EUR)', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
+		<input type="number" id="tttc-tikkie-amount" name="tttc_tikkie_amount" min="0" step="0.01" value="<?php echo esc_attr( $tikkie_amount ); ?>"></p>
+	<p><label for="tttc-tikkie-url"><strong><?php esc_html_e( 'Direct payment link (optional)', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
+		<input type="url" class="large-text" id="tttc-tikkie-url" name="tttc_tikkie_url" value="<?php echo esc_attr( $tikkie_url ); ?>"></p>
+</div>
 
 <div class="tttc-tournament-format-section" style="margin-top: 16px; border-top: 1px solid #dcdcde; padding-top: 12px;">
 	<p><strong><?php esc_html_e( 'Group player brackets (format)', 'table-tennis-tournament-for-clubs' ); ?></strong></p>
@@ -692,12 +743,14 @@ final class TTTC_Admin {
 		}
 		$rating = isset( $_POST['tttc_rating'] ) ? max( 0, absint( $_POST['tttc_rating'] ) ) : 0;
 		$email  = isset( $_POST['tttc_email'] ) ? sanitize_email( wp_unslash( $_POST['tttc_email'] ) ) : '';
+		$phone  = isset( $_POST['tttc_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_phone'] ) ) : '';
 		$gender = isset( $_POST['tttc_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_gender'] ) ) : 'male';
 		$type   = isset( $_POST['tttc_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_type'] ) ) : 'senior';
 		$gender = in_array( $gender, array( 'male', 'female' ), true ) ? $gender : 'male';
 		$type   = in_array( $type, array( 'senior', 'youth' ), true ) ? $type : 'senior';
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_RATING, $rating );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_EMAIL, $email );
+		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_PHONE, $phone );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_GENDER, $gender );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_TYPE, $type );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_ACTIVE, isset( $_POST['tttc_active'] ) ? '1' : '0' );
@@ -732,6 +785,26 @@ final class TTTC_Admin {
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIME, $time );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TYPE, $type );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
+		$description = isset( $_POST['tttc_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tttc_description'] ) ) : '';
+		$phone_required = isset( $_POST['tttc_phone_required'] ) ? '1' : '0';
+		$tikkie_enabled = isset( $_POST['tttc_tikkie_enabled'] ) ? '1' : '0';
+		$tikkie_qr = isset( $_POST['tttc_tikkie_qr'] ) ? absint( $_POST['tttc_tikkie_qr'] ) : 0;
+		if ( ! $tikkie_qr || ! wp_attachment_is_image( $tikkie_qr ) ) {
+			$tikkie_qr = 0;
+		}
+		$tikkie_amount = isset( $_POST['tttc_tikkie_amount'] ) ? str_replace( ',', '.', sanitize_text_field( wp_unslash( $_POST['tttc_tikkie_amount'] ) ) ) : '';
+		if ( '' !== $tikkie_amount && ( ! is_numeric( $tikkie_amount ) || (float) $tikkie_amount < 0 ) ) {
+			$tikkie_amount = '';
+		} elseif ( '' !== $tikkie_amount ) {
+			$tikkie_amount = number_format( (float) $tikkie_amount, 2, '.', '' );
+		}
+		$tikkie_url = isset( $_POST['tttc_tikkie_url'] ) ? esc_url_raw( wp_unslash( $_POST['tttc_tikkie_url'] ) ) : '';
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, $description );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, $phone_required );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_ENABLED, $tikkie_enabled );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_QR, $tikkie_qr );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_AMOUNT, $tikkie_amount );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_URL, $tikkie_url );
 
 		$has_scores = TTTC_Plugin::has_scores( $post_id );
 		if ( ! $has_scores ) {
@@ -1881,6 +1954,9 @@ final class TTTC_Admin {
 		if ( false !== strpos( $hook, 'tttc-' ) || in_array( $screen_post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) {
 			wp_enqueue_style( 'tttc-admin', TTTC_URL . 'assets/admin.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.css' ) );
 			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery', 'jquery-ui-sortable' ), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.js' ), true );
+			if ( TTTC_Plugin::TOURNAMENT_POST_TYPE === $screen_post_type && in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+				wp_enqueue_media();
+			}
 
 			if ( TTTC_Plugin::PLAYER_POST_TYPE === $screen_post_type && in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 				$existing_players = get_posts( array(

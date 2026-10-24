@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,9 @@ Player emails are stored for club administration and are not shown in public sho
 == Features ==
 
 * Player records with name, rating, email, and active status.
-* Tournament records with name, date, time, best of, player type, and status.
+* Tournament records with name, description, date, time, best of, player type, and status.
+* Optional phone number collection, configurable as required per tournament.
+* Optional Tikkie QR-code registration payments with a fee and direct payment link; configure a bank account for manual transfers.
 * Tournament Players screen for adding and removing participants.
 * Inactive players cannot be assigned to new tournaments.
 * Tournament Scores screen with one, three, or five score fields per generated match.
@@ -49,7 +51,7 @@ Each published tournament title links to `/{tournament-url-base}/{tournament-nam
 
 Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced.
 
-Players must provide an email address when signing up. After a successful signup, the plugin sends a confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. Tournament times use the 24-hour `HH:MM` format. The subject and body support the merge fields `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
+Players must provide an email address when signing up. A phone number is collected and is required only when enabled for that tournament. After a successful signup, the plugin sends a confirmation email using the sender address, subject, and body configured under Settings > Table Tennis, and shows configured payment instructions on the success page. Signup closes at the start of the tournament date in the WordPress site's local timezone; expired tournaments show a disabled signup button. Tournament times use the 24-hour `HH:MM` format. The email subject and body support `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
 
 Optional attributes:
 
@@ -88,9 +90,15 @@ Tournament QR codes are generated in the visitor's browser using JavaScript bund
 == Privacy ==
 
 Player email addresses are available to administrators in WordPress and are never rendered by the public shortcodes.
+Player phone numbers are stored with player records and available to administrators; they are not rendered publicly.
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 1.0.4 =
+* Add tournament descriptions and per-tournament phone requirements.
+* Add Tikkie QR-code and payment details to signup confirmation.
+* Close signup when the tournament date is reached.
 
 = 1.0.3 =
 * Added a counter column to the printed score sheet and the TV view.

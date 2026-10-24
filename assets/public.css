@@ -296,6 +296,22 @@ ul.tttc-breadcrumbs__list > li::after {
   color: #ffffff;
 }
 
+.tttc-tournament-btn--upcoming:disabled,
+.tttc-tournament-btn--upcoming:disabled:hover {
+  background-color: #f0f0f1;
+  border-color: #c3c4c7;
+  color: #646970;
+  cursor: not-allowed;
+}
+
+.tttc-payment-qr {
+  border: 1px solid #dcdcde;
+  display: block;
+  height: auto;
+  margin: 12px 0 20px;
+  max-width: min(100%, 320px);
+}
+
 .tttc-tournament-btn--active {
   background-color: #00a32a;
   color: #ffffff;

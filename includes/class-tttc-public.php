@@ -647,10 +647,15 @@ final class TTTC_Public {
 			$query->the_post();
 			$post_id     = get_the_ID();
 			$status      = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+			$signup_open = $this->is_signup_open( $post_id );
 			$title       = '<a href="' . esc_url( $this->tournament_url( $post_id ) ) . '">' . esc_html( get_the_title() ) . '</a>';
 			$action_link = '';
 			if ( 'upcoming' === $status ) {
-				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--upcoming">' . esc_html__( 'Signup now!', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
+				if ( $signup_open ) {
+					$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--upcoming">' . esc_html__( 'Signup now!', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
+				} else {
+					$action_link = '<p class="tttc-tournament-action"><button type="button" class="tttc-tournament-btn tttc-tournament-btn--upcoming" disabled>' . esc_html__( 'Signup closed', 'table-tennis-tournament-for-clubs' ) . '</button></p>';
+				}
 			} elseif ( 'active' === $status ) {
 				$action_link = '<p class="tttc-tournament-action"><a href="' . esc_url( $this->tournament_url( $post_id ) ) . '" class="tttc-tournament-btn tttc-tournament-btn--active">' . esc_html__( 'Show live score', 'table-tennis-tournament-for-clubs' ) . ' &rarr;</a></p>';
 			} elseif ( 'completed' === $status ) {
@@ -667,6 +672,7 @@ final class TTTC_Public {
 		$stored_date = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
 		$stored_time = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIME, true );
 		$status      = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+		$description = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, true );
 		$is_active   = 'active' === $status;
 		$players     = $this->assigned_players( $tournament_id );
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
@@ -707,7 +713,18 @@ final class TTTC_Public {
 				loading="lazy">
 			<?php endif; ?>
 		</header>
-		<?php if ( 'upcoming' === $status ) : $this->render_signup_form( $tournament_id ); endif; ?>
+		<?php if ( '' !== trim( $description ) ) : ?>
+		<section class="tttc-public-tournament__description">
+			<?php echo wpautop( esc_html( $description ) ); ?>
+		</section>
+		<?php endif; ?>
+		<?php if ( 'success' === sanitize_key( get_query_var( 'tttc_signup' ) ) ) : ?>
+			<?php $this->render_signup_confirmation( $tournament_id ); ?>
+		<?php elseif ( $this->is_signup_open( $tournament_id ) ) : ?>
+			<?php $this->render_signup_form( $tournament_id ); ?>
+		<?php elseif ( 'upcoming' === $status ) : ?>
+			<p class="tttc-public-notice"><?php esc_html_e( 'Signup is closed for this tournament.', 'table-tennis-tournament-for-clubs' ); ?></p>
+		<?php endif; ?>
 		<?php if ( ! $is_active ) : ?>
 		<details class="tttc-public-tournament__players">
 			<summary><span><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?></span> <span
@@ -977,12 +994,24 @@ final class TTTC_Public {
 		return 'youth' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TYPE, true ) ? 'youth' : 'senior';
 	}
 
+	private function is_signup_open( $tournament_id ) {
+		if ( 'upcoming' !== get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true ) ) {
+			return false;
+		}
+
+		$date = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
+		$date_object = DateTime::createFromFormat( '!Y-m-d', $date );
+
+		return $date_object && $date_object->format( 'Y-m-d' ) === $date && $date > current_time( 'Y-m-d' );
+	}
+
 	private function handle_signup( $tournament_id ) {
 		$default_player_type = $this->signup_default_player_type( $tournament_id );
 		$this->signup_form = array(
 			'name'   => '',
 			'rating' => '',
 			'email'  => '',
+			'phone'  => '',
 			'gender' => 'male',
 			'type'   => $default_player_type,
 		);
@@ -996,7 +1025,7 @@ final class TTTC_Public {
 			return;
 		}
 
-		if ( 'upcoming' !== get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true ) || ! isset( $_POST['tttc_signup_tournament'] ) || $tournament_id !== absint( $_POST['tttc_signup_tournament'] ) ) {
+		if ( ! $this->is_signup_open( $tournament_id ) || ! isset( $_POST['tttc_signup_tournament'] ) || $tournament_id !== absint( $_POST['tttc_signup_tournament'] ) ) {
 			return;
 		}
 
@@ -1004,6 +1033,7 @@ final class TTTC_Public {
 			'name'   => isset( $_POST['tttc_signup_name'] ) ? $this->normalize_name( sanitize_text_field( wp_unslash( $_POST['tttc_signup_name'] ) ) ) : '',
 			'rating' => isset( $_POST['tttc_signup_rating'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_rating'] ) ) : '',
 			'email'  => isset( $_POST['tttc_signup_email'] ) ? strtolower( sanitize_email( wp_unslash( $_POST['tttc_signup_email'] ) ) ) : '',
+			'phone'  => isset( $_POST['tttc_signup_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_phone'] ) ) : '',
 			'gender' => isset( $_POST['tttc_signup_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_gender'] ) ) : 'male',
 			'type'   => isset( $_POST['tttc_signup_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_type'] ) ) : $default_player_type,
 		);
@@ -1017,6 +1047,10 @@ final class TTTC_Public {
 		}
 		if ( '' === $this->signup_form['email'] || ! is_email( $this->signup_form['email'] ) ) {
 			$this->signup_error = __( 'Please enter a valid email address so we can confirm your signup.', 'table-tennis-tournament-for-clubs' );
+			return;
+		}
+		if ( '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, true ) && '' === $this->signup_form['phone'] ) {
+			$this->signup_error = __( 'Please enter your phone number.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
 		if ( ! in_array( $this->signup_form['gender'], array( 'male', 'female' ), true ) ) {
@@ -1062,6 +1096,9 @@ final class TTTC_Public {
 			}
 			update_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, '' === $this->signup_form['rating'] ? '' : absint( $this->signup_form['rating'] ) );
 			update_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_ACTIVE, '1' );
+			if ( '' !== $this->signup_form['phone'] ) {
+				update_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_PHONE, $this->signup_form['phone'] );
+			}
 		} else {
 			$player_id = wp_insert_post( array(
 				'post_type'   => TTTC_Plugin::PLAYER_POST_TYPE,
@@ -1078,6 +1115,7 @@ final class TTTC_Public {
 			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, '1' );
 			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_GENDER, $this->signup_form['gender'] );
 			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_TYPE, $this->signup_form['type'] );
+			update_post_meta( $player_id, TTTC_Plugin::PLAYER_META_PHONE, $this->signup_form['phone'] );
 		}
 
 		global $wpdb;
@@ -1097,14 +1135,12 @@ final class TTTC_Public {
 	}
 
 	private function render_signup_form( $tournament_id ) {
-		$form = wp_parse_args( $this->signup_form, array( 'name' => '', 'rating' => '', 'email' => '', 'gender' => 'male', 'type' => $this->signup_default_player_type( $tournament_id ) ) );
+		$phone_required = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, true );
+		$form = wp_parse_args( $this->signup_form, array( 'name' => '', 'rating' => '', 'email' => '', 'phone' => '', 'gender' => 'male', 'type' => $this->signup_default_player_type( $tournament_id ) ) );
 		?>
 <section class="tttc-public-tournament__signup" aria-labelledby="tttc-signup-heading">
 	<h2 id="tttc-signup-heading">
 		<?php esc_html_e( 'Sign up for this tournament', 'table-tennis-tournament-for-clubs' ); ?></h2>
-	<?php if ( 'success' === sanitize_key( get_query_var( 'tttc_signup' ) ) ) : ?><p
-		class="tttc-public-notice tttc-public-notice--success" role="status">
-		<?php esc_html_e( 'Your signup was successful.', 'table-tennis-tournament-for-clubs' ); ?></p><?php endif; ?>
 	<?php if ( $this->signup_error ) : ?><p class="tttc-public-notice" role="alert">
 		<?php echo esc_html( $this->signup_error ); ?></p><?php endif; ?>
 	<form method="post" action="<?php echo esc_url( $this->tournament_url( $tournament_id ) ); ?>"
@@ -1122,6 +1158,7 @@ final class TTTC_Public {
 			<p><label for="tttc-signup-email"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?> <span
 						aria-hidden="true">*</span></label><input type="email" id="tttc-signup-email" name="tttc_signup_email"
 					value="<?php echo esc_attr( $form['email'] ); ?>" required></p>
+			<p><label for="tttc-signup-phone"><?php esc_html_e( 'Phone number', 'table-tennis-tournament-for-clubs' ); ?><?php if ( $phone_required ) : ?> <span aria-hidden="true">*</span><?php endif; ?></label><input type="tel" id="tttc-signup-phone" name="tttc_signup_phone" value="<?php echo esc_attr( $form['phone'] ); ?>" <?php echo $phone_required ? 'required' : ''; ?>></p>
 			<p><label
 					for="tttc-signup-gender"><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></label><select
 					id="tttc-signup-gender" name="tttc_signup_gender">
@@ -1141,6 +1178,44 @@ final class TTTC_Public {
 		</div>
 		<p><button type="submit"><?php esc_html_e( 'Sign up', 'table-tennis-tournament-for-clubs' ); ?></button></p>
 	</form>
+</section>
+<?php
+	}
+
+	private function render_signup_confirmation( $tournament_id ) {
+		$tikkie_enabled = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_ENABLED, true );
+		$qr_id = absint( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_QR, true ) );
+		$qr_url = $tikkie_enabled && $qr_id && wp_attachment_is_image( $qr_id ) ? wp_get_attachment_image_url( $qr_id, 'large' ) : '';
+		$amount = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_AMOUNT, true );
+		$has_amount = $tikkie_enabled && '' !== $amount && is_numeric( $amount ) && (float) $amount >= 0;
+		$formatted_amount = $has_amount ? number_format_i18n( (float) $amount, 2 ) : '';
+		$payment_url = $tikkie_enabled ? get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_URL, true ) : '';
+		$bank_account = get_option( TTTC_Plugin::OPTION_BANK_ACCOUNT, '' );
+		$site_title = get_bloginfo( 'name' );
+		$has_payment_details = $qr_url || $payment_url || ( $bank_account && $has_amount );
+		?>
+<section class="tttc-public-tournament__signup tttc-public-payment-confirmation" aria-labelledby="tttc-payment-heading">
+	<h2 id="tttc-payment-heading"><?php esc_html_e( 'Thanks for registering! 🏓', 'table-tennis-tournament-for-clubs' ); ?></h2>
+	<p role="status"><?php esc_html_e( 'We have successfully received your details.', 'table-tennis-tournament-for-clubs' ); ?></p>
+	<?php if ( $has_payment_details ) : ?>
+		<?php if ( $has_amount ) : ?><p><?php printf( esc_html__( 'To finalize your registration, please pay the registration fee of €%s.', 'table-tennis-tournament-for-clubs' ), esc_html( $formatted_amount ) ); ?></p><?php endif; ?>
+		<?php if ( $qr_url ) : ?>
+		<h3><?php esc_html_e( 'Pay easily via the QR code', 'table-tennis-tournament-for-clubs' ); ?></h3>
+		<p><?php esc_html_e( 'Scan the QR code below using your phone’s camera or your banking app to make an immediate payment.', 'table-tennis-tournament-for-clubs' ); ?></p>
+		<img class="tttc-payment-qr" src="<?php echo esc_url( $qr_url ); ?>" alt="<?php esc_attr_e( 'Tikkie payment QR code', 'table-tennis-tournament-for-clubs' ); ?>" loading="lazy">
+		<?php endif; ?>
+		<?php if ( $payment_url ) : ?>
+		<p><?php if ( $qr_url ) : ?><strong><?php esc_html_e( 'Having trouble scanning the QR code?', 'table-tennis-tournament-for-clubs' ); ?></strong><br><?php endif; ?>
+			<?php esc_html_e( 'Payment link:', 'table-tennis-tournament-for-clubs' ); ?> <a href="<?php echo esc_url( $payment_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Click here to pay directly', 'table-tennis-tournament-for-clubs' ); ?></a></p>
+		<?php endif; ?>
+		<?php if ( $bank_account && $has_amount ) : ?>
+		<p><?php printf( esc_html__( 'Manual bank transfer: Please transfer €%1$s to %2$s, payable to %3$s.', 'table-tennis-tournament-for-clubs' ), esc_html( $formatted_amount ), esc_html( $bank_account ), esc_html( $site_title ) ); ?></p>
+		<?php endif; ?>
+		<?php if ( $has_amount ) : ?>
+		<p><?php esc_html_e( 'Important: Please include the participant’s first and last name with your payment so that we can correctly link it to your registration.', 'table-tennis-tournament-for-clubs' ); ?></p>
+		<?php endif; ?>
+	<?php endif; ?>
+	<p><?php esc_html_e( 'See you soon at the tournament!', 'table-tennis-tournament-for-clubs' ); ?></p>
 </section>
 <?php
 	}
