@@ -559,6 +559,7 @@ final class TTTC_Admin {
 		$time   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIME, true );
 		$games  = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
 		$status = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+		$hide_from_overview = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_HIDE_FROM_OVERVIEW, true );
 		$type   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
 		$description = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, true );
 		$phone_required = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, true );
@@ -621,6 +622,8 @@ final class TTTC_Admin {
 		<?php endforeach; ?>
 	</select></p>
 
+<p><label><input type="checkbox" name="tttc_hide_from_overview" value="1" <?php checked( '1', $hide_from_overview ); ?>>
+		<?php esc_html_e( 'Hide this tournament from the public tournament overview', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 <p><label><input type="checkbox" name="tttc_phone_required" value="1" <?php checked( '1', $phone_required ); ?>>
 		<?php esc_html_e( 'Require a phone number when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 <div class="tttc-tikkie-settings">
@@ -785,6 +788,8 @@ final class TTTC_Admin {
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIME, $time );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TYPE, $type );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
+		$hide_from_overview = isset( $_POST['tttc_hide_from_overview'] ) ? '1' : '0';
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_HIDE_FROM_OVERVIEW, $hide_from_overview );
 		$description = isset( $_POST['tttc_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tttc_description'] ) ) : '';
 		$phone_required = isset( $_POST['tttc_phone_required'] ) ? '1' : '0';
 		$tikkie_enabled = isset( $_POST['tttc_tikkie_enabled'] ) ? '1' : '0';

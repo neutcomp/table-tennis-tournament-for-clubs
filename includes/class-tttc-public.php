@@ -633,6 +633,18 @@ final class TTTC_Public {
 					'value'   => array( 'draft', 'cancelled' ),
 					'compare' => 'NOT IN',
 				),
+				array(
+					'relation' => 'OR',
+					array(
+						'key'     => TTTC_Plugin::TOURNAMENT_META_HIDE_FROM_OVERVIEW,
+						'value'   => '1',
+						'compare' => '!=',
+					),
+					array(
+						'key'     => TTTC_Plugin::TOURNAMENT_META_HIDE_FROM_OVERVIEW,
+						'compare' => 'NOT EXISTS',
+					),
+				),
 			),
 		);
 		if ( absint( $atts['id'] ) ) {

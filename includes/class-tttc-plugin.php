@@ -23,6 +23,7 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_TIME = '_tttc_time';
 	const TOURNAMENT_META_GAMES = '_tttc_games';
 	const TOURNAMENT_META_STATUS = '_tttc_status';
+	const TOURNAMENT_META_HIDE_FROM_OVERVIEW = '_tttc_hide_from_overview';
 	const TOURNAMENT_META_TYPE = '_tttc_tournament_type';
 	const TOURNAMENT_META_FORMAT_RANGES = '_tttc_format_ranges';
 	const TOURNAMENT_META_DESCRIPTION = '_tttc_description';
