@@ -687,7 +687,8 @@ final class TTTC_Public {
 		$stored_time = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIME, true );
 		$status      = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$description = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, true );
-		$is_active   = 'active' === $status;
+		$is_active         = 'active' === $status;
+		$is_signup_success = 'success' === sanitize_key( get_query_var( 'tttc_signup' ) );
 		$players     = $this->assigned_players( $tournament_id );
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
@@ -722,7 +723,7 @@ final class TTTC_Public {
 				<h1><?php echo esc_html( $title ); ?></h1>
 				<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date_time( $stored_date, $stored_time ) ); ?></p>
 			</div>
-			<?php if ( $page_url && ! $is_active ) : ?>
+			<?php if ( $page_url && ! $is_active && ! $is_signup_success ) : ?>
 			<img class="tttc-public-tournament__qr" data-tttc-qr="<?php echo esc_attr( $page_url ); ?>" width="200" height="200"
 				alt="<?php esc_attr_e( 'QR code linking to this tournament page', 'table-tennis-tournament-for-clubs' ); ?>"
 				loading="lazy">
@@ -733,7 +734,7 @@ final class TTTC_Public {
 			<?php echo wpautop( esc_html( $description ) ); ?>
 		</section>
 		<?php endif; ?>
-		<?php if ( 'success' === sanitize_key( get_query_var( 'tttc_signup' ) ) ) : ?>
+		<?php if ( $is_signup_success ) : ?>
 			<?php $this->render_signup_confirmation( $tournament_id ); ?>
 		<?php elseif ( $this->is_signup_open( $tournament_id ) ) : ?>
 			<?php $this->render_signup_form( $tournament_id ); ?>
