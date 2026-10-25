@@ -206,8 +206,34 @@ final class TTTC_Competition {
 	private static function crossover_stages( $group_count ) {
 		if ( 2 === $group_count ) {
 			return array(
-				array( 'id' => 'final', 'phase' => 'finals', 'label' => __( 'Final', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 1, 'place' => 1 ) ) ) ) ),
-				array( 'id' => 'third-place', 'phase' => 'finals', 'label' => __( 'Third-place match', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'group' => 0, 'place' => 2 ), array( 'group' => 1, 'place' => 2 ) ) ) ) ) ),
+				array(
+					'id'      => 'final',
+					'phase'   => 'finals',
+					'label'   => __( 'Final', 'table-tennis-tournament-for-clubs' ),
+					'matches' => array(
+						array(
+							'id'      => 'final-1',
+							'players' => array(
+								array( 'group' => 0, 'place' => 1 ),
+								array( 'group' => 1, 'place' => 1 ),
+							),
+						),
+					),
+				),
+				array(
+					'id'      => 'third-place',
+					'phase'   => 'finals',
+					'label'   => __( 'Third-place match', 'table-tennis-tournament-for-clubs' ),
+					'matches' => array(
+						array(
+							'id'      => 'third-place-1',
+							'players' => array(
+								array( 'group' => 0, 'place' => 2 ),
+								array( 'group' => 1, 'place' => 2 ),
+							),
+						),
+					),
+				),
 			);
 		}
 		if ( 3 === $group_count ) {
