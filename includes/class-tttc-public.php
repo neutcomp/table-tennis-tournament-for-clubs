@@ -1254,9 +1254,42 @@ final class TTTC_Public {
 		);
 		$subject = strtr( $subject, $replacements );
 		$body    = strtr( $body, $replacements );
-		$headers = $from ? array( 'From: ' . $from ) : array();
+		$html_body = '<div>' . nl2br( esc_html( $body ) ) . '</div>';
+		$tikkie_enabled = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_ENABLED, true );
+		$qr_id = absint( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_QR, true ) );
+		$qr_url = $tikkie_enabled && $qr_id && wp_attachment_is_image( $qr_id ) ? wp_get_attachment_image_url( $qr_id, 'large' ) : '';
+		$amount = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_AMOUNT, true );
+		$has_amount = $tikkie_enabled && '' !== $amount && is_numeric( $amount ) && (float) $amount >= 0;
+		$formatted_amount = $has_amount ? number_format_i18n( (float) $amount, 2 ) : '';
+		$payment_url = $tikkie_enabled ? get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_URL, true ) : '';
 
-		wp_mail( $recipient, $subject, $body, $headers );
+		if ( $qr_url || $payment_url ) {
+			$html_body .= '<hr><div>';
+			if ( $has_amount ) {
+				$html_body .= '<p>' . sprintf( esc_html__( 'To finalize your registration, please pay the registration fee of €%s.', 'table-tennis-tournament-for-clubs' ), esc_html( $formatted_amount ) ) . '</p>';
+			}
+			if ( $qr_url ) {
+				$html_body .= '<h2>' . esc_html__( 'Pay easily via the QR code', 'table-tennis-tournament-for-clubs' ) . '</h2>';
+				$html_body .= '<p>' . esc_html__( 'Scan the QR code below using your phone’s camera or your banking app to make an immediate payment.', 'table-tennis-tournament-for-clubs' ) . '</p>';
+				$html_body .= '<p><img src="' . esc_url( $qr_url ) . '" alt="' . esc_attr__( 'Tikkie payment QR code', 'table-tennis-tournament-for-clubs' ) . '" style="height:auto;max-width:320px"></p>';
+			}
+			if ( $payment_url ) {
+				if ( $qr_url ) {
+					$html_body .= '<p><strong>' . esc_html__( 'Having trouble scanning the QR code?', 'table-tennis-tournament-for-clubs' ) . '</strong><br>';
+				} else {
+					$html_body .= '<p>';
+				}
+				$html_body .= esc_html__( 'Payment link:', 'table-tennis-tournament-for-clubs' ) . ' <a href="' . esc_url( $payment_url ) . '">' . esc_html__( 'Click here to pay directly', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
+			}
+			$html_body .= '</div>';
+		}
+
+		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+		if ( $from ) {
+			$headers[] = 'From: ' . $from;
+		}
+
+		wp_mail( $recipient, $subject, $html_body, $headers );
 	}
 
 	private function assigned_players( $tournament_id ) {
