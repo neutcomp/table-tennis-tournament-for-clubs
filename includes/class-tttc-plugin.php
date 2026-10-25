@@ -22,6 +22,8 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_DATE = '_tttc_date';
 	const TOURNAMENT_META_TIME = '_tttc_time';
 	const TOURNAMENT_META_GAMES = '_tttc_games';
+		const TOURNAMENT_META_INTERMEDIATE_GAMES = '_tttc_intermediate_games';
+		const TOURNAMENT_META_FINALS_GAMES = '_tttc_finals_games';
 	const TOURNAMENT_META_STATUS = '_tttc_status';
 	const TOURNAMENT_META_HIDE_FROM_OVERVIEW = '_tttc_hide_from_overview';
 	const TOURNAMENT_META_TYPE = '_tttc_tournament_type';
@@ -76,6 +78,31 @@ final class TTTC_Plugin {
 
 	public static function get_tournament_url_base() {
 		return self::sanitize_tournament_url_base( get_option( self::OPTION_TOURNAMENT_URL_BASE, self::DEFAULT_TOURNAMENT_URL_BASE ) );
+	}
+
+	public static function get_tournament_game_formats( $tournament_id ) {
+		$default_games = get_option( self::OPTION_DEFAULT_GAMES, '3' );
+		if ( ! in_array( (string) $default_games, array( '1', '3', '5' ), true ) ) {
+			$default_games = '3';
+		}
+		$preliminary = get_post_meta( $tournament_id, self::TOURNAMENT_META_GAMES, true );
+		if ( ! in_array( (string) $preliminary, array( '1', '3', '5' ), true ) ) {
+			$preliminary = $default_games;
+		}
+		$intermediate = get_post_meta( $tournament_id, self::TOURNAMENT_META_INTERMEDIATE_GAMES, true );
+		if ( ! in_array( (string) $intermediate, array( '1', '3', '5' ), true ) ) {
+			$intermediate = $preliminary;
+		}
+		$finals = get_post_meta( $tournament_id, self::TOURNAMENT_META_FINALS_GAMES, true );
+		if ( ! in_array( (string) $finals, array( '1', '3', '5' ), true ) ) {
+			$finals = $preliminary;
+		}
+
+		return array(
+			'preliminary' => (int) $preliminary,
+			'intermediate' => (int) $intermediate,
+			'finals' => (int) $finals,
+		);
 	}
 
 	public function schedule_tournament_rewrite_flush( $option ) {

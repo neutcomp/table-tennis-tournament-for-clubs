@@ -204,6 +204,15 @@ msgstr "%1$s om %2$s"
 msgid "Best of"
 msgstr "Best of"
 
+msgid "Preliminary rounds best of"
+msgstr "Best of voor voorrondes"
+
+msgid "Intermediate rounds best of"
+msgstr "Best of voor tussenrondes"
+
+msgid "Finals best of"
+msgstr "Best of voor finales"
+
 msgid "Status"
 msgstr "Status"
 
@@ -573,8 +582,8 @@ msgstr[1] "%d groepen"
 msgid "Note:"
 msgstr "Let op:"
 
-msgid "Match scores have already been recorded for this tournament. Format settings (Best of and group player brackets) cannot be changed."
-msgstr "Er zijn al wedstrijdscores voor dit toernooi vastgelegd. De formaatinstellingen (best-of en spelersaantallen per groep) kunnen niet worden gewijzigd."
+msgid "Match scores have already been recorded for this tournament. Match formats and group player brackets cannot be changed."
+msgstr "Er zijn al wedstrijdscores voor dit toernooi vastgelegd. De wedstrijdformaten en spelersaantallen per groep kunnen niet worden gewijzigd."
 
 msgid "Group player brackets (format)"
 msgstr "Spelersaantallen per groep (formaat)"

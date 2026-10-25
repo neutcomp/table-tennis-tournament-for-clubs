@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,7 @@ Player emails are stored for club administration and are not shown in public sho
 == Features ==
 
 * Player records with name, rating, email, and active status.
-* Tournament records with name, description, date, time, best of, player type, and status.
+* Tournament records with name, description, date, time, separate best-of formats for preliminary rounds, intermediate rounds, and finals, player type, and status.
 * Optional phone number collection, configurable as required per tournament.
 * Optional Tikkie QR-code registration payments with a fee and direct payment link; configure a bank account for manual transfers.
 * Tournament Players screen for adding and removing participants.
@@ -39,7 +39,9 @@ Player emails are stored for club administration and are not shown in public sho
 2. Activate the plugin from Plugins in WordPress.
 3. Use the Table Tennis menu to create players and tournaments.
 4. Open Tournament Players, select a tournament, and save its participants.
-5. Set the tournament date and optional start time, select Best of 1, Best of 3, or Best of 5 when creating a tournament, then use Scores in the tournament overview to enter match scores.
+5. Set the tournament date and optional start time, choose a Best of 1, 3, or 5 format for preliminary rounds, intermediate rounds, and finals, then use Scores in the tournament overview to enter match scores.
+
+Group matches use the preliminary format. Four-group semi-finals and the three-group winners round use the intermediate format. Finals and third-place matches use the finals format. Existing tournaments without saved intermediate or finals formats continue using their existing Best of setting for those stages.
 
 After every group match has a completed score, the Scores screen reveals the applicable crossover matches. Later four-group matches remain unavailable until their semi-finals are complete. Public tournament pages show the crossover results and final places when the deciding matches have been completed.
 
@@ -94,6 +96,9 @@ Player phone numbers are stored with player records and available to administrat
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 1.0.5 =
+* Add separate Best of formats for preliminary rounds, intermediate rounds, and finals.
 
 = 1.0.4 =
 * Add tournament descriptions and per-tournament phone requirements.

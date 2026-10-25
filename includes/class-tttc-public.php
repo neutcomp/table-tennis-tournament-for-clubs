@@ -67,6 +67,7 @@ final class TTTC_Public {
 					$score_state ? $score_state->updated : '',
 					(string) $player_state,
 					get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true ),
+					wp_json_encode( TTTC_Plugin::get_tournament_game_formats( $tournament_id ) ),
 					get_post_field( 'post_modified_gmt', $tournament_id ),
 				)
 			)
@@ -327,10 +328,10 @@ final class TTTC_Public {
 	private function render_tv_view( $tournament_id ) {
 		$status      = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$schedule    = $this->tournament_schedule( $tournament_id );
-		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games       = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (int) $games : 3;
+		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
+		$games       = $game_formats['preliminary'];
 		$scores      = $this->saved_scores( $tournament_id );
-		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats );
 		$has_slides  = in_array( $status, array( 'active', 'completed' ), true ) && ! empty( $schedule );
 		$tv_interval = absint( get_option( TTTC_Plugin::OPTION_TV_INTERVAL, 20 ) );
 		?>
@@ -428,7 +429,7 @@ final class TTTC_Public {
 							} )
 						);
 						?>
-		<?php foreach ( $stages as $stage ) :
+		<?php foreach ( $stages as $stage ) : $stage_games = $game_formats[ $stage['phase'] ];
 			if ( in_array( $stage['id'], array( 'final', 'third-place' ), true ) && ( ! $stage['matches'][0]['players'][0] || ! $stage['matches'][0]['players'][1] ) ) {
 				continue;
 			}
@@ -444,7 +445,7 @@ final class TTTC_Public {
 										$available = $match['players'][0] && $match['players'][1];
 										$rows[]    = array( $available ? $match['players'][0]->post_title : $waiting, $available ? $match['players'][1]->post_title : $waiting, isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array() );
 									}
-									$this->render_tv_match_table( $rows, $games );
+									$this->render_tv_match_table( $rows, $stage_games );
 									?>
 			</div>
 		</section>
@@ -689,10 +690,10 @@ final class TTTC_Public {
 		$players     = $this->assigned_players( $tournament_id );
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
-		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games       = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (int) $games : 3;
+		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
+		$games       = $game_formats['preliminary'];
 		$scores      = $this->saved_scores( $tournament_id );
-		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats );
 		$page_url    = $this->tournament_url( $tournament_id );
 		$breadcrumbs = array(
 			array(
@@ -942,7 +943,7 @@ final class TTTC_Public {
 			<?php if ( count( $schedule ) > 1 ) : ?>
 			<div class="tttc-public-crossover"
 				aria-label="<?php esc_attr_e( 'Crossover rounds', 'table-tennis-tournament-for-clubs' ); ?>">
-				<?php foreach ( $competition['stages'] as $stage ) : $panel_id = 'tttc-crossover-panel-' . $stage['id']; ?>
+				<?php foreach ( $competition['stages'] as $stage ) : $panel_id = 'tttc-crossover-panel-' . $stage['id']; $stage_games = $game_formats[ $stage['phase'] ]; ?>
 				<section id="<?php echo esc_attr( $panel_id ); ?>" class="tttc-public-group tttc-public-crossover-stage"
 					role="tabpanel" aria-labelledby="<?php echo esc_attr( 'tttc-crossover-tab-' . $stage['id'] ); ?>" hidden>
 					<h3><?php echo esc_html( $stage['label'] ); ?></h3>
@@ -951,7 +952,7 @@ final class TTTC_Public {
 							<tr>
 								<th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th>
 								<th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th>
-								<th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) :
+								<th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $stage_games; $game++ ) :
 											// translators: %d is the game number.
 											$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game );
 											?><th><?php echo esc_html( $game_label ); ?></th><?php endfor; ?><th>
@@ -959,7 +960,7 @@ final class TTTC_Public {
 							</tr>
 						</thead>
 						<tbody>
-							<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $match_scores = isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array(); $games_won = $this->games_won( $match_scores, $games ); ?>
+							<?php foreach ( $stage['matches'] as $match_number => $match ) : $available = $match['players'][0] && $match['players'][1]; $match_scores = isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array(); $games_won = $this->games_won( $match_scores, $stage_games ); ?>
 							<tr>
 								<td><?php echo esc_html( $match_number + 1 ); ?></td>
 								<td>
@@ -968,7 +969,7 @@ final class TTTC_Public {
 								<td>
 									<?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?>
 								</td>
-								<?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
+								<?php for ( $game = 0; $game < $stage_games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
 								<td><?php echo esc_html( (string) $game_score[0] . '-' . (string) $game_score[1] ); ?></td>
 								<?php endfor; ?><td><?php echo esc_html( $games_won[0] . '-' . $games_won[1] ); ?></td>
 							</tr>
@@ -1333,12 +1334,11 @@ final class TTTC_Public {
 	}
 
 	private function tournament_places( $tournament_id ) {
-		$games       = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_GAMES, true );
-		$games       = in_array( (string) $games, array( '1', '3', '5' ), true ) ? (int) $games : 3;
+		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
 		$scores      = $this->saved_scores( $tournament_id );
-		$competition = TTTC_Competition::calculate( $schedule, $scores, $games );
-		if ( ! $this->all_games_played( $schedule, $competition, $scores, $games ) ) {
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats );
+		if ( ! $this->all_games_played( $schedule, $competition, $scores, $game_formats ) ) {
 			return array();
 		}
 
@@ -1369,7 +1369,7 @@ final class TTTC_Public {
 		return isset( $places[0]['player']->ID ) ? (int) $places[0]['player']->ID : 0;
 	}
 
-	private function all_games_played( $schedule, $competition, $scores, $games ) {
+	private function all_games_played( $schedule, $competition, $scores, $game_formats ) {
 		$matches = array();
 		foreach ( $schedule as $group_schedule ) {
 			foreach ( $group_schedule['rounds'] as $round ) {
@@ -1383,16 +1383,22 @@ final class TTTC_Public {
 				if ( ! $match['players'][0] || ! $match['players'][1] ) {
 					return false;
 				}
-				$matches[] = $match['score_key'];
+				$matches[] = array( $match['score_key'], $game_formats[ $match['phase'] ] );
 			}
 		}
 
-		foreach ( $matches as $match_key ) {
+		foreach ( $matches as $match ) {
+			if ( is_array( $match ) ) {
+				list( $match_key, $match_games ) = $match;
+			} else {
+				$match_key = $match;
+				$match_games = $game_formats['preliminary'];
+			}
 			if ( ! isset( $scores[ $match_key ] ) ) {
 				return false;
 			}
-			$games_won = $this->games_won( $scores[ $match_key ], $games );
-			if ( max( $games_won ) < (int) ceil( $games / 2 ) ) {
+			$games_won = $this->games_won( $scores[ $match_key ], $match_games );
+			if ( max( $games_won ) < (int) ceil( $match_games / 2 ) ) {
 				return false;
 			}
 		}

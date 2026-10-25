@@ -10,10 +10,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Competition {
-	public static function calculate( $schedule, $scores, $games ) {
+	public static function calculate( $schedule, $scores, $game_formats ) {
+		if ( ! is_array( $game_formats ) ) {
+			$game_formats = array_fill_keys( array( 'preliminary', 'intermediate', 'finals' ), (int) $game_formats );
+		}
 		$groups = array();
 		foreach ( $schedule as $group_index => $group_schedule ) {
-			$groups[ $group_index ] = self::standings_for_group( $group_schedule, $scores, $games );
+			$groups[ $group_index ] = self::standings_for_group( $group_schedule, $scores, $game_formats['preliminary'] );
 		}
 
 		$stages = self::crossover_stages( count( $groups ) );
@@ -21,11 +24,13 @@ final class TTTC_Competition {
 		foreach ( $stages as $stage ) {
 			$resolved_matches = array();
 			foreach ( $stage['matches'] as $match ) {
-				$players = array( self::resolve_reference( $match['players'][0], $groups, $resolved_stages, $scores, $games ), self::resolve_reference( $match['players'][1], $groups, $resolved_stages, $scores, $games ) );
+				$match['phase'] = $stage['phase'];
+				$stage_games = self::games_for_phase( $game_formats, $stage['phase'] );
+				$players = array( self::resolve_reference( $match['players'][0], $groups, $resolved_stages ), self::resolve_reference( $match['players'][1], $groups, $resolved_stages ) );
 				$match['players'] = $players;
 				$match['score_key'] = self::score_key( $match['id'], $players );
-				$match['winner'] = self::match_winner( $match['score_key'], $players, $scores, $games );
-				$match['loser'] = self::match_loser( $match['score_key'], $players, $scores, $games );
+				$match['winner'] = self::match_winner( $match['score_key'], $players, $scores, $stage_games );
+				$match['loser'] = self::match_loser( $match['score_key'], $players, $scores, $stage_games );
 				$resolved_matches[] = $match;
 			}
 			$stage['matches'] = $resolved_matches;
@@ -35,8 +40,12 @@ final class TTTC_Competition {
 		return array(
 			'groups' => $groups,
 			'stages' => $resolved_stages,
-			'places' => self::places( $groups, $resolved_stages, $scores, $games ),
+			'places' => self::places( $groups, $resolved_stages, $scores, $game_formats ),
 		);
+	}
+
+	private static function games_for_phase( $game_formats, $phase ) {
+		return isset( $game_formats[ $phase ] ) ? (int) $game_formats[ $phase ] : (int) $game_formats['preliminary'];
 	}
 
 	private static function standings_for_group( $group_schedule, $scores, $games ) {
@@ -197,13 +206,13 @@ final class TTTC_Competition {
 	private static function crossover_stages( $group_count ) {
 		if ( 2 === $group_count ) {
 			return array(
-				array( 'id' => 'final', 'label' => __( 'Final', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 1, 'place' => 1 ) ) ) ) ),
-				array( 'id' => 'third-place', 'label' => __( 'Third-place match', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'group' => 0, 'place' => 2 ), array( 'group' => 1, 'place' => 2 ) ) ) ) ),
+				array( 'id' => 'final', 'phase' => 'finals', 'label' => __( 'Final', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 1, 'place' => 1 ) ) ) ),
+				array( 'id' => 'third-place', 'phase' => 'finals', 'label' => __( 'Third-place match', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'group' => 0, 'place' => 2 ), array( 'group' => 1, 'place' => 2 ) ) ) ),
 			);
 		}
 		if ( 3 === $group_count ) {
 			return array(
-				array( 'id' => 'winner-round', 'label' => __( 'Winner round', 'table-tennis-tournament-for-clubs' ), 'matches' => array(
+				array( 'id' => 'winner-round', 'phase' => 'intermediate', 'label' => __( 'Winner round', 'table-tennis-tournament-for-clubs' ), 'matches' => array(
 					array( 'id' => 'winner-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 1, 'place' => 1 ) ) ),
 					array( 'id' => 'winner-2', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 2, 'place' => 1 ) ) ),
 					array( 'id' => 'winner-3', 'players' => array( array( 'group' => 1, 'place' => 1 ), array( 'group' => 2, 'place' => 1 ) ) ),
@@ -212,18 +221,18 @@ final class TTTC_Competition {
 		}
 		if ( 4 === $group_count ) {
 			return array(
-				array( 'id' => 'semifinals', 'label' => __( 'Semi-finals', 'table-tennis-tournament-for-clubs' ), 'matches' => array(
+				array( 'id' => 'semifinals', 'phase' => 'intermediate', 'label' => __( 'Semi-finals', 'table-tennis-tournament-for-clubs' ), 'matches' => array(
 					array( 'id' => 'semi-1', 'players' => array( array( 'group' => 0, 'place' => 1 ), array( 'group' => 3, 'place' => 1 ) ) ),
 					array( 'id' => 'semi-2', 'players' => array( array( 'group' => 1, 'place' => 1 ), array( 'group' => 2, 'place' => 1 ) ) ),
 				) ),
-				array( 'id' => 'final', 'label' => __( 'Final', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'stage' => 'semifinals', 'match' => 0, 'result' => 'winner' ), array( 'stage' => 'semifinals', 'match' => 1, 'result' => 'winner' ) ) ) ) ),
-				array( 'id' => 'third-place', 'label' => __( 'Third-place match', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'stage' => 'semifinals', 'match' => 0, 'result' => 'loser' ), array( 'stage' => 'semifinals', 'match' => 1, 'result' => 'loser' ) ) ) ) ),
+				array( 'id' => 'final', 'phase' => 'finals', 'label' => __( 'Final', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'final-1', 'players' => array( array( 'stage' => 'semifinals', 'match' => 0, 'result' => 'winner' ), array( 'stage' => 'semifinals', 'match' => 1, 'result' => 'winner' ) ) ) ) ),
+				array( 'id' => 'third-place', 'phase' => 'finals', 'label' => __( 'Third-place match', 'table-tennis-tournament-for-clubs' ), 'matches' => array( array( 'id' => 'third-place-1', 'players' => array( array( 'stage' => 'semifinals', 'match' => 0, 'result' => 'loser' ), array( 'stage' => 'semifinals', 'match' => 1, 'result' => 'loser' ) ) ) ) ),
 			);
 		}
 		return array();
 	}
 
-	private static function resolve_reference( $reference, $groups, $stages, $scores, $games ) {
+	private static function resolve_reference( $reference, $groups, $stages ) {
 		if ( isset( $reference['group'] ) ) {
 			$index = (int) $reference['group'];
 			$place = (int) $reference['place'] - 1;
@@ -288,7 +297,7 @@ final class TTTC_Competition {
 		return $ids[0] . '-' . $ids[1];
 	}
 
-	private static function places( $groups, $stages, $scores, $games ) {
+	private static function places( $groups, $stages, $scores, $game_formats ) {
 		$places = array();
 		if ( 1 === count( $groups ) ) {
 			return isset( $groups[0]['complete'] ) && $groups[0]['complete'] ? $groups[0]['standings'] : array();
@@ -306,7 +315,7 @@ final class TTTC_Competition {
 				if ( ! $match['winner'] || ! isset( $players_by_id[ (int) $match['players'][0]->ID ], $players_by_id[ (int) $match['players'][1]->ID ], $scores[ $match['score_key'] ] ) ) {
 					continue;
 				}
-				$totals          = self::game_totals( $scores[ $match['score_key'] ], $games );
+				$totals          = self::game_totals( $scores[ $match['score_key'] ], self::games_for_phase( $game_formats, $stages[0]['phase'] ) );
 				$match_records[] = array(
 					'ids'       => array( (int) $match['players'][0]->ID, (int) $match['players'][1]->ID ),
 					'winner_id' => (int) $match['winner']->ID,
