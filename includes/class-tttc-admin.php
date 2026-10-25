@@ -956,7 +956,11 @@ final class TTTC_Admin {
 			'tttc_active' => array( 'key' => TTTC_Plugin::PLAYER_META_ACTIVE, 'orderby' => 'meta_value' ),
 		);
 		$orderby = $query->get( 'orderby' );
-		if ( isset( $sortable_meta_keys[ $orderby ] ) ) {
+		$requested_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : '';
+		if ( '' === $requested_orderby ) {
+			$query->set( 'orderby', 'title' );
+			$query->set( 'order', 'ASC' );
+		} elseif ( isset( $sortable_meta_keys[ $orderby ] ) ) {
 			$query->set( 'meta_key', $sortable_meta_keys[ $orderby ]['key'] );
 			$query->set( 'orderby', $sortable_meta_keys[ $orderby ]['orderby'] );
 		}
