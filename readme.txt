@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,7 +54,7 @@ Each published tournament title links to `/{tournament-url-base}/{tournament-nam
 
 Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced.
 
-Players must provide an email address when signing up. A phone number is collected and is required only when enabled for that tournament. After a successful signup, the plugin sends a confirmation email using the sender address, subject, and body configured under Settings > Table Tennis, and shows configured payment instructions on the success page. Signup closes at the start of the tournament date in the WordPress site's local timezone; expired tournaments show a disabled signup button. Tournament times use the 24-hour `HH:MM` format. The email subject and body support `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
+Players must provide an email address when signing up. A phone number is collected and is required only when enabled for that tournament. After a successful signup, the plugin sends an HTML confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. When payment details are enabled for the tournament, the email appends the registration fee and configured payment instructions, including the uploaded QR-code image and optional direct payment link. The success page also shows configured payment instructions. Signup closes at the start of the tournament date in the WordPress site's local timezone; expired tournaments show a disabled signup button. Tournament times use the 24-hour `HH:MM` format. The email subject and body support `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
 
 Optional attributes:
 
@@ -84,7 +84,7 @@ Draft, Upcoming, Active, Completed, and Cancelled are available. Draft tournamen
 
 == External services ==
 
-When a visitor successfully signs up for an upcoming tournament, the plugin uses WordPress's `wp_mail()` function to send a confirmation email. It passes the visitor's email address, the configured sender address, and the configured email subject and message to WordPress. The message can include the tournament name, date, time, and public tournament URL. The email is sent only after the signup has been saved.
+When a visitor successfully signs up for an upcoming tournament, the plugin uses WordPress's `wp_mail()` function to send an HTML confirmation email. It passes the visitor's email address, configured sender address, subject, and message to WordPress. The message can include the tournament name, date, time, and public tournament URL. If payment details are enabled, it can also include the tournament's uploaded payment QR image, served from the website's media library, and an optional direct payment link. Email clients may block remote images. The email is sent only after the signup has been saved.
 
 The website's mail transport is configured by the site owner and may be the hosting provider or a separately installed mail service. This plugin does not select or connect to a specific email provider, so the applicable provider's terms of service and privacy policy depend on the website's configuration.
 
@@ -97,6 +97,9 @@ Player phone numbers are stored with player records and available to administrat
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 1.0.7 =
+* Include configured payment QR images and direct payment links in signup confirmation emails.
 
 = 1.0.6 =
 * Add an option to end tournaments after the group rounds.
