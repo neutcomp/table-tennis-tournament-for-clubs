@@ -213,6 +213,12 @@ msgstr "Best of voor tussenrondes"
 msgid "Finals best of"
 msgstr "Best of voor finales"
 
+msgid "No follow-up rounds"
+msgstr "Geen vervolgrondes"
+
+msgid "Group standings become the final results; there is no overall winner."
+msgstr "De groepsstanden zijn het eindresultaat; er is geen algehele winnaar."
+
 msgid "Status"
 msgstr "Status"
 
@@ -582,8 +588,8 @@ msgstr[1] "%d groepen"
 msgid "Note:"
 msgstr "Let op:"
 
-msgid "Match scores have already been recorded for this tournament. Match formats and group player brackets cannot be changed."
-msgstr "Er zijn al wedstrijdscores voor dit toernooi vastgelegd. De wedstrijdformaten en spelersaantallen per groep kunnen niet worden gewijzigd."
+msgid "Match scores have already been recorded for this tournament. Match formats, group player brackets, and follow-up round settings cannot be changed."
+msgstr "Er zijn al wedstrijdscores voor dit toernooi vastgelegd. De wedstrijdformaten, spelersaantallen per groep en vervolgrondes kunnen niet worden gewijzigd."
 
 msgid "Group player brackets (format)"
 msgstr "Spelersaantallen per groep (formaat)"

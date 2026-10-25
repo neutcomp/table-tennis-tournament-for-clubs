@@ -331,7 +331,8 @@ final class TTTC_Public {
 		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
 		$games       = $game_formats['preliminary'];
 		$scores      = $this->saved_scores( $tournament_id );
-		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats );
+		$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats, $no_follow_up_rounds );
 		$has_slides  = in_array( $status, array( 'active', 'completed' ), true ) && ! empty( $schedule );
 		$tv_interval = absint( get_option( TTTC_Plugin::OPTION_TV_INTERVAL, 20 ) );
 		?>
@@ -693,7 +694,8 @@ final class TTTC_Public {
 		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
 		$games       = $game_formats['preliminary'];
 		$scores      = $this->saved_scores( $tournament_id );
-		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats );
+		$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats, $no_follow_up_rounds );
 		$page_url    = $this->tournament_url( $tournament_id );
 		$breadcrumbs = array(
 			array(
@@ -765,7 +767,7 @@ final class TTTC_Public {
 			<h2 id="tttc-groups-heading"><?php esc_html_e( 'Groups and matches', 'table-tennis-tournament-for-clubs' ); ?>
 			</h2>
 			<div class="tttc-public-group-tabs" role="tablist"
-				aria-label="<?php esc_attr_e( 'Groups and crossover rounds', 'table-tennis-tournament-for-clubs' ); ?>">
+				aria-label="<?php echo esc_attr( ! empty( $competition['stages'] ) ? __( 'Groups and crossover rounds', 'table-tennis-tournament-for-clubs' ) : __( 'Groups', 'table-tennis-tournament-for-clubs' ) ); ?>">
 				<?php foreach ( $schedule as $index => $group_schedule ) :
 								$tab_id   = 'tttc-group-tab-' . ( $index + 1 );
 								$panel_id = 'tttc-group-panel-' . ( $index + 1 );
@@ -941,6 +943,7 @@ final class TTTC_Public {
 				<?php endforeach; ?>
 			</div>
 			<?php if ( count( $schedule ) > 1 ) : ?>
+			<?php if ( ! empty( $competition['stages'] ) ) : ?>
 			<div class="tttc-public-crossover"
 				aria-label="<?php esc_attr_e( 'Crossover rounds', 'table-tennis-tournament-for-clubs' ); ?>">
 				<?php foreach ( $competition['stages'] as $stage ) : $panel_id = 'tttc-crossover-panel-' . $stage['id']; $stage_games = $game_formats[ $stage['phase'] ]; ?>
@@ -979,6 +982,7 @@ final class TTTC_Public {
 				</section>
 				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
 			<?php endif; ?>
 			<?php if ( ! empty( $competition['places'] ) ) : ?>
 			<section id="tttc-final-places-panel" class="tttc-public-group" role="tabpanel"
@@ -1337,7 +1341,8 @@ final class TTTC_Public {
 		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
 		$scores      = $this->saved_scores( $tournament_id );
-		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats );
+		$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats, $no_follow_up_rounds );
 		if ( ! $this->all_games_played( $schedule, $competition, $scores, $game_formats ) ) {
 			return array();
 		}

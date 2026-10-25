@@ -582,11 +582,12 @@ final class TTTC_Admin {
 
 		$format_ranges = TTTC_Plugin::get_format_ranges( $post->ID );
 		$has_scores    = TTTC_Plugin::has_scores( $post->ID );
+		$no_follow_up_rounds = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
 		?>
 <?php if ( $has_scores ) : ?>
 <div class="notice notice-warning inline" style="margin: 0 0 16px;">
 	<p><strong><?php esc_html_e( 'Note:', 'table-tennis-tournament-for-clubs' ); ?></strong>
-		<?php esc_html_e( 'Match scores have already been recorded for this tournament. Match formats and group player brackets cannot be changed.', 'table-tennis-tournament-for-clubs' ); ?>
+		<?php esc_html_e( 'Match scores have already been recorded for this tournament. Match formats, group player brackets, and follow-up round settings cannot be changed.', 'table-tennis-tournament-for-clubs' ); ?>
 	</p>
 </div>
 <?php endif; ?>
@@ -659,6 +660,9 @@ final class TTTC_Admin {
 
 <div class="tttc-tournament-format-section" style="margin-top: 16px; border-top: 1px solid #dcdcde; padding-top: 12px;">
 	<p><strong><?php esc_html_e( 'Group player brackets (format)', 'table-tennis-tournament-for-clubs' ); ?></strong></p>
+	<p><label><input type="checkbox" name="tttc_no_follow_up" value="1" <?php checked( '1', $no_follow_up_rounds ); ?> <?php disabled( $has_scores ); ?>>
+			<?php esc_html_e( 'No follow-up rounds', 'table-tennis-tournament-for-clubs' ); ?></label></p>
+	<p class="description"><?php esc_html_e( 'Group standings become the final results; there is no overall winner.', 'table-tennis-tournament-for-clubs' ); ?></p>
 	<p class="description">
 		<?php esc_html_e( 'Customize player count brackets for this tournament or leave default.', 'table-tennis-tournament-for-clubs' ); ?>
 	</p>
@@ -827,6 +831,8 @@ final class TTTC_Admin {
 
 		$has_scores = TTTC_Plugin::has_scores( $post_id );
 		if ( ! $has_scores ) {
+			$no_follow_up_rounds = isset( $_POST['tttc_no_follow_up'] ) ? '1' : '0';
+			update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, $no_follow_up_rounds );
 			$games = isset( $_POST['tttc_games'] ) ? sanitize_key( wp_unslash( $_POST['tttc_games'] ) ) : '3';
 			if ( ! in_array( $games, array( '1', '3', '5' ), true ) ) {
 				$games = '3';
@@ -1138,7 +1144,8 @@ final class TTTC_Admin {
 			$this->score_form_scores = isset( $error_data['scores'] ) ? $error_data['scores'] : null;
 		}
 		$saved_scores = null !== $this->score_form_scores ? $this->score_form_scores : $this->saved_scores( $tournament_id );
-		$competition  = TTTC_Competition::calculate( $schedule, $saved_scores, $game_formats );
+		$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+		$competition  = TTTC_Competition::calculate( $schedule, $saved_scores, $game_formats, $no_follow_up_rounds );
 		$ordered_stages = array();
 		foreach ( $competition['stages'] as $stage ) {
 			if ( 'final' !== $stage['id'] ) {
@@ -1351,7 +1358,8 @@ final class TTTC_Admin {
 				}
 			}
 		}
-		$competition = TTTC_Competition::calculate( $schedule, $validated, $game_formats );
+		$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+		$competition = TTTC_Competition::calculate( $schedule, $validated, $game_formats, $no_follow_up_rounds );
 		foreach ( $competition['stages'] as $stage ) {
 			foreach ( $stage['matches'] as $match ) {
 				if ( ! $match['players'][0] || ! $match['players'][1] ) {
@@ -1475,7 +1483,8 @@ final class TTTC_Admin {
 			}
 		}
 
-		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats );
+		$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+		$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats, $no_follow_up_rounds );
 		foreach ( $competition['stages'] as $stage ) {
 			$games = $game_formats[ $stage['phase'] ];
 			foreach ( $stage['matches'] as $match ) {

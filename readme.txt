@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Tournament Scores screen with one, three, or five score fields per generated match.
 * Score validation requiring 11 points (with a 2+ point margin) or a deuce win with exactly two points lead, plus a completed Best of 1, Best of 3, or Best of 5 match without superfluous or skipped games.
 * Automatic crossover rounds after all group matches are complete. Two groups produce a final and third-place match, three groups produce a round-robin among the group winners, and four groups produce semi-finals followed by a final and third-place match.
+* Optional no-follow-up mode that ends the tournament with each group's final standings and does not declare an overall champion.
 * Group and crossover standings are ordered by match wins, game difference, point difference, and then a stable player-order fallback.
 * Public tournament pages with groups, round-robin match schedules, and match scores.
 * TV mode (`?showtv=true`) for showing live scores full-screen on a TV, with automatic slide cycling and live refresh when scores are saved.
@@ -39,11 +40,11 @@ Player emails are stored for club administration and are not shown in public sho
 2. Activate the plugin from Plugins in WordPress.
 3. Use the Table Tennis menu to create players and tournaments.
 4. Open Tournament Players, select a tournament, and save its participants.
-5. Set the tournament date and optional start time, choose a Best of 1, 3, or 5 format for preliminary rounds, intermediate rounds, and finals, then use Scores in the tournament overview to enter match scores.
+5. Set the tournament date and optional start time, choose a Best of 1, 3, or 5 format for preliminary rounds, intermediate rounds, and finals, optionally select No follow-up rounds, then use Scores in the tournament overview to enter match scores.
 
 Group matches use the preliminary format. Four-group semi-finals and the three-group winners round use the intermediate format. Finals and third-place matches use the finals format. Existing tournaments without saved intermediate or finals formats continue using their existing Best of setting for those stages.
 
-After every group match has a completed score, the Scores screen reveals the applicable crossover matches. Later four-group matches remain unavailable until their semi-finals are complete. Public tournament pages show the crossover results and final places when the deciding matches have been completed.
+After every group match has a completed score, the Scores screen reveals the applicable crossover matches unless No follow-up rounds is selected. In that mode, each group's standings are the tournament results and there is no overall winner. The option, like other match format settings, cannot be changed after scores have been entered. Later four-group matches remain unavailable until their semi-finals are complete. Public tournament pages show crossover results and final places when the deciding matches have been completed.
 
 == Shortcodes ==
 
@@ -96,6 +97,9 @@ Player phone numbers are stored with player records and available to administrat
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 1.0.6 =
+* Add an option to end tournaments after the group rounds.
 
 = 1.0.5 =
 * Add separate Best of formats for preliminary rounds, intermediate rounds, and finals.

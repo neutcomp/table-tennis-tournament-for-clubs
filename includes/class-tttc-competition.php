@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Competition {
-	public static function calculate( $schedule, $scores, $game_formats ) {
+	public static function calculate( $schedule, $scores, $game_formats, $no_follow_up_rounds = false ) {
 		if ( ! is_array( $game_formats ) ) {
 			$game_formats = array_fill_keys( array( 'preliminary', 'intermediate', 'finals' ), (int) $game_formats );
 		}
@@ -19,7 +19,7 @@ final class TTTC_Competition {
 			$groups[ $group_index ] = self::standings_for_group( $group_schedule, $scores, $game_formats['preliminary'] );
 		}
 
-		$stages = self::crossover_stages( count( $groups ) );
+		$stages = $no_follow_up_rounds ? array() : self::crossover_stages( count( $groups ) );
 		$resolved_stages = array();
 		foreach ( $stages as $stage ) {
 			$resolved_matches = array();
@@ -40,7 +40,7 @@ final class TTTC_Competition {
 		return array(
 			'groups' => $groups,
 			'stages' => $resolved_stages,
-			'places' => self::places( $groups, $resolved_stages, $scores, $game_formats ),
+			'places' => $no_follow_up_rounds ? array() : self::places( $groups, $resolved_stages, $scores, $game_formats ),
 		);
 	}
 

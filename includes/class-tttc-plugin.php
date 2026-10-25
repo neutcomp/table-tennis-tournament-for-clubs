@@ -28,6 +28,7 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_HIDE_FROM_OVERVIEW = '_tttc_hide_from_overview';
 	const TOURNAMENT_META_TYPE = '_tttc_tournament_type';
 	const TOURNAMENT_META_FORMAT_RANGES = '_tttc_format_ranges';
+	const TOURNAMENT_META_NO_FOLLOW_UP = '_tttc_no_follow_up';
 	const TOURNAMENT_META_DESCRIPTION = '_tttc_description';
 	const TOURNAMENT_META_PHONE_REQUIRED = '_tttc_phone_required';
 	const TOURNAMENT_META_TIKKIE_ENABLED = '_tttc_tikkie_enabled';
