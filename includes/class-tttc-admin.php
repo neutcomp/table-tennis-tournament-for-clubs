@@ -1965,7 +1965,7 @@ final class TTTC_Admin {
 	<?php if ( isset( $_GET['removed'] ) ) : ?><div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'All tournament scores removed.', 'table-tennis-tournament-for-clubs' ); ?></p></div><?php elseif ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Tournament scores updated.', 'table-tennis-tournament-for-clubs' ); ?></p></div><?php endif; ?>
 	<nav class="nav-tab-wrapper">
 		<a class="nav-tab <?php echo 'preliminary' === $phase ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&phase=preliminary' ) ); ?>"><?php esc_html_e( 'Preliminary groups', 'table-tennis-tournament-for-clubs' ); ?></a>
-		<?php if ( is_array( $pools ) ) : ?><a class="nav-tab nav-tab-active" href="<?php echo esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&phase=placement' ) ); ?>"><?php esc_html_e( 'A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></a><?php endif; ?>
+		<?php if ( is_array( $pools ) ) : ?><a class="nav-tab <?php echo 'placement' === $phase ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&phase=placement' ) ); ?>"><?php esc_html_e( 'A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></a><?php endif; ?>
 	</nav>
 	<?php if ( empty( $schedule ) ) : ?>
 		<p><?php esc_html_e( 'The placement-pool format requires at least 9 assigned active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
