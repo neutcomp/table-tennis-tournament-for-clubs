@@ -1887,12 +1887,12 @@ final class TTTC_Admin {
 		$all_scores = $this->saved_scores( $tournament_id );
 		$pools = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PLACEMENT_POOLS, true );
 		$print_all_groups = isset( $_GET['print'] ) && is_string( $_GET['print'] ) && 'all' === sanitize_key( wp_unslash( $_GET['print'] ) );
-		$phase = isset( $_GET['phase'] ) && is_string( $_GET['phase'] ) && 'placement' === sanitize_key( wp_unslash( $_GET['phase'] ) ) ? 'placement' : 'preliminary';
+		$phase = isset( $_GET['phase'] ) && is_string( $_GET['phase'] ) ? sanitize_key( wp_unslash( $_GET['phase'] ) ) : '';
+		if ( ! in_array( $phase, array( 'preliminary', 'placement' ), true ) ) {
+			$phase = is_array( $pools ) ? 'placement' : 'preliminary';
+		}
 		if ( 'placement' === $phase && ! is_array( $pools ) ) {
 			$phase = 'preliminary';
-		}
-		if ( is_array( $pools ) ) {
-			$phase = 'placement';
 		}
 
 		$public = TTTC_Public::instance();
