@@ -2120,7 +2120,7 @@ final class TTTC_Admin {
 			<?php foreach ( $schedule as $group_key => $group_schedule ) :
 				$group_url = admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&phase=' . $phase . '&group=' . rawurlencode( (string) $group_key ) . '&round=0' );
 				?>
-				<a class="nav-tab <?php echo (string) $selected_group === (string) $group_key ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( $group_url ); ?>"><?php echo esc_html( $group_schedule['label'] ); ?></a>
+				<a class="nav-tab <?php echo null === $selected_stage && (string) $selected_group === (string) $group_key ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( $group_url ); ?>"><?php echo esc_html( $group_schedule['label'] ); ?></a>
 			<?php endforeach; ?>
 		</nav>
 		<?php if ( 'placement' === $phase && ! $no_follow_up_rounds ) : ?>
