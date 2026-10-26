@@ -1656,6 +1656,7 @@ final class TTTC_Admin {
 	private function placement_scores_page( $tournament_id ) {
 		$all_scores = $this->saved_scores( $tournament_id );
 		$pools = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PLACEMENT_POOLS, true );
+		$print_all_groups = isset( $_GET['print'] ) && is_string( $_GET['print'] ) && 'all' === sanitize_key( wp_unslash( $_GET['print'] ) );
 		$phase = isset( $_GET['phase'] ) && is_string( $_GET['phase'] ) && 'placement' === sanitize_key( wp_unslash( $_GET['phase'] ) ) ? 'placement' : 'preliminary';
 		if ( 'placement' === $phase && ! is_array( $pools ) ) {
 			$phase = 'preliminary';
@@ -1707,6 +1708,9 @@ final class TTTC_Admin {
 				),
 			);
 		}
+		if ( $print_all_groups ) {
+			$visible_schedule = $schedule;
+		}
 		?>
 <div class="wrap">
 	<h1><?php echo esc_html( get_the_title( $tournament_id ) . ' - ' . __( 'Scores', 'table-tennis-tournament-for-clubs' ) ); ?></h1>
@@ -1745,13 +1749,17 @@ final class TTTC_Admin {
 					<a class="nav-tab <?php echo $selected_round === $round_index ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id . '&phase=' . $phase . '&group=' . rawurlencode( (string) $selected_group ) . '&round=' . $round_index ) ); ?>"><?php echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_index + 1 ) ); ?></a>
 				<?php endforeach; ?>
 			</nav>
-		<?php else : ?>
+		<?php elseif ( ! $print_all_groups ) : ?>
 			<p><?php esc_html_e( 'This pool has no matches; its standings are ready.', 'table-tennis-tournament-for-clubs' ); ?></p>
 		<?php endif; ?>
-		<?php if ( null !== $selected_round ) : ?>
+		<?php if ( null !== $selected_round || $print_all_groups ) : ?>
+		<?php if ( $print_all_groups ) : ?>
+		<div class="tttc-scores-form tttc-print-all-groups">
+		<?php else : ?>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form">
 			<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>"><input type="hidden" name="tttc_placement_phase" value="<?php echo esc_attr( $phase ); ?>"><input type="hidden" name="tttc_placement_group" value="<?php echo esc_attr( $selected_group ); ?>"><input type="hidden" name="tttc_placement_round" value="<?php echo esc_attr( null === $selected_round ? '' : $selected_round ); ?>">
 			<?php wp_nonce_field( 'tttc_save_scores', 'tttc_scores_nonce' ); ?>
+		<?php endif; ?>
 			<div class="tttc-scores-toolbar"><button type="button" class="button tttc-print-button" onclick="window.print(); return false;"><?php esc_html_e( 'Print scores', 'table-tennis-tournament-for-clubs' ); ?></button></div>
 			<?php foreach ( $visible_schedule as $group_key => $group_schedule ) : ?>
 				<section class="tttc-admin-placement-group">
@@ -1776,8 +1784,12 @@ final class TTTC_Admin {
 					<?php endforeach; ?>
 				</section>
 			<?php endforeach; ?>
-			<p><button class="button button-primary"><?php esc_html_e( 'Save scores', 'table-tennis-tournament-for-clubs' ); ?></button></p>
+			<?php if ( ! $print_all_groups ) : ?><p><button class="button button-primary"><?php esc_html_e( 'Save scores', 'table-tennis-tournament-for-clubs' ); ?></button></p><?php endif; ?>
+		<?php if ( $print_all_groups ) : ?>
+		</div>
+		<?php else : ?>
 		</form>
+		<?php endif; ?>
 		<?php endif; ?>
 	<?php endif; ?>
 </div>

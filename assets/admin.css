@@ -586,6 +586,36 @@
     width: 100% !important;
   }
 
+  .tttc-admin-placement-group {
+    border: 0;
+    break-inside: auto;
+    margin: 0 0 28px;
+    padding: 0;
+    page-break-inside: auto;
+    width: 100%;
+  }
+
+  .tttc-admin-placement-group h2 {
+    border-bottom: 3px solid #000;
+    color: #000;
+    font-size: 28px;
+    margin: 0 0 16px;
+    padding-bottom: 8px;
+  }
+
+  .tttc-admin-placement-group h3 {
+    break-after: avoid;
+    color: #000;
+    font-size: 18px;
+    margin: 16px 0 8px;
+    page-break-after: avoid;
+  }
+
+  .tttc-admin-placement-group .tttc-scores-table-wrap {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   .tttc-admin-group h2 {
     border-bottom: 3px solid #000;
     font-size: 30px;
