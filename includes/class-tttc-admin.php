@@ -27,10 +27,12 @@ final class TTTC_Admin {
 		add_action( 'pre_get_posts', array( $this, 'filter_players' ) );
 		add_filter( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_columns', array( $this, 'tournament_columns' ) );
 		add_action( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_custom_column', array( $this, 'tournament_column' ), 10, 2 );
+		add_filter( 'post_row_actions', array( $this, 'tournament_row_actions' ), 10, 2 );
 		add_action( 'admin_footer-edit.php', array( $this, 'render_status_info_modal' ) );
 		add_action( 'admin_post_tttc_update_players', array( $this, 'update_players' ) );
 		add_action( 'admin_post_tttc_reorder_players', array( $this, 'reorder_players' ) );
 		add_action( 'admin_post_tttc_save_scores', array( $this, 'save_scores' ) );
+		add_action( 'admin_post_tttc_duplicate_tournament', array( $this, 'duplicate_tournament' ) );
 		add_action( 'admin_post_tttc_merge_players', array( $this, 'merge_players' ) );
 		add_action( 'wp_ajax_tttc_quick_status', array( $this, 'ajax_quick_status' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
@@ -981,6 +983,113 @@ final class TTTC_Admin {
 			$query->set( 'meta_key', $sortable_meta_keys[ $orderby ]['key'] );
 			$query->set( 'orderby', $sortable_meta_keys[ $orderby ]['orderby'] );
 		}
+	}
+
+	public function tournament_row_actions( $actions, $post ) {
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== $post->post_type || ! current_user_can( 'edit_post', $post->ID ) ) {
+			return $actions;
+		}
+
+		$url = wp_nonce_url(
+			admin_url( 'admin-post.php?action=tttc_duplicate_tournament&post=' . absint( $post->ID ) ),
+			'tttc_duplicate_tournament_' . absint( $post->ID )
+		);
+		$actions['tttc_duplicate'] = '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Duplicate', 'table-tennis-tournament-for-clubs' ) . '</a>';
+
+		return $actions;
+	}
+
+	public function duplicate_tournament() {
+		$source_id = isset( $_GET['post'] ) ? absint( wp_unslash( $_GET['post'] ) ) : 0;
+		check_admin_referer( 'tttc_duplicate_tournament_' . $source_id );
+
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $source_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		if ( ! current_user_can( 'edit_post', $source_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to duplicate this tournament.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$source = get_post( $source_id );
+		if ( ! $source ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$title = $source->post_title . ' ' . __( 'copy', 'table-tennis-tournament-for-clubs' );
+		$copy_id = wp_insert_post(
+			array(
+				'post_type'   => TTTC_Plugin::TOURNAMENT_POST_TYPE,
+				'post_status' => 'draft',
+				'post_title'  => $title,
+				'post_name'   => $this->unique_tournament_slug( $title ),
+			),
+			true
+		);
+
+		if ( is_wp_error( $copy_id ) ) {
+			wp_die( esc_html( $copy_id->get_error_message() ) );
+		}
+
+		$meta_keys = array(
+			TTTC_Plugin::TOURNAMENT_META_DATE,
+			TTTC_Plugin::TOURNAMENT_META_TIME,
+			TTTC_Plugin::TOURNAMENT_META_GAMES,
+			TTTC_Plugin::TOURNAMENT_META_INTERMEDIATE_GAMES,
+			TTTC_Plugin::TOURNAMENT_META_FINALS_GAMES,
+			TTTC_Plugin::TOURNAMENT_META_HIDE_FROM_OVERVIEW,
+			TTTC_Plugin::TOURNAMENT_META_TYPE,
+			TTTC_Plugin::TOURNAMENT_META_FORMAT_RANGES,
+			TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP,
+			TTTC_Plugin::TOURNAMENT_META_DESCRIPTION,
+			TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED,
+			TTTC_Plugin::TOURNAMENT_META_ASK_JOINING,
+			TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL,
+		);
+		foreach ( $meta_keys as $meta_key ) {
+			$meta_value = get_post_meta( $source_id, $meta_key, true );
+			if ( '' !== $meta_value ) {
+				update_post_meta( $copy_id, $meta_key, $meta_value );
+			}
+		}
+		update_post_meta( $copy_id, TTTC_Plugin::TOURNAMENT_META_STATUS, 'draft' );
+
+		global $wpdb;
+		$assignment_table = TTTC_Plugin::table_name();
+		$source_players   = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE tournament_id = %d', $assignment_table, $source_id ) );
+		$copied_players   = $wpdb->query(
+			$wpdb->prepare(
+				'INSERT INTO %i (tournament_id, player_id, rating, seed, created_at)
+				SELECT %d, player_id, rating, seed, %s FROM %i WHERE tournament_id = %d',
+				$assignment_table,
+				$copy_id,
+				current_time( 'mysql', true ),
+				$assignment_table,
+				$source_id
+			)
+		);
+
+		if ( false === $source_players || false === $copied_players || (int) $source_players !== (int) $copied_players ) {
+			wp_delete_post( $copy_id, true );
+			wp_die( esc_html__( 'The tournament copy could not be completed because its players could not be copied.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		wp_safe_redirect( admin_url( 'post.php?post=' . absint( $copy_id ) . '&action=edit' ) );
+		exit;
+	}
+
+	private function unique_tournament_slug( $title ) {
+		global $wpdb;
+
+		$base_slug = sanitize_title( $title );
+		$slug      = $base_slug;
+		$suffix    = 2;
+
+		while ( $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_name = %s LIMIT 1", TTTC_Plugin::TOURNAMENT_POST_TYPE, $slug ) ) ) {
+			$slug = $base_slug . '-' . $suffix;
+			++$suffix;
+		}
+
+		return $slug;
 	}
 
 	public function tournament_columns( $columns ) {

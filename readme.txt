@@ -24,6 +24,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Optional per-tournament attendance question with email notifications for people who cannot attend.
 * Optional Tikkie QR-code registration payments with a fee and direct payment link; configure a bank account for manual transfers.
 * Tournament Players screen for adding and removing participants.
+* Duplicate tournaments as unpublished drafts with the same players and settings, but without match scores or payment details.
 * Inactive players cannot be assigned to new tournaments.
 * Tournament Scores screen with one, three, or five score fields per generated match.
 * Score validation requiring 11 points (with a 2+ point margin) or a deuce win with exactly two points lead, plus a completed Best of 1, Best of 3, or Best of 5 match without superfluous or skipped games.
@@ -42,6 +43,8 @@ Player emails are stored for club administration and are not shown in public sho
 3. Use the Table Tennis menu to create players and tournaments.
 4. Open Tournament Players, select a tournament, and save its participants.
 5. Set the tournament date and optional start time, choose a Best of 1, 3, or 5 format for preliminary rounds, intermediate rounds, and finals, optionally select No follow-up rounds, then use Scores in the tournament overview to enter match scores.
+
+Use the Duplicate action in the tournament list to create an unpublished draft copy. It keeps the tournament date, setup, and assigned players, adds "copy" to the title, and clears payment details and scores.
 
 Group matches use the preliminary format. Four-group semi-finals and the three-group winners round use the intermediate format. Finals and third-place matches use the finals format. Existing tournaments without saved intermediate or finals formats continue using their existing Best of setting for those stages.
 
