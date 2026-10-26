@@ -789,8 +789,8 @@ msgstr "Terug naar de voorronde scores"
 msgid "Placement matches have started, so pool assignments are locked."
 msgstr "De plaatsingswedstrijden zijn gestart; de poule-indeling kan niet meer worden gewijzigd."
 
-msgid "Suggested pools are based on preliminary group places. Change any player’s pool before starting placement matches."
-msgstr "De voorgestelde poules zijn gebaseerd op de eindposities in de voorrondepoules. Je kunt de indeling wijzigen voordat de plaatsingswedstrijden beginnen."
+msgid "Suggested pools are based on preliminary group places. Drag players between pools, or use each player’s pool selector, before starting placement matches."
+msgstr "De voorgestelde poules zijn gebaseerd op de eindposities in de voorrondepoules. Sleep spelers naar een andere poule of gebruik de poulekiezer bij de speler voordat de plaatsingswedstrijden beginnen."
 
 msgid "Preliminary group place"
 msgstr "Plaats in voorrondepoule"

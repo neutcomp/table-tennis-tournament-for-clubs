@@ -86,6 +86,22 @@
 	});
 
 	$(document).ready(function () {
+		var $placementPoolForm = $(".tttc-placement-pools-form");
+		var $placementPoolLists = $placementPoolForm.find(".tttc-placement-pool-list");
+		const updatePlacementPools = () => {
+			$placementPoolLists.each(function () {
+				var $list = $(this);
+				var pool = String($list.data("pool"));
+				$list
+					.children(".tttc-placement-player")
+					.find(".tttc-placement-player-pool")
+					.val(pool);
+				$placementPoolForm
+					.find('[data-pool-count="' + pool + '"]')
+					.text($list.children(".tttc-placement-player").length);
+			});
+		};
+
 		if ($(".tttc-scores-form.tttc-print-all-groups").length) {
 			window.print();
 		}
@@ -110,6 +126,38 @@
 						);
 				},
 			});
+		}
+
+		if ($placementPoolLists.length && $.fn.sortable) {
+			$placementPoolLists.sortable({
+				connectWith: ".tttc-placement-pool-list",
+				items: "> .tttc-placement-player",
+				cancel: "input,textarea,button,select,option",
+				placeholder: "tttc-placement-player-placeholder",
+				forcePlaceholderSize: true,
+				tolerance: "pointer",
+				update: updatePlacementPools,
+			});
+
+			$placementPoolLists.on(
+				"change",
+				".tttc-placement-player-pool",
+				function () {
+					var $player = $(this).closest(".tttc-placement-player");
+					var targetPool = String($(this).val());
+					var $targetList = $placementPoolLists.filter(function () {
+						return String($(this).data("pool")) === targetPool;
+					});
+
+					if ($targetList.length && $player.parent()[0] !== $targetList[0]) {
+						$player.appendTo($targetList);
+						$placementPoolLists.sortable("refresh");
+					}
+					updatePlacementPools();
+				},
+			);
+
+			updatePlacementPools();
 		}
 
 		$(".tttc-seed-form").on("submit", function () {

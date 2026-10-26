@@ -1823,6 +1823,29 @@ final class TTTC_Admin {
 				}
 			}
 		}
+		$pool_players = array( 'A' => array(), 'B' => array(), 'C' => array() );
+		if ( $complete ) {
+			foreach ( $competition['groups'] as $group_index => $group ) {
+				foreach ( $group['standings'] as $rank => $standing ) {
+					$player_id = (int) $standing['player']->ID;
+					$current_pool = '';
+					foreach ( array( 'A', 'B', 'C' ) as $pool ) {
+						if ( isset( $pool_assignments[ $pool ] ) && in_array( $player_id, $pool_assignments[ $pool ], true ) ) {
+							$current_pool = $pool;
+							break;
+						}
+					}
+					if ( '' === $current_pool ) {
+						$current_pool = ( 0 === $rank ) ? 'A' : ( 1 === $rank || 3 === $rank ? 'B' : 'C' );
+					}
+					$pool_players[ $current_pool ][] = array(
+						'player'      => $standing['player'],
+						'group_index' => $group_index,
+						'rank'        => $rank,
+					);
+				}
+			}
+		}
 		?>
 <div class="wrap">
 	<h1><?php echo esc_html( get_the_title( $tournament_id ) . ' - ' . __( 'Placement pools A/B/C', 'table-tennis-tournament-for-clubs' ) ); ?></h1>
@@ -1833,24 +1856,38 @@ final class TTTC_Admin {
 	<?php elseif ( $has_placement_scores ) : ?>
 		<p><?php esc_html_e( 'Placement matches have started, so pool assignments are locked.', 'table-tennis-tournament-for-clubs' ); ?></p>
 	<?php else : ?>
-		<p><?php esc_html_e( 'Suggested pools are based on preliminary group places. Change any player’s pool before starting placement matches.', 'table-tennis-tournament-for-clubs' ); ?></p>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<p><?php esc_html_e( 'Suggested pools are based on preliminary group places. Drag players between pools, or use each player’s pool selector, before starting placement matches.', 'table-tennis-tournament-for-clubs' ); ?></p>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-placement-pools-form">
 			<input type="hidden" name="action" value="tttc_save_placement_pools"><input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
 			<?php wp_nonce_field( 'tttc_save_placement_pools_' . $tournament_id, 'tttc_placement_pools_nonce' ); ?>
-			<table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Preliminary group place', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Placement pool', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
-			<?php foreach ( $competition['groups'] as $group_index => $group ) : foreach ( $group['standings'] as $rank => $standing ) :
-				$player_id = (int) $standing['player']->ID;
-				$current_pool = '';
-				foreach ( array( 'A', 'B', 'C' ) as $pool ) {
-					if ( isset( $pool_assignments[ $pool ] ) && in_array( $player_id, $pool_assignments[ $pool ], true ) ) {
-						$current_pool = $pool;
-						break;
-					}
-				}
-				?>
-				<tr><td><?php echo esc_html( $standing['player']->post_title ); ?></td><td><?php echo esc_html( sprintf( __( 'Group %1$d, place %2$d', 'table-tennis-tournament-for-clubs' ), $group_index + 1, $rank + 1 ) ); ?></td><td><select name="pool_assignments[<?php echo esc_attr( $player_id ); ?>]"><?php foreach ( array( 'A', 'B', 'C' ) as $pool ) : ?><option value="<?php echo esc_attr( $pool ); ?>" <?php selected( $current_pool, $pool ); ?>><?php echo esc_html( sprintf( __( 'Pool %s', 'table-tennis-tournament-for-clubs' ), $pool ) ); ?></option><?php endforeach; ?></select></td></tr>
-			<?php endforeach; endforeach; ?>
-			</tbody></table>
+			<div class="tttc-placement-pools">
+				<?php foreach ( array( 'A', 'B', 'C' ) as $pool ) : ?>
+					<section class="tttc-placement-pool" aria-labelledby="<?php echo esc_attr( 'tttc-placement-pool-' . $pool ); ?>">
+						<h2 id="<?php echo esc_attr( 'tttc-placement-pool-' . $pool ); ?>">
+							<?php echo esc_html( sprintf( __( 'Pool %s', 'table-tennis-tournament-for-clubs' ), $pool ) ); ?>
+							<span class="tttc-placement-pool-count" data-pool-count="<?php echo esc_attr( $pool ); ?>"><?php echo esc_html( count( $pool_players[ $pool ] ) ); ?></span>
+						</h2>
+						<ul class="tttc-placement-pool-list" data-pool="<?php echo esc_attr( $pool ); ?>">
+							<?php foreach ( $pool_players[ $pool ] as $assignment ) :
+								$player_id = (int) $assignment['player']->ID;
+								?>
+								<li class="tttc-placement-player">
+									<strong><?php echo esc_html( $assignment['player']->post_title ); ?></strong>
+									<span class="tttc-placement-player-place"><?php echo esc_html( sprintf( __( 'Group %1$d, place %2$d', 'table-tennis-tournament-for-clubs' ), $assignment['group_index'] + 1, $assignment['rank'] + 1 ) ); ?></span>
+									<label>
+										<span class="screen-reader-text"><?php esc_html_e( 'Placement pool', 'table-tennis-tournament-for-clubs' ); ?></span>
+										<select class="tttc-placement-player-pool" name="pool_assignments[<?php echo esc_attr( $player_id ); ?>]">
+											<?php foreach ( array( 'A', 'B', 'C' ) as $option_pool ) : ?>
+												<option value="<?php echo esc_attr( $option_pool ); ?>" <?php selected( $pool, $option_pool ); ?>><?php echo esc_html( sprintf( __( 'Pool %s', 'table-tennis-tournament-for-clubs' ), $option_pool ) ); ?></option>
+											<?php endforeach; ?>
+										</select>
+									</label>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					</section>
+				<?php endforeach; ?>
+			</div>
 			<p><button class="button button-primary"><?php esc_html_e( 'Save pool assignments and continue', 'table-tennis-tournament-for-clubs' ); ?></button></p>
 		</form>
 	<?php endif; ?>
