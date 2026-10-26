@@ -6,6 +6,36 @@
 			return;
 		}
 
+		function initializeJoiningSignup(form) {
+			var yesFields = form.querySelector('[data-tttc-joining-fields]');
+			var noFields = form.querySelector('[data-tttc-not-joining-fields]');
+			var choiceInputs = form.querySelectorAll('input[name="tttc_signup_joining"]');
+
+			if (!yesFields || !noFields || !choiceInputs.length) {
+				return;
+			}
+
+			function updateFields() {
+				var choice = form.querySelector('input[name="tttc_signup_joining"]:checked');
+				var isJoining = choice && 'yes' === choice.value;
+				var isNotJoining = choice && 'no' === choice.value;
+
+				yesFields.hidden = !isJoining;
+				noFields.hidden = !isNotJoining;
+				yesFields.querySelectorAll('input, select, textarea, button').forEach(function (field) {
+					field.disabled = !isJoining;
+				});
+				noFields.querySelectorAll('input, select, textarea, button').forEach(function (field) {
+					field.disabled = !isNotJoining;
+				});
+			}
+
+			choiceInputs.forEach(function (input) {
+				input.addEventListener('change', updateFields);
+			});
+			updateFields();
+		}
+
 		document.querySelectorAll('[data-tttc-qr]').forEach(function (image) {
 			var url = image.getAttribute('data-tttc-qr');
 
@@ -178,6 +208,7 @@
 	}
 
 	initializeQrCodes();
+	document.querySelectorAll('[data-tttc-ask-joining]').forEach(initializeJoiningSignup);
 	document.querySelectorAll('.tttc-public-group-tabs').forEach(initializeGroupTabs);
 	document.querySelectorAll('[data-tttc-tv]').forEach(initializeTv);
 }());

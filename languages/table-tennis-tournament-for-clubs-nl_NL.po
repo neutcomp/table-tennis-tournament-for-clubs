@@ -30,6 +30,15 @@ msgstr "Beschrijving"
 msgid "Require a phone number when signing up"
 msgstr "Telefoonnummer verplicht bij inschrijving"
 
+msgid "Ask: Are you joining?"
+msgstr "Vragen: Doe je mee?"
+
+msgid "Email not joining reply"
+msgstr "E-mailadres melding niet-deelnemer"
+
+msgid "Notification recipient for people who are not joining."
+msgstr "Ontvanger van meldingen van mensen die niet deelnemen."
+
 msgid "QR-Code Tikkie"
 msgstr "Tikkie QR-code"
 
@@ -331,6 +340,24 @@ msgstr "Geen toernooien gevonden."
 msgid "The signup could not be verified. Please try again."
 msgstr "De aanmelding kon niet worden geverifieerd. Probeer het opnieuw."
 
+msgid "Please select whether you are joining."
+msgstr "Geef aan of je deelneemt."
+
+msgid "Please enter a valid email address."
+msgstr "Vul een geldig e-mailadres in."
+
+msgid "The tournament notification email is not configured correctly. Please contact the organizer."
+msgstr "Het e-mailadres voor meldingen van dit toernooi is niet goed ingesteld. Neem contact op met de organisator."
+
+msgid "Your response could not be sent. Please try again."
+msgstr "Je antwoord kon niet worden verzonden. Probeer het opnieuw."
+
+msgid "Not joining %s"
+msgstr "Doet niet mee aan %s"
+
+msgid "%1$s is not joining the %2$s. Reason %3$s"
+msgstr "%1$s doet niet mee aan %2$s. Reden: %3$s"
+
 msgid "Please enter your name."
 msgstr "Vul je naam in."
 
@@ -402,6 +429,21 @@ msgstr "Meld je aan voor dit toernooi"
 
 msgid "Sign up"
 msgstr "Aanmelden"
+
+msgid "Are you joining?"
+msgstr "Doe je mee?"
+
+msgid "Reason you are not joining?"
+msgstr "Waarom doe je niet mee?"
+
+msgid "Send response"
+msgstr "Verstuur antwoord"
+
+msgid "Thank you for letting us know."
+msgstr "Bedankt voor je bericht."
+
+msgid "Your response has been sent."
+msgstr "Je antwoord is verzonden."
 
 msgid "Your signup was successful."
 msgstr "Je aanmelding is gelukt."

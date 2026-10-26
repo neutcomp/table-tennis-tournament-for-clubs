@@ -688,7 +688,8 @@ final class TTTC_Public {
 		$status      = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$description = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, true );
 		$is_active         = 'active' === $status;
-		$is_signup_success = 'success' === sanitize_key( get_query_var( 'tttc_signup' ) );
+		$signup_state = sanitize_key( get_query_var( 'tttc_signup' ) );
+		$is_signup_confirmation = in_array( $signup_state, array( 'success', 'not_joining' ), true );
 		$players     = $this->assigned_players( $tournament_id );
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
 		$schedule    = $this->tournament_schedule( $tournament_id );
@@ -723,7 +724,7 @@ final class TTTC_Public {
 				<h1><?php echo esc_html( $title ); ?></h1>
 				<p class="tttc-public-tournament__date"><?php echo esc_html( $this->display_date_time( $stored_date, $stored_time ) ); ?></p>
 			</div>
-			<?php if ( $page_url && ! $is_active && ! $is_signup_success ) : ?>
+			<?php if ( $page_url && ! $is_active && ! $is_signup_confirmation ) : ?>
 			<img class="tttc-public-tournament__qr" data-tttc-qr="<?php echo esc_attr( $page_url ); ?>" width="200" height="200"
 				alt="<?php esc_attr_e( 'QR code linking to this tournament page', 'table-tennis-tournament-for-clubs' ); ?>"
 				loading="lazy">
@@ -734,7 +735,12 @@ final class TTTC_Public {
 			<?php echo wpautop( esc_html( $description ) ); ?>
 		</section>
 		<?php endif; ?>
-		<?php if ( $is_signup_success ) : ?>
+		<?php if ( 'not_joining' === $signup_state ) : ?>
+			<section class="tttc-public-tournament__signup" aria-labelledby="tttc-not-joining-heading">
+				<h2 id="tttc-not-joining-heading"><?php esc_html_e( 'Thank you for letting us know.', 'table-tennis-tournament-for-clubs' ); ?></h2>
+				<p role="status"><?php esc_html_e( 'Your response has been sent.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			</section>
+		<?php elseif ( 'success' === $signup_state ) : ?>
 			<?php $this->render_signup_confirmation( $tournament_id ); ?>
 		<?php elseif ( $this->is_signup_open( $tournament_id ) ) : ?>
 			<?php $this->render_signup_form( $tournament_id ); ?>
@@ -1025,6 +1031,7 @@ final class TTTC_Public {
 
 	private function handle_signup( $tournament_id ) {
 		$default_player_type = $this->signup_default_player_type( $tournament_id );
+		$ask_joining = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true );
 		$this->signup_form = array(
 			'name'   => '',
 			'rating' => '',
@@ -1032,6 +1039,8 @@ final class TTTC_Public {
 			'phone'  => '',
 			'gender' => 'male',
 			'type'   => $default_player_type,
+			'joining' => '',
+			'reason' => '',
 		);
 
 		if ( ! isset( $_POST['tttc_signup_action'] ) || 'tttc_signup' !== sanitize_key( wp_unslash( $_POST['tttc_signup_action'] ) ) ) {
@@ -1054,7 +1063,38 @@ final class TTTC_Public {
 			'phone'  => isset( $_POST['tttc_signup_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_phone'] ) ) : '',
 			'gender' => isset( $_POST['tttc_signup_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_gender'] ) ) : 'male',
 			'type'   => isset( $_POST['tttc_signup_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_type'] ) ) : $default_player_type,
+			'joining' => isset( $_POST['tttc_signup_joining'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_joining'] ) ) : '',
+			'reason' => isset( $_POST['tttc_signup_reason'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tttc_signup_reason'] ) ) : '',
 		);
+
+		if ( $ask_joining ) {
+			if ( ! in_array( $this->signup_form['joining'], array( 'yes', 'no' ), true ) ) {
+				$this->signup_error = __( 'Please select whether you are joining.', 'table-tennis-tournament-for-clubs' );
+				return;
+			}
+			if ( 'no' === $this->signup_form['joining'] ) {
+				if ( '' === $this->signup_form['name'] ) {
+					$this->signup_error = __( 'Please enter your name.', 'table-tennis-tournament-for-clubs' );
+					return;
+				}
+				if ( '' === $this->signup_form['email'] || ! is_email( $this->signup_form['email'] ) ) {
+					$this->signup_error = __( 'Please enter a valid email address.', 'table-tennis-tournament-for-clubs' );
+					return;
+				}
+				$recipient = sanitize_email( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true ) );
+				if ( ! $recipient || ! is_email( $recipient ) ) {
+					$this->signup_error = __( 'The tournament notification email is not configured correctly. Please contact the organizer.', 'table-tennis-tournament-for-clubs' );
+					return;
+				}
+				if ( ! $this->send_not_joining_email( $tournament_id, $recipient, $this->signup_form['name'], $this->signup_form['email'], $this->signup_form['reason'] ) ) {
+					$this->signup_error = __( 'Your response could not be sent. Please try again.', 'table-tennis-tournament-for-clubs' );
+					return;
+				}
+				wp_safe_redirect( add_query_arg( 'tttc_signup', 'not_joining', $this->tournament_url( $tournament_id ) ) );
+				exit;
+			}
+		}
+
 		if ( '' === $this->signup_form['name'] ) {
 			$this->signup_error = __( 'Please enter your name.', 'table-tennis-tournament-for-clubs' );
 			return;
@@ -1154,7 +1194,8 @@ final class TTTC_Public {
 
 	private function render_signup_form( $tournament_id ) {
 		$phone_required = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, true );
-		$form = wp_parse_args( $this->signup_form, array( 'name' => '', 'rating' => '', 'email' => '', 'phone' => '', 'gender' => 'male', 'type' => $this->signup_default_player_type( $tournament_id ) ) );
+		$ask_joining = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true );
+		$form = wp_parse_args( $this->signup_form, array( 'name' => '', 'rating' => '', 'email' => '', 'phone' => '', 'gender' => 'male', 'type' => $this->signup_default_player_type( $tournament_id ), 'joining' => '', 'reason' => '' ) );
 		?>
 <section class="tttc-public-tournament__signup" aria-labelledby="tttc-signup-heading">
 	<h2 id="tttc-signup-heading">
@@ -1162,10 +1203,18 @@ final class TTTC_Public {
 	<?php if ( $this->signup_error ) : ?><p class="tttc-public-notice" role="alert">
 		<?php echo esc_html( $this->signup_error ); ?></p><?php endif; ?>
 	<form method="post" action="<?php echo esc_url( $this->tournament_url( $tournament_id ) ); ?>"
-		class="tttc-public-signup-form">
+		class="tttc-public-signup-form" <?php echo $ask_joining ? 'data-tttc-ask-joining' : ''; ?>>
 		<input type="hidden" name="tttc_signup_action" value="tttc_signup"><input type="hidden"
 			name="tttc_signup_tournament"
 			value="<?php echo esc_attr( $tournament_id ); ?>"><?php wp_nonce_field( 'tttc_signup_' . $tournament_id, 'tttc_signup_nonce' ); ?>
+		<?php if ( $ask_joining ) : ?>
+		<fieldset class="tttc-public-signup-form__joining">
+			<legend><?php esc_html_e( 'Are you joining?', 'table-tennis-tournament-for-clubs' ); ?></legend>
+			<label><input type="radio" name="tttc_signup_joining" value="yes" <?php checked( $form['joining'], 'yes' ); ?>> <?php esc_html_e( 'Yes', 'table-tennis-tournament-for-clubs' ); ?></label>
+			<label><input type="radio" name="tttc_signup_joining" value="no" <?php checked( $form['joining'], 'no' ); ?>> <?php esc_html_e( 'No', 'table-tennis-tournament-for-clubs' ); ?></label>
+		</fieldset>
+		<?php endif; ?>
+		<div class="tttc-public-signup-form__fields" data-tttc-joining-fields <?php echo $ask_joining && 'yes' !== $form['joining'] ? 'hidden' : ''; ?>>
 		<div class="tttc-public-signup-form__grid">
 			<p><label for="tttc-signup-name"><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?> <span
 						aria-hidden="true">*</span></label><input type="text" id="tttc-signup-name" name="tttc_signup_name"
@@ -1195,6 +1244,17 @@ final class TTTC_Public {
 				</select></p>
 		</div>
 		<p><button type="submit"><?php esc_html_e( 'Sign up', 'table-tennis-tournament-for-clubs' ); ?></button></p>
+		</div>
+		<?php if ( $ask_joining ) : ?>
+		<div class="tttc-public-signup-form__fields" data-tttc-not-joining-fields <?php echo 'no' !== $form['joining'] ? 'hidden' : ''; ?>>
+			<div class="tttc-public-signup-form__grid">
+				<p><label for="tttc-not-joining-name"><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="text" id="tttc-not-joining-name" name="tttc_signup_name" value="<?php echo esc_attr( $form['name'] ); ?>" required></p>
+				<p><label for="tttc-not-joining-email"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="email" id="tttc-not-joining-email" name="tttc_signup_email" value="<?php echo esc_attr( $form['email'] ); ?>" required></p>
+				<p><label for="tttc-not-joining-reason"><?php esc_html_e( 'Reason you are not joining?', 'table-tennis-tournament-for-clubs' ); ?></label><textarea id="tttc-not-joining-reason" name="tttc_signup_reason" rows="3"><?php echo esc_textarea( $form['reason'] ); ?></textarea></p>
+			</div>
+			<p><button type="submit"><?php esc_html_e( 'Send response', 'table-tennis-tournament-for-clubs' ); ?></button></p>
+		</div>
+		<?php endif; ?>
 	</form>
 </section>
 <?php
@@ -1290,6 +1350,27 @@ final class TTTC_Public {
 		}
 
 		wp_mail( $recipient, $subject, $html_body, $headers );
+	}
+
+	private function send_not_joining_email( $tournament_id, $recipient, $name, $reply_to, $reason ) {
+		$from = sanitize_email( get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) ) );
+		$tournament_name = get_the_title( $tournament_id );
+		$subject = sprintf( __( 'Not joining %s', 'table-tennis-tournament-for-clubs' ), $tournament_name );
+		$body = sprintf(
+			__( '%1$s is not joining the %2$s. Reason %3$s', 'table-tennis-tournament-for-clubs' ),
+			$name,
+			$tournament_name,
+			$reason
+		);
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			'Reply-To: ' . $reply_to,
+		);
+		if ( $from ) {
+			$headers[] = 'From: ' . $from;
+		}
+
+		return wp_mail( $recipient, $subject, '<div>' . nl2br( esc_html( $body ) ) . '</div>', $headers );
 	}
 
 	private function assigned_players( $tournament_id ) {

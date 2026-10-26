@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Player records with name, rating, email, and active status.
 * Tournament records with name, description, date, time, separate best-of formats for preliminary rounds, intermediate rounds, and finals, player type, and status.
 * Optional phone number collection, configurable as required per tournament.
+* Optional per-tournament attendance question with email notifications for people who cannot attend.
 * Optional Tikkie QR-code registration payments with a fee and direct payment link; configure a bank account for manual transfers.
 * Tournament Players screen for adding and removing participants.
 * Inactive players cannot be assigned to new tournaments.
@@ -52,7 +53,7 @@ After every group match has a completed score, the Scores screen reveals the app
 
 Each published tournament title links to `/{tournament-url-base}/{tournament-name}/{DD-MM-YYYY}`. The default URL base is `toernooi`; change it under Settings > Table Tennis > URLs. The public tournament page lists active assigned players by rating, distributes them into groups using the tournament group rules, and shows every round-robin match in each group. Schedules are available for 4 to 28 players.
 
-Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced.
+Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced. Tournaments can optionally first ask whether the visitor is joining; a "No" response collects their name, email, and an optional reason, then emails the configured tournament contact without creating a player or assignment.
 
 Players must provide an email address when signing up. A phone number is collected and is required only when enabled for that tournament. After a successful signup, the plugin sends an HTML confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. When payment details are enabled for the tournament, the email appends the registration fee and configured payment instructions, including the uploaded QR-code image and optional direct payment link. The success page also shows configured payment instructions. Signup closes at the start of the tournament date in the WordPress site's local timezone; expired tournaments show a disabled signup button. Tournament times use the 24-hour `HH:MM` format. The email subject and body support `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
 
@@ -86,7 +87,7 @@ Draft, Upcoming, Active, Completed, and Cancelled are available. Draft tournamen
 
 When a visitor successfully signs up for an upcoming tournament, the plugin uses WordPress's `wp_mail()` function to send an HTML confirmation email. It passes the visitor's email address, configured sender address, subject, and message to WordPress. The message can include the tournament name, date, time, and public tournament URL. If payment details are enabled, it can also include the tournament's uploaded payment QR image, served from the website's media library, and an optional direct payment link. Email clients may block remote images. The email is sent only after the signup has been saved.
 
-The website's mail transport is configured by the site owner and may be the hosting provider or a separately installed mail service. This plugin does not select or connect to a specific email provider, so the applicable provider's terms of service and privacy policy depend on the website's configuration.
+When a visitor indicates that they are not joining and this option is enabled, the plugin also uses WordPress's `wp_mail()` function to send their name and optional reason to the tournament's configured notification address, using the configured sender and the visitor's email as Reply-To. The website's mail transport is configured by the site owner and may be the hosting provider or a separately installed mail service. This plugin does not select or connect to a specific email provider, so the applicable provider's terms of service and privacy policy depend on the website's configuration.
 
 Tournament QR codes are generated in the visitor's browser using JavaScript bundled with the plugin. The tournament URL is not sent to a QR-code service.
 
@@ -97,6 +98,9 @@ Player phone numbers are stored with player records and available to administrat
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 1.0.8 =
+* Add an optional per-tournament attendance question and non-attendance email notification.
 
 = 1.0.7 =
 * Include configured payment QR images and direct payment links in signup confirmation emails.
@@ -128,4 +132,3 @@ Tournament QR codes are generated in the visitor's browser using JavaScript incl
 
 = 1.0 =
 * First release.
-
