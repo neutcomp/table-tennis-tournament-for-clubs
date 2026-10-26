@@ -85,6 +85,12 @@
 			.val(score <= 9 ? 11 : score + 2);
 	});
 
+	$(document).on("submit", ".tttc-random-scores-form", function (event) {
+		if (!window.confirm($(this).data("confirm"))) {
+			event.preventDefault();
+		}
+	});
+
 	$(document).ready(function () {
 		var $placementPoolForm = $(".tttc-placement-pools-form");
 		var $placementPoolLists = $placementPoolForm.find(".tttc-placement-pool-list");

@@ -27,6 +27,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Duplicate tournaments as unpublished drafts with the same players and settings, but without match scores or payment details.
 * Inactive players cannot be assigned to new tournaments.
 * Tournament Scores screen with one, three, or five score fields per generated match.
+* Administrators can fill tournament matches and rounds with random, rules-valid scores.
 * Score validation requiring 11 points (with a 2+ point margin) or a deuce win with exactly two points lead, plus a completed Best of 1, Best of 3, or Best of 5 match without superfluous or skipped games.
 * Automatic crossover rounds after all group matches are complete. Two groups produce a final and third-place match, three groups produce a round-robin among the group winners, and four groups produce semi-finals followed by a final and third-place match.
 * Optional no-follow-up mode that ends the tournament with each group's final standings and does not declare an overall champion.

@@ -32,6 +32,7 @@ final class TTTC_Admin {
 		add_action( 'admin_post_tttc_update_players', array( $this, 'update_players' ) );
 		add_action( 'admin_post_tttc_reorder_players', array( $this, 'reorder_players' ) );
 		add_action( 'admin_post_tttc_save_scores', array( $this, 'save_scores' ) );
+		add_action( 'admin_post_tttc_random_scores', array( $this, 'random_scores' ) );
 		add_action( 'admin_post_tttc_save_placement_pools', array( $this, 'save_placement_pools' ) );
 		add_action( 'admin_post_tttc_duplicate_tournament', array( $this, 'duplicate_tournament' ) );
 		add_action( 'admin_post_tttc_merge_players', array( $this, 'merge_players' ) );
@@ -1318,6 +1319,7 @@ final class TTTC_Admin {
 				?>
 	<p><?php echo esc_html( $player_range_message ); ?></p>
 	<?php else : ?>
+	<?php $this->render_random_scores_form( $tournament_id ); ?>
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-scores-form<?php echo $print_all_groups ? ' tttc-print-all-groups' : ''; ?>">
 		<input type="hidden" name="action" value="tttc_save_scores"><input type="hidden" name="tournament_id"
 			value="<?php echo esc_attr( $tournament_id ); ?>">
@@ -1548,6 +1550,186 @@ final class TTTC_Admin {
 		exit;
 	}
 
+	private function render_random_scores_form( $tournament_id, $group = '', $round = null ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-random-scores-form" data-confirm="<?php echo esc_attr__( 'This will replace existing scores with random results. Continue?', 'table-tennis-tournament-for-clubs' ); ?>">
+			<input type="hidden" name="action" value="tttc_random_scores">
+			<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
+			<input type="hidden" name="tttc_random_group" value="<?php echo esc_attr( $group ); ?>">
+			<input type="hidden" name="tttc_random_round" value="<?php echo esc_attr( null === $round ? '' : $round ); ?>">
+			<?php wp_nonce_field( 'tttc_random_scores_' . $tournament_id, 'tttc_random_scores_nonce' ); ?>
+			<p><button type="submit" class="button"><?php esc_html_e( 'Fill all scores with random results', 'table-tennis-tournament-for-clubs' ); ?></button></p>
+		</form>
+		<?php
+	}
+
+	public function random_scores() {
+		$tournament_id = isset( $_POST['tournament_id'] ) ? absint( $_POST['tournament_id'] ) : 0;
+		if ( ! current_user_can( 'manage_options' ) || ! isset( $_POST['tttc_random_scores_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_random_scores_nonce'] ) ), 'tttc_random_scores_' . $tournament_id ) ) {
+			wp_die( esc_html__( 'The security check failed.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) || ! current_user_can( 'edit_post', $tournament_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
+		$is_placement_format = 'placement_pools' === TTTC_Plugin::get_tournament_competition_format( $tournament_id ) && count( $this->assigned_player_ids( $tournament_id ) ) >= 9;
+		$pools = $is_placement_format ? get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PLACEMENT_POOLS, true ) : false;
+		$randomized_placement_pools = $is_placement_format && is_array( $pools );
+		$records = array();
+
+		if ( $randomized_placement_pools ) {
+			$schedule = TTTC_Public::instance()->placement_pool_schedule( $tournament_id, $pools );
+			if ( empty( $schedule ) ) {
+				wp_die( esc_html__( 'No placement-pool matches are available to score.', 'table-tennis-tournament-for-clubs' ) );
+			}
+			foreach ( $schedule as $group_key => $group_schedule ) {
+				foreach ( $group_schedule['rounds'] as $round_number => $round ) {
+					foreach ( $round as $match_number => $match ) {
+						$score_key = TTTC_Plugin::placement_score_key( 'placement', $group_key, $match[0]->ID, $match[1]->ID );
+						$records[ $score_key ] = $this->random_score_record( $match, $round_number + 1, $match_number + 1, $game_formats['intermediate'] );
+					}
+				}
+			}
+		} elseif ( $is_placement_format ) {
+			$schedule = TTTC_Public::instance()->tournament_schedule( $tournament_id );
+			if ( empty( $schedule ) ) {
+				wp_die( esc_html__( 'No preliminary matches are available to score.', 'table-tennis-tournament-for-clubs' ) );
+			}
+			foreach ( $schedule as $group_schedule ) {
+				foreach ( $group_schedule['rounds'] as $round_number => $round ) {
+					foreach ( $round as $match_number => $match ) {
+						$score_key = $this->match_key( $match[0]->ID, $match[1]->ID );
+						$records[ $score_key ] = $this->random_score_record( $match, $round_number + 1, $match_number + 1, $game_formats['preliminary'] );
+					}
+				}
+			}
+		} else {
+			$schedule = TTTC_Public::instance()->tournament_schedule( $tournament_id );
+			if ( empty( $schedule ) ) {
+				wp_die( esc_html__( 'No matches are available to score.', 'table-tennis-tournament-for-clubs' ) );
+			}
+			$scores = array();
+			foreach ( $schedule as $group_schedule ) {
+				foreach ( $group_schedule['rounds'] as $round_number => $round ) {
+					foreach ( $round as $match_number => $match ) {
+						$score_key = $this->match_key( $match[0]->ID, $match[1]->ID );
+						$records[ $score_key ] = $this->random_score_record( $match, $round_number + 1, $match_number + 1, $game_formats['preliminary'] );
+						$scores[ $score_key ] = $records[ $score_key ]['scores'];
+					}
+				}
+			}
+
+			$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+			$stage_index = 0;
+			while ( true ) {
+				$competition = TTTC_Competition::calculate( $schedule, $scores, $game_formats, $no_follow_up_rounds );
+				if ( ! isset( $competition['stages'][ $stage_index ] ) ) {
+					break;
+				}
+				$stage = $competition['stages'][ $stage_index ];
+				foreach ( $stage['matches'] as $match_number => $match ) {
+					if ( ! $match['players'][0] || ! $match['players'][1] ) {
+						continue;
+					}
+					$score_key = $match['score_key'];
+					$records[ $score_key ] = $this->random_score_record( $match['players'], 0, $match_number + 1, $game_formats[ $match['phase'] ] );
+					$scores[ $score_key ] = $records[ $score_key ]['scores'];
+				}
+				$stage_index++;
+			}
+		}
+
+		$this->persist_random_score_records( $tournament_id, $records, $randomized_placement_pools );
+		$redirect_args = array(
+			'page'          => 'tttc-scores',
+			'tournament_id' => $tournament_id,
+			'updated'       => 1,
+		);
+		if ( $randomized_placement_pools ) {
+			$redirect_args['phase'] = 'placement';
+			if ( isset( $_POST['tttc_random_group'] ) && is_scalar( $_POST['tttc_random_group'] ) ) {
+				$redirect_args['group'] = sanitize_text_field( wp_unslash( $_POST['tttc_random_group'] ) );
+			}
+			if ( isset( $_POST['tttc_random_round'] ) && is_scalar( $_POST['tttc_random_round'] ) ) {
+				$redirect_args['round'] = absint( $_POST['tttc_random_round'] );
+			}
+		}
+		wp_safe_redirect( add_query_arg( $redirect_args, admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
+	private function random_score_record( $players, $round_number, $match_number, $games ) {
+		$scores = array();
+		$wins = array( 0, 0 );
+		$required_wins = (int) ceil( $games / 2 );
+		while ( max( $wins ) < $required_wins ) {
+			$winner = wp_rand( 0, 1 );
+			if ( 0 === wp_rand( 0, 4 ) ) {
+				$loser_score = wp_rand( 10, 15 );
+				$winner_score = $loser_score + 2;
+			} else {
+				$loser_score = wp_rand( 0, 9 );
+				$winner_score = 11;
+			}
+			$scores[] = 0 === $winner
+				? array( (string) $winner_score, (string) $loser_score )
+				: array( (string) $loser_score, (string) $winner_score );
+			$wins[ $winner ]++;
+		}
+
+		$validated_scores = $this->validate_match_scores( $scores, $games );
+		if ( is_wp_error( $validated_scores ) ) {
+			wp_die( esc_html( $validated_scores->get_error_message() ) );
+		}
+		$player_ids = array( (int) $players[0]->ID, (int) $players[1]->ID );
+		sort( $player_ids, SORT_NUMERIC );
+
+		return array(
+			'player_one_id' => $player_ids[0],
+			'player_two_id' => $player_ids[1],
+			'round_number'  => $round_number,
+			'match_number'  => $match_number,
+			'scores'        => $validated_scores,
+		);
+	}
+
+	private function persist_random_score_records( $tournament_id, $records, $placement_only ) {
+		global $wpdb;
+		$table = TTTC_Plugin::scores_table_name();
+		if ( $placement_only ) {
+			$deleted = $wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE tournament_id = %d AND match_key LIKE %s', $table, $tournament_id, 'p%' ) );
+		} else {
+			$deleted = $wpdb->delete( $table, array( 'tournament_id' => $tournament_id ), array( '%d' ) );
+		}
+		if ( false === $deleted ) {
+			wp_die( esc_html__( 'The random scores could not be saved.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		foreach ( $records as $score_key => $record ) {
+			$inserted = $wpdb->insert(
+				$table,
+				array(
+					'tournament_id' => $tournament_id,
+					'match_key'     => $score_key,
+					'player_one_id' => $record['player_one_id'],
+					'player_two_id' => $record['player_two_id'],
+					'round_number'  => $record['round_number'],
+					'match_number'  => $record['match_number'],
+					'scores'        => wp_json_encode( $record['scores'] ),
+					'updated_at'    => current_time( 'mysql', true ),
+				),
+				array( '%d', '%s', '%d', '%d', '%d', '%d', '%s', '%s' )
+			);
+			if ( false === $inserted ) {
+				wp_die( esc_html__( 'The random scores could not be saved.', 'table-tennis-tournament-for-clubs' ) );
+			}
+		}
+	}
+
 	private function save_placement_scores( $tournament_id ) {
 		$phase = isset( $_POST['tttc_placement_phase'] ) ? sanitize_key( wp_unslash( $_POST['tttc_placement_phase'] ) ) : '';
 		if ( ! in_array( $phase, array( 'preliminary', 'placement' ), true ) ) {
@@ -1724,6 +1906,7 @@ final class TTTC_Admin {
 	<?php if ( empty( $schedule ) ) : ?>
 		<p><?php esc_html_e( 'The placement-pool format requires at least 9 assigned active players.', 'table-tennis-tournament-for-clubs' ); ?></p>
 	<?php else : ?>
+		<?php $this->render_random_scores_form( $tournament_id, $selected_group, $selected_round ); ?>
 		<?php if ( 'preliminary' === $phase && $all_complete && ! is_array( $pools ) ) : ?>
 			<div class="notice notice-success inline"><p><?php esc_html_e( 'All preliminary matches are complete. Review the suggested A/B/C placement pools before starting the next round.', 'table-tennis-tournament-for-clubs' ); ?> <a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=tttc-placement-pools&tournament_id=' . $tournament_id ) ); ?>"><?php esc_html_e( 'Review placement pools', 'table-tennis-tournament-for-clubs' ); ?></a></p></div>
 		<?php endif; ?>
