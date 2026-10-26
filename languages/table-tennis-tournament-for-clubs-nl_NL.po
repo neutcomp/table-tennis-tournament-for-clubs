@@ -721,7 +721,7 @@ msgid "Groups of 3 → A/B/C placement pools"
 msgstr "Poules van 3 → A/B/C-plaatsingspoules"
 
 msgid "The placement-pool format is available for 9 or more players. Preliminary groups contain 3 or 4 players; first, second, and third place advance to pools A, B, and C. Fourth place in a group of 4 defaults to pool B."
-msgstr "De opzet met plaatsingspoules is beschikbaar vanaf 9 spelers. Voorrondepoules bevatten 3 of 4 spelers; de nummers 1, 2 en 3 gaan naar respectievelijk poule A, B en C. De nummer 4 uit een poule van 4 wordt standaard in poule B geplaatst."
+msgstr "De opzet met plaatsingspoules is beschikbaar vanaf 9 spelers. Voorrondepoules bevatten 3 of 4 spelers; de nummers 1, 2 en 3 gaan naar respectievelijk poule A, B en C. De nummer 4 uit een poule van 4 wordt standaard in poule B geplaatst. De ingestelde groepsgrootte verdeelt elke A/B/C-poule zo nodig in meerdere poules."
 
 msgid "The competition phase is invalid."
 msgstr "De wedstrijdronde is ongeldig."
@@ -810,8 +810,8 @@ msgstr "Poule-indeling opslaan en doorgaan"
 msgid "Pool assignments can only be changed after all preliminary matches and before placement scores are entered."
 msgstr "De poule-indeling kan alleen worden gewijzigd nadat alle voorrondewedstrijden zijn gespeeld en voordat plaatsingsscores zijn ingevoerd."
 
-msgid "Pool %s final places"
-msgstr "Eindstand poule %s"
+msgid "%s final places"
+msgstr "Eindstand %s"
 
 msgid "Position: %1$d in pool %2$s"
 msgstr "Positie: %1$d in poule %2$s"
@@ -822,8 +822,8 @@ msgstr "De A/B/C-plaatsingspoules worden getoond nadat de organisator de indelin
 msgid "A/B/C placement pools will be shown after all preliminary matches are complete."
 msgstr "De A/B/C-plaatsingspoules worden getoond nadat alle voorrondewedstrijden zijn gespeeld."
 
-msgid "Each pool has its own final places 1–3."
-msgstr "Elke poule heeft een eigen eindstand van plaats 1 tot en met 3."
+msgid "Each A/B/C follow-up group has its own final places 1–3."
+msgstr "Elke vervolgpoule van A, B of C heeft een eigen eindstand van plaats 1 tot en met 3."
 
 msgid "players"
 msgstr "spelers"

@@ -156,7 +156,9 @@ final class TTTC_Plugin {
 		foreach ( $schedule as $group_key => $group_schedule ) {
 			foreach ( $group_schedule['rounds'] as $round ) {
 				foreach ( $round as $match ) {
-					$score_group = '' === $group && 'placement' === $phase ? $group_key : $group;
+					$score_group = '' === $group && 'placement' === $phase
+						? ( isset( $group_schedule['score_group'] ) ? $group_schedule['score_group'] : $group_key )
+						: $group;
 					$score_key = self::placement_score_key( $phase, $score_group, $match[0]->ID, $match[1]->ID );
 					$player_ids = array( absint( $match[0]->ID ), absint( $match[1]->ID ) );
 					sort( $player_ids, SORT_NUMERIC );

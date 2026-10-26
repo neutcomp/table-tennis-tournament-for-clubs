@@ -642,7 +642,7 @@ final class TTTC_Admin {
 		<option value="standard" <?php selected( $competition_format, 'standard' ); ?>><?php esc_html_e( 'Standard groups and follow-up rounds', 'table-tennis-tournament-for-clubs' ); ?></option>
 		<option value="placement_pools" <?php selected( $competition_format, 'placement_pools' ); ?>><?php esc_html_e( 'Groups of 3 → A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></option>
 	</select>
-	<p class="description"><?php esc_html_e( 'The placement-pool format is available for 9 or more players. Preliminary groups contain 3 or 4 players; first, second, and third place advance to pools A, B, and C. Fourth place in a group of 4 defaults to pool B.', 'table-tennis-tournament-for-clubs' ); ?></p>
+	<p class="description"><?php esc_html_e( 'The placement-pool format is available for 9 or more players. Preliminary groups contain 3 or 4 players; first, second, and third place advance to pools A, B, and C. Fourth place in a group of 4 defaults to pool B. Tournament group-size settings also split each A/B/C pool into multiple groups when needed.', 'table-tennis-tournament-for-clubs' ); ?></p>
 </p>
 <p><label
 		for="tttc-status"><strong><?php esc_html_e( 'Status', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
@@ -1602,7 +1602,7 @@ final class TTTC_Admin {
 			foreach ( $schedule as $group_key => $group_schedule ) {
 				foreach ( $group_schedule['rounds'] as $round_number => $round ) {
 					foreach ( $round as $match_number => $match ) {
-						$score_key = TTTC_Plugin::placement_score_key( 'placement', $group_key, $match[0]->ID, $match[1]->ID );
+						$score_key = TTTC_Plugin::placement_score_key( 'placement', $group_schedule['score_group'], $match[0]->ID, $match[1]->ID );
 						$records[ $score_key ] = $this->random_score_record( $match, $round_number + 1, $match_number + 1, $game_formats['intermediate'] );
 					}
 				}
@@ -1830,7 +1830,7 @@ final class TTTC_Admin {
 		foreach ( $selected_schedule as $group_key => $group_schedule ) {
 			foreach ( $group_schedule['rounds'] as $round_number => $round ) {
 				foreach ( $round as $match_index => $match ) {
-					$score_key = TTTC_Plugin::placement_score_key( $phase, 'placement' === $phase ? $group_key : '', $match[0]->ID, $match[1]->ID );
+					$score_key = TTTC_Plugin::placement_score_key( $phase, 'placement' === $phase ? $group_schedule['score_group'] : '', $match[0]->ID, $match[1]->ID );
 					$match_scores = isset( $submitted[ $score_key ] ) && is_array( $submitted[ $score_key ] ) ? $submitted[ $score_key ] : array();
 					$result = $this->validate_match_scores( $match_scores, $games );
 					if ( is_wp_error( $result ) ) {
@@ -2020,7 +2020,7 @@ final class TTTC_Admin {
 							<thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><?php for ( $game = 1; $game <= $games; $game++ ) : ?><th><?php echo esc_html( sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game ) ); ?></th><?php endfor; ?></tr></thead>
 							<tbody>
 								<?php foreach ( $round as $match_index => $match ) :
-									$score_key = TTTC_Plugin::placement_score_key( $phase, 'placement' === $phase ? $group_key : '', $match[0]->ID, $match[1]->ID );
+									$score_key = TTTC_Plugin::placement_score_key( $phase, 'placement' === $phase ? $group_schedule['score_group'] : '', $match[0]->ID, $match[1]->ID );
 									$match_scores = isset( $all_scores[ $score_key ] ) ? $all_scores[ $score_key ] : array();
 									?>
 									<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td>
