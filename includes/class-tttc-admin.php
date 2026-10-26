@@ -1567,7 +1567,7 @@ final class TTTC_Admin {
 			<?php wp_nonce_field( 'tttc_random_scores_' . $tournament_id, 'tttc_random_scores_nonce' ); ?>
 			<p><button type="submit" class="button"><?php esc_html_e( 'Fill all scores with random results', 'table-tennis-tournament-for-clubs' ); ?></button></p>
 		</form>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-remove-scores-form" data-confirm="<?php echo esc_attr__( 'This will permanently remove all scores from this tournament, including placement-pool scores. Continue?', 'table-tennis-tournament-for-clubs' ); ?>">
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-remove-scores-form" data-confirm="<?php echo esc_attr__( 'This will permanently remove all scores and reset confirmed placement-pool assignments so preliminary scores can be entered again. Continue?', 'table-tennis-tournament-for-clubs' ); ?>">
 			<input type="hidden" name="action" value="tttc_remove_scores">
 			<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
 			<input type="hidden" name="tttc_random_group" value="<?php echo esc_attr( $group ); ?>">
@@ -1690,20 +1690,23 @@ final class TTTC_Admin {
 			wp_die( esc_html__( 'Tournament scores could not be removed.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
+		$had_placement_pools = is_array( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PLACEMENT_POOLS, true ) );
+		delete_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PLACEMENT_POOLS );
+
 		$redirect_args = array(
 			'page'          => 'tttc-scores',
 			'tournament_id' => $tournament_id,
 			'removed'       => 1,
 		);
 		$phase = isset( $_POST['tttc_random_phase'] ) && is_scalar( $_POST['tttc_random_phase'] ) ? sanitize_key( wp_unslash( $_POST['tttc_random_phase'] ) ) : '';
-		if ( 'placement' === $phase ) {
-			$redirect_args['phase'] = 'placement';
+		if ( $had_placement_pools ) {
+			$redirect_args['phase'] = 'preliminary';
 		}
 		$group = isset( $_POST['tttc_random_group'] ) && is_scalar( $_POST['tttc_random_group'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_random_group'] ) ) : '';
-		if ( '' !== $group ) {
+		if ( '' !== $group && ( ! $had_placement_pools || 'preliminary' === $phase ) ) {
 			$redirect_args['group'] = $group;
 		}
-		if ( isset( $_POST['tttc_random_round'] ) && is_scalar( $_POST['tttc_random_round'] ) && '' !== (string) wp_unslash( $_POST['tttc_random_round'] ) ) {
+		if ( ! $had_placement_pools && isset( $_POST['tttc_random_round'] ) && is_scalar( $_POST['tttc_random_round'] ) && '' !== (string) wp_unslash( $_POST['tttc_random_round'] ) ) {
 			$redirect_args['round'] = absint( wp_unslash( $_POST['tttc_random_round'] ) );
 		}
 		wp_safe_redirect( add_query_arg( $redirect_args, admin_url( 'admin.php' ) ) );
