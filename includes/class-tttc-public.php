@@ -1946,11 +1946,21 @@ final class TTTC_Public {
 		if ( empty( $assignments ) ) {
 			return '<p class="tttc-no-players">' . esc_html__( 'Players will be announced soon.', 'table-tennis-tournament-for-clubs' ) . '</p>';
 		}
+		foreach ( $assignments as $index => $assignment ) {
+			$rating                     = null === $assignment->rating ? get_post_meta( (int) $assignment->player_id, TTTC_Plugin::PLAYER_META_RATING, true ) : (int) $assignment->rating;
+			$assignment->display_rating = $rating;
+			$assignment->sort_rating    = absint( $rating );
+			$assignment->signup_order   = $index;
+		}
+		usort( $assignments, function ( $first, $second ) {
+			$rating_order = $second->sort_rating <=> $first->sort_rating;
+			return 0 !== $rating_order ? $rating_order : $first->signup_order <=> $second->signup_order;
+		} );
+
 		$output = '<h4>' . esc_html__( 'Players', 'table-tennis-tournament-for-clubs' ) . '</h4><ul class="tttc-assigned-players">';
 		foreach ( $assignments as $assignment ) {
 			$player_id = (int) $assignment->player_id;
-			$rating    = null === $assignment->rating ? get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_RATING, true ) : (int) $assignment->rating;
-			$output   .= '<li>' . esc_html( get_the_title( $player_id ) ) . '<span>' . esc_html__( 'Rating:', 'table-tennis-tournament-for-clubs' ) . ' ' . esc_html( $rating ) . '</span></li>';
+			$output   .= '<li>' . esc_html( get_the_title( $player_id ) ) . '<span>' . esc_html__( 'Rating:', 'table-tennis-tournament-for-clubs' ) . ' ' . esc_html( $assignment->display_rating ) . '</span></li>';
 		}
 		return $output . '</ul>';
 	}
