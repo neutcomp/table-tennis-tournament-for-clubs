@@ -1196,7 +1196,7 @@ final class TTTC_Public {
 		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
 		$games = 'preliminary' === $phase ? $game_formats['preliminary'] : $game_formats['intermediate'];
 		?>
-		<details class="tttc-placement-group">
+		<details class="tttc-placement-group" open>
 			<summary><?php echo esc_html( $group_schedule['label'] . ' (' . count( $group_schedule['players'] ) . ' ' . __( 'players', 'table-tennis-tournament-for-clubs' ) . ')' ); ?></summary>
 			<table class="tttc-public-matches">
 				<thead><tr><th><?php esc_html_e( 'Round', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead>
