@@ -27,6 +27,8 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_STATUS = '_tttc_status';
 	const TOURNAMENT_META_HIDE_FROM_OVERVIEW = '_tttc_hide_from_overview';
 	const TOURNAMENT_META_TYPE = '_tttc_tournament_type';
+	const TOURNAMENT_META_COMPETITION_FORMAT = '_tttc_competition_format';
+	const TOURNAMENT_META_PLACEMENT_POOLS = '_tttc_placement_pools';
 	const TOURNAMENT_META_FORMAT_RANGES = '_tttc_format_ranges';
 	const TOURNAMENT_META_NO_FOLLOW_UP = '_tttc_no_follow_up';
 	const TOURNAMENT_META_DESCRIPTION = '_tttc_description';
@@ -88,6 +90,7 @@ final class TTTC_Plugin {
 		if ( ! in_array( (string) $default_games, array( '1', '3', '5' ), true ) ) {
 			$default_games = '3';
 		}
+
 		$preliminary = get_post_meta( $tournament_id, self::TOURNAMENT_META_GAMES, true );
 		if ( ! in_array( (string) $preliminary, array( '1', '3', '5' ), true ) ) {
 			$preliminary = $default_games;
@@ -106,6 +109,65 @@ final class TTTC_Plugin {
 			'intermediate' => (int) $intermediate,
 			'finals' => (int) $finals,
 		);
+	}
+
+	public static function get_tournament_competition_format( $tournament_id ) {
+		$format = get_post_meta( $tournament_id, self::TOURNAMENT_META_COMPETITION_FORMAT, true );
+
+		return 'placement_pools' === $format ? $format : 'standard';
+	}
+
+	public static function placement_group_sizes( $player_count ) {
+		$player_count = absint( $player_count );
+		if ( $player_count < 9 ) {
+			return array();
+		}
+
+		$remainder = $player_count % 3;
+		$group_count = (int) floor( $player_count / 3 );
+		$four_player_groups = 0;
+		if ( 1 === $remainder ) {
+			$four_player_groups = 1;
+		} elseif ( 2 === $remainder ) {
+			$four_player_groups = 2;
+		}
+
+		$sizes = array_fill( 0, $group_count, 3 );
+		for ( $index = 0; $index < $four_player_groups; $index++ ) {
+			$offset = (int) floor( ( $group_count - 1 ) / 2 ) + $index;
+			$sizes[ $offset ] = 4;
+		}
+
+		return $sizes;
+	}
+
+	public static function placement_score_key( $phase, $group, $first_id, $second_id ) {
+		$ids = array( absint( $first_id ), absint( $second_id ) );
+		sort( $ids, SORT_NUMERIC );
+		if ( 'preliminary' === $phase ) {
+			return $ids[0] . '-' . $ids[1];
+		}
+
+		return 'p' . sanitize_key( $group ) . '-' . substr( md5( $ids[0] . '-' . $ids[1] ), 0, 16 );
+	}
+
+	public static function group_scores( $schedule, $scores, $phase, $group = '' ) {
+		$group_scores = array();
+		foreach ( $schedule as $group_key => $group_schedule ) {
+			foreach ( $group_schedule['rounds'] as $round ) {
+				foreach ( $round as $match ) {
+					$score_group = '' === $group && 'placement' === $phase ? $group_key : $group;
+					$score_key = self::placement_score_key( $phase, $score_group, $match[0]->ID, $match[1]->ID );
+					$player_ids = array( absint( $match[0]->ID ), absint( $match[1]->ID ) );
+					sort( $player_ids, SORT_NUMERIC );
+					if ( isset( $scores[ $score_key ] ) ) {
+						$group_scores[ $player_ids[0] . '-' . $player_ids[1] ] = $scores[ $score_key ];
+					}
+				}
+			}
+		}
+
+		return $group_scores;
 	}
 
 	public function schedule_tournament_rewrite_flush( $option ) {

@@ -707,3 +707,123 @@ msgstr "Het wedstrijdschema is nog niet beschikbaar."
 
 msgid "Live"
 msgstr "Live"
+
+msgid "Placement Pools"
+msgstr "Plaatsingspoules"
+
+msgid "Competition format"
+msgstr "Wedstrijdopzet"
+
+msgid "Standard groups and follow-up rounds"
+msgstr "Standaardpoules en vervolgrondes"
+
+msgid "Groups of 3 → A/B/C placement pools"
+msgstr "Poules van 3 → A/B/C-plaatsingspoules"
+
+msgid "The placement-pool format is available for 9 or more players. Preliminary groups contain 3 or 4 players; first, second, and third place advance to pools A, B, and C. Fourth place in a group of 4 defaults to pool B."
+msgstr "De opzet met plaatsingspoules is beschikbaar vanaf 9 spelers. Voorrondepoules bevatten 3 of 4 spelers; de nummers 1, 2 en 3 gaan naar respectievelijk poule A, B en C. De nummer 4 uit een poule van 4 wordt standaard in poule B geplaatst."
+
+msgid "The competition phase is invalid."
+msgstr "De wedstrijdronde is ongeldig."
+
+msgid "Review and save the A/B/C placement pools before entering placement scores."
+msgstr "Controleer en bewaar de A/B/C-plaatsingspoules voordat je scores invoert."
+
+msgid "Preliminary scores are locked after placement pools have been confirmed."
+msgstr "Scores van de voorronde kunnen niet meer worden gewijzigd nadat de plaatsingspoules zijn bevestigd."
+
+msgid "The selected competition group could not be found."
+msgstr "De geselecteerde wedstrijdpoule kon niet worden gevonden."
+
+msgid "The selected competition round could not be found."
+msgstr "De geselecteerde wedstrijdronde kon niet worden gevonden."
+
+msgid "Enter the lowest score of each game; the other field is filled in automatically."
+msgstr "Vul per game de laagste score in; het andere veld wordt automatisch ingevuld."
+
+msgid "Preliminary groups"
+msgstr "Voorrondepoules"
+
+msgid "A/B/C placement pools"
+msgstr "A/B/C-plaatsingspoules"
+
+msgid "The placement-pool format requires at least 9 assigned active players."
+msgstr "De opzet met plaatsingspoules vereist minimaal 9 toegewezen actieve spelers."
+
+msgid "All preliminary matches are complete. Review the suggested A/B/C placement pools before starting the next round."
+msgstr "Alle wedstrijden in de voorronde zijn gespeeld. Controleer de voorgestelde A/B/C-plaatsingspoules voordat je aan de volgende ronde begint."
+
+msgid "Review placement pools"
+msgstr "Plaatsingspoules controleren"
+
+msgid "Review A/B/C pool assignments"
+msgstr "A/B/C-poule-indeling controleren"
+
+msgid "Competition groups"
+msgstr "Wedstrijdpoules"
+
+msgid "Rounds"
+msgstr "Rondes"
+
+msgid "This pool has no matches; its standings are ready."
+msgstr "Deze poule heeft geen wedstrijden; de eindstand is gereed."
+
+msgid "Print scores"
+msgstr "Scores afdrukken"
+
+msgid "The pool assignments must include every tournament player exactly once and at least one player in each pool."
+msgstr "Iedere toernooispeler moet precies één keer zijn ingedeeld en elke poule moet minimaal één speler bevatten."
+
+msgid "Placement pool assignments updated."
+msgstr "De plaatsingspoules zijn bijgewerkt."
+
+msgid "Placement pools A/B/C"
+msgstr "Plaatsingspoules A/B/C"
+
+msgid "Complete every preliminary group match before assigning players to pools."
+msgstr "Speel alle wedstrijden in de voorrondepoules voordat je spelers indeelt."
+
+msgid "Back to preliminary scores"
+msgstr "Terug naar de voorronde scores"
+
+msgid "Placement matches have started, so pool assignments are locked."
+msgstr "De plaatsingswedstrijden zijn gestart; de poule-indeling kan niet meer worden gewijzigd."
+
+msgid "Suggested pools are based on preliminary group places. Change any player’s pool before starting placement matches."
+msgstr "De voorgestelde poules zijn gebaseerd op de eindposities in de voorrondepoules. Je kunt de indeling wijzigen voordat de plaatsingswedstrijden beginnen."
+
+msgid "Preliminary group place"
+msgstr "Plaats in voorrondepoule"
+
+msgid "Placement pool"
+msgstr "Plaatsingspoule"
+
+msgid "Group %1$d, place %2$d"
+msgstr "Poule %1$d, plaats %2$d"
+
+msgid "Pool %s"
+msgstr "Poule %s"
+
+msgid "Save pool assignments and continue"
+msgstr "Poule-indeling opslaan en doorgaan"
+
+msgid "Pool assignments can only be changed after all preliminary matches and before placement scores are entered."
+msgstr "De poule-indeling kan alleen worden gewijzigd nadat alle voorrondewedstrijden zijn gespeeld en voordat plaatsingsscores zijn ingevoerd."
+
+msgid "Pool %s final places"
+msgstr "Eindstand poule %s"
+
+msgid "Position: %1$d in pool %2$s"
+msgstr "Positie: %1$d in poule %2$s"
+
+msgid "A/B/C placement pools will be shown after the organizer confirms the assignments."
+msgstr "De A/B/C-plaatsingspoules worden getoond nadat de organisator de indeling heeft bevestigd."
+
+msgid "A/B/C placement pools will be shown after all preliminary matches are complete."
+msgstr "De A/B/C-plaatsingspoules worden getoond nadat alle voorrondewedstrijden zijn gespeeld."
+
+msgid "Each pool has its own final places 1–3."
+msgstr "Elke poule heeft een eigen eindstand van plaats 1 tot en met 3."
+
+msgid "players"
+msgstr "spelers"

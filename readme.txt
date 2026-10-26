@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.8
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Score validation requiring 11 points (with a 2+ point margin) or a deuce win with exactly two points lead, plus a completed Best of 1, Best of 3, or Best of 5 match without superfluous or skipped games.
 * Automatic crossover rounds after all group matches are complete. Two groups produce a final and third-place match, three groups produce a round-robin among the group winners, and four groups produce semi-finals followed by a final and third-place match.
 * Optional no-follow-up mode that ends the tournament with each group's final standings and does not declare an overall champion.
+* A separate "Groups of 3 → A/B/C placement pools" competition format for tournaments with at least 9 players, including manual pool adjustments after preliminary groups.
 * Group and crossover standings are ordered by match wins, game difference, point difference, and then a stable player-order fallback.
 * Public tournament pages with groups, round-robin match schedules, and match scores.
 * TV mode (`?showtv=true`) for showing live scores full-screen on a TV, with automatic slide cycling and live refresh when scores are saved.
@@ -42,7 +43,7 @@ Player emails are stored for club administration and are not shown in public sho
 2. Activate the plugin from Plugins in WordPress.
 3. Use the Table Tennis menu to create players and tournaments.
 4. Open Tournament Players, select a tournament, and save its participants.
-5. Set the tournament date and optional start time, choose a Best of 1, 3, or 5 format for preliminary rounds, intermediate rounds, and finals, optionally select No follow-up rounds, then use Scores in the tournament overview to enter match scores.
+5. Set the tournament date and optional start time, choose the competition format and a Best of 1, 3, or 5 format for preliminary rounds, intermediate rounds, and finals, optionally select No follow-up rounds, then use Scores in the tournament overview to enter match scores.
 
 Use the Duplicate action in the tournament list to create an unpublished draft copy. It keeps the tournament date, setup, and assigned players, adds "copy" to the title, and clears payment details and scores.
 
@@ -50,11 +51,13 @@ Group matches use the preliminary format. Four-group semi-finals and the three-g
 
 After every group match has a completed score, the Scores screen reveals the applicable crossover matches unless No follow-up rounds is selected. In that mode, each group's standings are the tournament results and there is no overall winner. The option, like other match format settings, cannot be changed after scores have been entered. Later four-group matches remain unavailable until their semi-finals are complete. Public tournament pages show crossover results and final places when the deciding matches have been completed.
 
+The "Groups of 3 → A/B/C placement pools" competition format is available from 9 assigned active players. Preliminary groups are made up of 3 players, with as few 4-player groups as needed to fit the signup count. Players are seeded into the groups in rating/seed snake order. First, second, and third place advance to pools A, B, and C; fourth place in any 4-player preliminary group defaults to B. After every preliminary match is complete, an organizer can review and change the suggested pool assignments before saving the placements to unlock the pool round-robin score sheets. Each pool has its own final places 1–3; this format does not declare one overall tournament champion.
+
 == Shortcodes ==
 
 `[tttc_tournaments]` displays published tournaments and their assigned players.
 
-Each published tournament title links to `/{tournament-url-base}/{tournament-name}/{DD-MM-YYYY}`. The default URL base is `toernooi`; change it under Settings > Table Tennis > URLs. The public tournament page lists active assigned players by rating, distributes them into groups using the tournament group rules, and shows every round-robin match in each group. Schedules are available for 4 to 28 players.
+Each published tournament title links to `/{tournament-url-base}/{tournament-name}/{DD-MM-YYYY}`. The default URL base is `toernooi`; change it under Settings > Table Tennis > URLs. The public tournament page lists active assigned players by rating, distributes them into groups using the tournament group rules, and shows every round-robin match in each group. Standard schedules are available for 4 to 28 players; the A/B/C placement-pool format supports 9 or more players.
 
 Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced. Tournaments can optionally first ask whether the visitor is joining; a "No" response collects their name, email, and an optional reason, then emails the configured tournament contact without creating a player or assignment.
 
@@ -101,6 +104,9 @@ Player phone numbers are stored with player records and available to administrat
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 2.0.0 =
+* Add a Groups of 3 → A/B/C placement-pool competition format with editable pool assignments and separate standings.
 
 = 1.0.8 =
 * Add an optional per-tournament attendance question and non-attendance email notification.
