@@ -1343,9 +1343,67 @@ final class TTTC_Public {
 		$complete = ! empty( $standing_group['complete'] );
 		$game_formats = TTTC_Plugin::get_tournament_game_formats( $tournament_id );
 		$games = 'preliminary' === $phase ? $game_formats['preliminary'] : $game_formats['intermediate'];
+		$group_matrix = 'placement' === $phase ? $this->group_schedule_matrix( $group_schedule ) : array();
+		$group_ranks = array();
+		if ( $complete ) {
+			foreach ( $standing_group['standings'] as $rank => $standing ) {
+				$group_ranks[ (int) $standing['player']->ID ] = $rank + 1;
+			}
+		}
 		?>
 		<details class="tttc-placement-group" open>
 			<summary><?php echo esc_html( $group_schedule['label'] . ' (' . count( $group_schedule['players'] ) . ' ' . __( 'players', 'table-tennis-tournament-for-clubs' ) . ')' ); ?></summary>
+			<?php if ( 'placement' === $phase ) : ?>
+			<table class="tttc-public-matches">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'No.', 'table-tennis-tournament-for-clubs' ); ?></th>
+						<th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th>
+						<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) :
+							// translators: %d is the round number.
+							$round_label = sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 );
+							?>
+						<th><?php echo esc_html( $round_label ); ?></th>
+						<?php endforeach; ?>
+						<th><?php esc_html_e( 'Results', 'table-tennis-tournament-for-clubs' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $group_schedule['players'] as $player_index => $player ) : ?>
+					<tr>
+						<td><?php echo esc_html( $player_index + 1 ); ?></td>
+						<td><a href="<?php echo esc_url( $this->player_url( $player->ID, $tournament_id ) ); ?>"><?php echo esc_html( $player->post_title ); ?></a></td>
+						<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
+						<?php $matrix_entry = $group_matrix[ (int) $player->ID ][ $round_number ]; ?>
+						<?php if ( null === $matrix_entry ) : ?>
+						<td class="is-bye"></td>
+						<?php else : ?>
+						<?php
+						$score_key = TTTC_Plugin::placement_score_key(
+							'placement',
+							isset( $group_schedule['score_group'] ) ? $group_schedule['score_group'] : $pool,
+							$player->ID,
+							$matrix_entry['opponent']->ID
+						);
+						$match_result = '';
+						if ( isset( $scores[ $score_key ] ) ) {
+							$match_games_won = $this->games_won( $scores[ $score_key ], $games );
+							if ( array_sum( $match_games_won ) > 0 ) {
+								$player_side = $matrix_entry['side'];
+								$opponent_side = 1 - $player_side;
+								$match_result = $match_games_won[ $player_side ] . '-' . $match_games_won[ $opponent_side ];
+							}
+						}
+						?>
+						<td><?php echo esc_html( $match_result ); ?></td>
+						<?php endif; ?>
+						<?php endforeach; ?>
+						<td><?php echo isset( $group_ranks[ (int) $player->ID ] ) ? esc_html( $this->format_ordinal( $group_ranks[ (int) $player->ID ] ) ) : ''; ?></td>
+					</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+			<?php endif; ?>
 			<table class="tttc-public-matches">
 				<thead><tr><th><?php esc_html_e( 'Round', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead>
 				<tbody>
