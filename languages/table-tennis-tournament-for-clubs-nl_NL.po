@@ -720,8 +720,8 @@ msgstr "Standaardpoules en vervolgrondes"
 msgid "Groups of 3 → A/B/C placement pools"
 msgstr "Poules van 3 → A/B/C-plaatsingspoules"
 
-msgid "The placement-pool format is available for 9 or more players. Preliminary groups contain 3 or 4 players; first, second, and third place advance to pools A, B, and C. Fourth place in a group of 4 defaults to pool B."
-msgstr "De opzet met plaatsingspoules is beschikbaar vanaf 9 spelers. Voorrondepoules bevatten 3 of 4 spelers; de nummers 1, 2 en 3 gaan naar respectievelijk poule A, B en C. De nummer 4 uit een poule van 4 wordt standaard in poule B geplaatst. De ingestelde groepsgrootte verdeelt elke A/B/C-poule zo nodig in meerdere poules."
+msgid "The placement-pool format is available for 9 or more players. Preliminary groups contain 3 or 4 players; first, second, and third place advance to pools A, B, and C. Fourth place in a group of 4 defaults to pool B. Tournament group-size settings also split each A/B/C pool into multiple groups when needed. The No follow-up rounds checkbox controls whether those groups play crossover rounds."
+msgstr "De opzet met plaatsingspoules is beschikbaar vanaf 9 spelers. Voorrondepoules bevatten 3 of 4 spelers; de nummers 1, 2 en 3 gaan naar respectievelijk poule A, B en C. De nummer 4 uit een poule van 4 wordt standaard in poule B geplaatst. De ingestelde groepsgrootte verdeelt elke A/B/C-poule zo nodig in meerdere poules. Met het selectievakje Geen vervolgrondes bepaal je of deze poules kruisingswedstrijden spelen."
 
 msgid "The competition phase is invalid."
 msgstr "De wedstrijdronde is ongeldig."
@@ -737,6 +737,9 @@ msgstr "De geselecteerde wedstrijdpoule kon niet worden gevonden."
 
 msgid "The selected competition round could not be found."
 msgstr "De geselecteerde wedstrijdronde kon niet worden gevonden."
+
+msgid "The selected crossover round could not be found."
+msgstr "De geselecteerde kruisingsronde kon niet worden gevonden."
 
 msgid "Enter the lowest score of each game; the other field is filled in automatically."
 msgstr "Vul per game de laagste score in; het andere veld wordt automatisch ingevuld."
@@ -767,6 +770,12 @@ msgstr "Rondes"
 
 msgid "This pool has no matches; its standings are ready."
 msgstr "Deze poule heeft geen wedstrijden; de eindstand is gereed."
+
+msgid "The placement-group scores could not be saved."
+msgstr "De scores van de plaatsingsgroepen konden niet worden opgeslagen."
+
+msgid "The placement-round scores could not be saved."
+msgstr "De scores van de plaatsingsronde konden niet worden opgeslagen."
 
 msgid "Print scores"
 msgstr "Scores afdrukken"
@@ -822,8 +831,14 @@ msgstr "De A/B/C-plaatsingspoules worden getoond nadat de organisator de indelin
 msgid "A/B/C placement pools will be shown after all preliminary matches are complete."
 msgstr "De A/B/C-plaatsingspoules worden getoond nadat alle voorrondewedstrijden zijn gespeeld."
 
-msgid "Each A/B/C follow-up group has its own final places 1–3."
-msgstr "Elke vervolgpoule van A, B of C heeft een eigen eindstand van plaats 1 tot en met 3."
+msgid "Each A/B/C follow-up group has its own standings; enabled follow-up rounds determine its final places."
+msgstr "Elke vervolgpoule van A, B of C heeft een eigen stand; ingeschakelde vervolgrondes bepalen de eindplaatsen."
+
+msgid "When enabled, group standings are final and there is no overall winner. When disabled, the configured follow-up rounds are played, including after A/B/C placement pools are split into groups."
+msgstr "Als deze optie is ingeschakeld, is de poulestand de eindstand en is er geen algemene winnaar. Als deze optie is uitgeschakeld, worden de ingestelde vervolgrondes gespeeld, ook nadat A/B/C-plaatsingspoules in groepen zijn verdeeld."
+
+msgid "Pool %1$s: %2$s"
+msgstr "Poule %1$s: %2$s"
 
 msgid "players"
 msgstr "spelers"

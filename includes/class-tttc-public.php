@@ -226,6 +226,40 @@ final class TTTC_Public {
 		return $schedule;
 	}
 
+	public function placement_pool_competitions( $tournament_id, $schedule, $scores, $game_formats, $no_follow_up_rounds ) {
+		$placement_formats = $game_formats;
+		$placement_formats['preliminary'] = $game_formats['intermediate'];
+		$competitions = array();
+
+		foreach ( array( 'A', 'B', 'C' ) as $pool ) {
+			$pool_groups = array_values(
+				array_filter(
+					$schedule,
+					function( $group_schedule ) use ( $pool ) {
+						return isset( $group_schedule['pool'] ) && $pool === $group_schedule['pool'];
+					}
+				)
+			);
+			if ( empty( $pool_groups ) ) {
+				continue;
+			}
+
+			$group_scores = TTTC_Plugin::group_scores( $pool_groups, $scores, 'placement' );
+			$competitions[ $pool ] = array(
+				'schedule'    => $pool_groups,
+				'competition' => TTTC_Competition::calculate(
+					$pool_groups,
+					array_merge( $scores, $group_scores ),
+					$placement_formats,
+					$no_follow_up_rounds,
+					$pool
+				),
+			);
+		}
+
+		return $competitions;
+	}
+
 	public function placement_pool_schedule( $tournament_id, $pools = null ) {
 		if ( null === $pools ) {
 			$pools = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PLACEMENT_POOLS, true );
@@ -513,11 +547,15 @@ final class TTTC_Public {
 			$placement_pools = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PLACEMENT_POOLS, true );
 			if ( is_array( $placement_pools ) ) :
 				$placement_schedule = $this->placement_pool_schedule( $tournament_id, $placement_pools );
-				$placement_scores = TTTC_Plugin::group_scores( $placement_schedule, $scores, 'placement' );
-				$placement_competition = TTTC_Competition::calculate( $placement_schedule, $placement_scores, $game_formats['intermediate'], true );
+				$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+				$pool_competitions = $this->placement_pool_competitions( $tournament_id, $placement_schedule, $scores, $game_formats, $no_follow_up_rounds );
+				$pool_group_indexes = array();
 				foreach ( $placement_schedule as $group_key => $pool_schedule ) :
+					$pool = $pool_schedule['pool'];
+					$group_index = isset( $pool_group_indexes[ $pool ] ) ? $pool_group_indexes[ $pool ] : 0;
+					$pool_group_indexes[ $pool ] = $group_index + 1;
+					$pool_competition = $pool_competitions[ $pool ]['competition'];
 					$pool_label = $pool_schedule['label'];
-					$final_places_label = sprintf( __( '%s final places', 'table-tennis-tournament-for-clubs' ), $pool_label );
 					?>
 					<section class="tttc-tv-slide" data-tttc-label="<?php echo esc_attr( $pool_label ); ?>" hidden>
 						<h2><?php echo esc_html( $pool_label ); ?></h2>
@@ -532,20 +570,47 @@ final class TTTC_Public {
 								?>
 								<div class="tttc-tv-card"><h3><?php echo esc_html( $round_label ); ?></h3><?php $this->render_tv_match_table( $rows, $game_formats['intermediate'] ); ?></div>
 							<?php endforeach; ?>
-							<?php if ( ! empty( $placement_competition['groups'][ $group_key ]['complete'] ) ) : ?>
+							<?php if ( ! empty( $pool_competition['groups'][ $group_index ]['complete'] ) ) : ?>
 								<div class="tttc-tv-card tttc-tv-card--standings">
 									<h3><?php esc_html_e( 'Standings', 'table-tennis-tournament-for-clubs' ); ?></h3>
 									<table class="tttc-tv-standings"><thead><tr><th><?php esc_html_e( 'Pos', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Wins', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead><tbody>
-									<?php foreach ( $placement_competition['groups'][ $group_key ]['standings'] as $rank => $standing ) : ?><tr><td><?php echo esc_html( $rank + 1 ); ?></td><td class="tttc-tv-name"><?php echo esc_html( $standing['player']->post_title ); ?></td><td><?php echo esc_html( $standing['wins'] ); ?></td></tr><?php endforeach; ?>
+									<?php foreach ( $pool_competition['groups'][ $group_index ]['standings'] as $rank => $standing ) : ?><tr><td><?php echo esc_html( $rank + 1 ); ?></td><td class="tttc-tv-name"><?php echo esc_html( $standing['player']->post_title ); ?></td><td><?php echo esc_html( $standing['wins'] ); ?></td></tr><?php endforeach; ?>
 									</tbody></table>
 								</div>
 							<?php endif; ?>
 						</div>
 					</section>
-					<?php if ( ! empty( $placement_competition['groups'][ $group_key ]['complete'] ) ) : ?>
+				<?php endforeach; ?>
+				<?php foreach ( $pool_competitions as $pool => $pool_result ) :
+					$pool_competition = $pool_result['competition'];
+					foreach ( $pool_competition['stages'] as $stage ) :
+						$stage_label = sprintf( __( 'Pool %1$s: %2$s', 'table-tennis-tournament-for-clubs' ), $pool, $stage['label'] );
+						$stage_games = $game_formats[ $stage['phase'] ];
+						?>
+						<section class="tttc-tv-slide" data-tttc-label="<?php echo esc_attr( $stage_label ); ?>" hidden>
+							<h2><?php echo esc_html( $stage_label ); ?></h2>
+							<div class="tttc-tv-card tttc-tv-card--wide">
+								<?php
+								$rows = array();
+								$waiting = __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' );
+								foreach ( $stage['matches'] as $match ) {
+									$available = $match['players'][0] && $match['players'][1];
+									$rows[] = array(
+										$available ? $match['players'][0]->post_title : $waiting,
+										$available ? $match['players'][1]->post_title : $waiting,
+										isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array(),
+									);
+								}
+								$this->render_tv_match_table( $rows, $stage_games );
+								?>
+							</div>
+						</section>
+					<?php endforeach; ?>
+					<?php if ( ! empty( $pool_competition['places'] ) ) : ?>
+						<?php $final_places_label = sprintf( __( 'Pool %s final places', 'table-tennis-tournament-for-clubs' ), $pool ); ?>
 						<section class="tttc-tv-slide" data-tttc-label="<?php echo esc_attr( $final_places_label ); ?>" hidden>
 							<h2><?php echo esc_html( $final_places_label ); ?></h2>
-							<ol class="tttc-tv-places"><?php foreach ( array_slice( $placement_competition['groups'][ $group_key ]['standings'], 0, 3 ) as $rank => $standing ) : ?><li class="tttc-tv-place tttc-tv-place--<?php echo esc_attr( $rank + 1 ); ?>"><span class="tttc-tv-place__rank"><?php echo esc_html( $rank + 1 ); ?></span><span class="tttc-tv-place__name"><?php echo esc_html( $standing['player']->post_title ); ?></span></li><?php endforeach; ?></ol>
+							<ol class="tttc-tv-places"><?php foreach ( array_slice( $pool_competition['places'], 0, 3 ) as $rank => $place ) : ?><li class="tttc-tv-place tttc-tv-place--<?php echo esc_attr( $rank + 1 ); ?>"><span class="tttc-tv-place__rank"><?php echo esc_html( $rank + 1 ); ?></span><span class="tttc-tv-place__name"><?php echo esc_html( $place['player']->post_title ); ?></span></li><?php endforeach; ?></ol>
 						</section>
 					<?php endif; ?>
 				<?php endforeach; ?>
@@ -1188,16 +1253,47 @@ final class TTTC_Public {
 			<?php else : ?>
 				<?php
 				$pool_schedule = $this->placement_pool_schedule( $tournament_id, $pools );
-				$pool_scores = TTTC_Plugin::group_scores( $pool_schedule, $scores, 'placement' );
-				$pool_competition = TTTC_Competition::calculate( $pool_schedule, $pool_scores, $game_formats['intermediate'], true );
+				$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+				$pool_competitions = $this->placement_pool_competitions( $tournament_id, $pool_schedule, $scores, $game_formats, $no_follow_up_rounds );
+				$pool_group_indexes = array();
 				?>
 				<h3><?php esc_html_e( 'A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></h3>
-				<p><?php esc_html_e( 'Each A/B/C follow-up group has its own final places 1–3.', 'table-tennis-tournament-for-clubs' ); ?></p>
+				<p><?php esc_html_e( 'Each A/B/C follow-up group has its own standings; enabled follow-up rounds determine its final places.', 'table-tennis-tournament-for-clubs' ); ?></p>
 				<?php foreach ( $pool_schedule as $group_key => $group_schedule ) : ?>
-					<?php $this->render_placement_group( $tournament_id, $group_schedule, $scores, 'placement', $group_schedule['score_group'], $pool_competition['groups'][ $group_key ] ); ?>
-					<?php if ( ! empty( $pool_competition['groups'][ $group_key ]['complete'] ) ) : ?>
+					<?php
+					$pool = $group_schedule['pool'];
+					$group_index = isset( $pool_group_indexes[ $pool ] ) ? $pool_group_indexes[ $pool ] : 0;
+					$pool_group_indexes[ $pool ] = $group_index + 1;
+					$pool_competition = $pool_competitions[ $pool ]['competition'];
+					$this->render_placement_group( $tournament_id, $group_schedule, $scores, 'placement', $group_schedule['score_group'], $pool_competition['groups'][ $group_index ] );
+					?>
+					<?php if ( $no_follow_up_rounds && ! empty( $pool_competition['groups'][ $group_index ]['complete'] ) ) : ?>
 						<h4><?php echo esc_html( sprintf( __( '%s final places', 'table-tennis-tournament-for-clubs' ), $group_schedule['label'] ) ); ?></h4>
-						<ol class="tttc-public-places"><?php foreach ( array_slice( $pool_competition['groups'][ $group_key ]['standings'], 0, 3 ) as $standing ) : ?><li><?php echo esc_html( $standing['player']->post_title ); ?></li><?php endforeach; ?></ol>
+						<ol class="tttc-public-places"><?php foreach ( array_slice( $pool_competition['groups'][ $group_index ]['standings'], 0, 3 ) as $standing ) : ?><li><?php echo esc_html( $standing['player']->post_title ); ?></li><?php endforeach; ?></ol>
+					<?php endif; ?>
+				<?php endforeach; ?>
+				<?php foreach ( $pool_competitions as $pool => $pool_result ) :
+					$pool_competition = $pool_result['competition'];
+					foreach ( $pool_competition['stages'] as $stage ) :
+						$stage_label = sprintf( __( 'Pool %1$s: %2$s', 'table-tennis-tournament-for-clubs' ), $pool, $stage['label'] );
+						?>
+						<h4><?php echo esc_html( $stage_label ); ?></h4>
+						<table class="tttc-public-matches">
+							<thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead>
+							<tbody>
+							<?php foreach ( $stage['matches'] as $match_number => $match ) :
+								$available = $match['players'][0] && $match['players'][1];
+								$match_scores = isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array();
+								$games_won = $this->games_won( $match_scores, $game_formats[ $stage['phase'] ] );
+								?>
+								<tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $games_won[0] . '-' . $games_won[1] ); ?></td></tr>
+							<?php endforeach; ?>
+							</tbody>
+						</table>
+					<?php endforeach; ?>
+					<?php if ( ! empty( $pool_competition['places'] ) ) : ?>
+						<h4><?php echo esc_html( sprintf( __( 'Pool %s final places', 'table-tennis-tournament-for-clubs' ), $pool ) ); ?></h4>
+						<ol class="tttc-public-places"><?php foreach ( array_slice( $pool_competition['places'], 0, 3 ) as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol>
 					<?php endif; ?>
 				<?php endforeach; ?>
 			<?php endif; ?>
@@ -1689,15 +1785,29 @@ final class TTTC_Public {
 				return array();
 			}
 			$pool_schedule = $this->placement_pool_schedule( $tournament_id, $pools );
-			$pool_scores = TTTC_Plugin::group_scores( $pool_schedule, $scores, 'placement' );
-			$pool_competition = TTTC_Competition::calculate( $pool_schedule, $pool_scores, $game_formats['intermediate'], true );
+			$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
+			$pool_competitions = $this->placement_pool_competitions( $tournament_id, $pool_schedule, $scores, $game_formats, $no_follow_up_rounds );
 			$places = array();
-			foreach ( $pool_schedule as $group_key => $group_schedule ) {
-				if ( empty( $pool_competition['groups'][ $group_key ]['complete'] ) ) {
+			if ( $no_follow_up_rounds ) {
+				foreach ( $pool_competitions as $pool => $pool_result ) {
+					foreach ( $pool_result['schedule'] as $group_index => $group_schedule ) {
+						$group = $pool_result['competition']['groups'][ $group_index ];
+						if ( empty( $group['complete'] ) ) {
+							return array();
+						}
+						foreach ( array_slice( $group['standings'], 0, 3 ) as $rank => $standing ) {
+							$places[] = array( 'player' => $standing['player'], 'pool' => $group_schedule['position_pool'], 'position' => $rank + 1 );
+						}
+					}
+				}
+				return $places;
+			}
+			foreach ( $pool_competitions as $pool => $pool_result ) {
+				if ( empty( $pool_result['competition']['places'] ) ) {
 					return array();
 				}
-				foreach ( array_slice( $pool_competition['groups'][ $group_key ]['standings'], 0, 3 ) as $rank => $standing ) {
-					$places[] = array( 'player' => $standing['player'], 'pool' => $group_schedule['position_pool'], 'position' => $rank + 1 );
+				foreach ( array_slice( $pool_result['competition']['places'], 0, 3 ) as $rank => $place ) {
+					$places[] = array( 'player' => $place['player'], 'pool' => $pool, 'position' => $rank + 1 );
 				}
 			}
 			return $places;
@@ -1875,7 +1985,7 @@ final class TTTC_Public {
 
 	private function group_count( $player_count, $tournament_id = 0 ) {
 		$ranges = TTTC_Plugin::get_format_ranges( $tournament_id );
-		for ( $groups = 1; $groups <= 4; $groups++ ) {
+		for ( $groups = 4; $groups >= 1; $groups-- ) {
 			if ( isset( $ranges[ $groups ] ) && $player_count >= $ranges[ $groups ]['min'] && $player_count <= $ranges[ $groups ]['max'] ) {
 				return $groups;
 			}

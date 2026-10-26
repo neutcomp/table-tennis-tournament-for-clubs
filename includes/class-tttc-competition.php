@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Competition {
-	public static function calculate( $schedule, $scores, $game_formats, $no_follow_up_rounds = false ) {
+	public static function calculate( $schedule, $scores, $game_formats, $no_follow_up_rounds = false, $score_prefix = '' ) {
 		if ( ! is_array( $game_formats ) ) {
 			$game_formats = array_fill_keys( array( 'preliminary', 'intermediate', 'finals' ), (int) $game_formats );
 		}
@@ -28,7 +28,7 @@ final class TTTC_Competition {
 				$stage_games = self::games_for_phase( $game_formats, $stage['phase'] );
 				$players = array( self::resolve_reference( $match['players'][0], $groups, $resolved_stages ), self::resolve_reference( $match['players'][1], $groups, $resolved_stages ) );
 				$match['players'] = $players;
-				$match['score_key'] = self::score_key( $match['id'], $players );
+				$match['score_key'] = self::score_key( $match['id'], $players, $score_prefix );
 				$match['winner'] = self::match_winner( $match['score_key'], $players, $scores, $stage_games );
 				$match['loser'] = self::match_loser( $match['score_key'], $players, $scores, $stage_games );
 				$resolved_matches[] = $match;
@@ -313,8 +313,8 @@ final class TTTC_Competition {
 		return array( 'winner' => max( $game_wins ) >= $required ? ( $game_wins[0] > $game_wins[1] ? 0 : 1 ) : null, 'games' => $game_wins, 'points' => $points );
 	}
 
-	private static function score_key( $id, $players ) {
-		return 'crossover:' . $id;
+	private static function score_key( $id, $players, $score_prefix = '' ) {
+		return '' === $score_prefix ? 'crossover:' . $id : 'p' . sanitize_key( $score_prefix ) . '-c-' . sanitize_key( $id );
 	}
 
 	private static function pair_key( $first_id, $second_id ) {
