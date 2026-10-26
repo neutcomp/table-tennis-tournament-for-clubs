@@ -1231,13 +1231,31 @@ final class TTTC_Public {
 		<section class="tttc-public-groups tttc-placement-results" aria-labelledby="tttc-groups-heading">
 			<h2 id="tttc-groups-heading"><?php esc_html_e( 'Groups of 3 → A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></h2>
 			<h3><?php esc_html_e( 'Preliminary groups', 'table-tennis-tournament-for-clubs' ); ?></h3>
+			<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Preliminary groups', 'table-tennis-tournament-for-clubs' ); ?>">
+				<?php foreach ( $preliminary_schedule as $index => $group_schedule ) : ?>
+				<button id="<?php echo esc_attr( 'tttc-placement-preliminary-tab-' . ( $index + 1 ) ); ?>"
+					class="tttc-public-group-tab<?php echo 0 === $index ? ' is-active' : ''; ?>" type="button" role="tab"
+					aria-controls="<?php echo esc_attr( 'tttc-placement-preliminary-panel-' . ( $index + 1 ) ); ?>"
+					aria-selected="<?php echo 0 === $index ? 'true' : 'false'; ?>"
+					tabindex="<?php echo 0 === $index ? '0' : '-1'; ?>"><?php echo esc_html( $group_schedule['label'] ); ?></button>
+				<?php endforeach; ?>
+			</div>
+			<div class="tttc-public-group-grid">
 			<?php foreach ( $preliminary_schedule as $index => $group_schedule ) : ?>
 				<?php
 				$group_scores = TTTC_Plugin::group_scores( array( $group_schedule ), $scores, 'preliminary' );
 				$group_competition = TTTC_Competition::calculate( array( $group_schedule ), $group_scores, $game_formats['preliminary'], true );
+				?>
+				<section id="<?php echo esc_attr( 'tttc-placement-preliminary-panel-' . ( $index + 1 ) ); ?>"
+					class="tttc-public-group<?php echo 0 === $index ? ' is-active' : ''; ?>" role="tabpanel"
+					aria-labelledby="<?php echo esc_attr( 'tttc-placement-preliminary-tab-' . ( $index + 1 ) ); ?>"
+					<?php echo 0 === $index ? '' : ' hidden'; ?>>
+				<?php
 				$this->render_placement_group( $tournament_id, $group_schedule, $scores, 'preliminary', '', $group_competition['groups'][0] );
 				?>
+				</section>
 			<?php endforeach; ?>
+			</div>
 			<?php
 			$pools = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PLACEMENT_POOLS, true );
 			if ( ! is_array( $pools ) ) :
@@ -1256,22 +1274,42 @@ final class TTTC_Public {
 				$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
 				$pool_competitions = $this->placement_pool_competitions( $tournament_id, $pool_schedule, $scores, $game_formats, $no_follow_up_rounds );
 				$pool_group_indexes = array();
+				$pool_tab_index = 0;
 				?>
 				<h3><?php esc_html_e( 'A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></h3>
 				<p><?php esc_html_e( 'Each A/B/C follow-up group has its own standings; enabled follow-up rounds determine its final places.', 'table-tennis-tournament-for-clubs' ); ?></p>
-				<?php foreach ( $pool_schedule as $group_key => $group_schedule ) : ?>
+				<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?>">
+					<?php foreach ( array_values( $pool_schedule ) as $index => $group_schedule ) : ?>
+					<button id="<?php echo esc_attr( 'tttc-placement-pool-tab-' . ( $index + 1 ) ); ?>"
+						class="tttc-public-group-tab<?php echo 0 === $index ? ' is-active' : ''; ?>" type="button" role="tab"
+						aria-controls="<?php echo esc_attr( 'tttc-placement-pool-panel-' . ( $index + 1 ) ); ?>"
+						aria-selected="<?php echo 0 === $index ? 'true' : 'false'; ?>"
+						tabindex="<?php echo 0 === $index ? '0' : '-1'; ?>"><?php echo esc_html( $group_schedule['label'] ); ?></button>
+					<?php endforeach; ?>
+				</div>
+				<div class="tttc-public-group-grid">
+				<?php foreach ( $pool_schedule as $group_schedule ) : ?>
 					<?php
 					$pool = $group_schedule['pool'];
 					$group_index = isset( $pool_group_indexes[ $pool ] ) ? $pool_group_indexes[ $pool ] : 0;
 					$pool_group_indexes[ $pool ] = $group_index + 1;
 					$pool_competition = $pool_competitions[ $pool ]['competition'];
+					$tab_index = $pool_tab_index++;
+					?>
+					<section id="<?php echo esc_attr( 'tttc-placement-pool-panel-' . ( $tab_index + 1 ) ); ?>"
+						class="tttc-public-group<?php echo 0 === $tab_index ? ' is-active' : ''; ?>" role="tabpanel"
+						aria-labelledby="<?php echo esc_attr( 'tttc-placement-pool-tab-' . ( $tab_index + 1 ) ); ?>"
+						<?php echo 0 === $tab_index ? '' : ' hidden'; ?>>
+					<?php
 					$this->render_placement_group( $tournament_id, $group_schedule, $scores, 'placement', $group_schedule['score_group'], $pool_competition['groups'][ $group_index ] );
 					?>
 					<?php if ( $no_follow_up_rounds && ! empty( $pool_competition['groups'][ $group_index ]['complete'] ) ) : ?>
 						<h4><?php echo esc_html( sprintf( __( '%s final places', 'table-tennis-tournament-for-clubs' ), $group_schedule['label'] ) ); ?></h4>
 						<ol class="tttc-public-places"><?php foreach ( array_slice( $pool_competition['groups'][ $group_index ]['standings'], 0, 3 ) as $standing ) : ?><li><?php echo esc_html( $standing['player']->post_title ); ?></li><?php endforeach; ?></ol>
 					<?php endif; ?>
+					</section>
 				<?php endforeach; ?>
+				</div>
 				<?php foreach ( $pool_competitions as $pool => $pool_result ) :
 					$pool_competition = $pool_result['competition'];
 					foreach ( $pool_competition['stages'] as $stage ) :
