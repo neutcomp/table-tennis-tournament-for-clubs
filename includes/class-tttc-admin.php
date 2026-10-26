@@ -2098,6 +2098,24 @@ final class TTTC_Admin {
 		<p><a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=tttc-scores&tournament_id=' . $tournament_id ) ); ?>"><?php esc_html_e( 'Back to preliminary scores', 'table-tennis-tournament-for-clubs' ); ?></a></p>
 	<?php elseif ( $has_placement_scores ) : ?>
 		<p><?php esc_html_e( 'Placement matches have started, so pool assignments are locked.', 'table-tennis-tournament-for-clubs' ); ?></p>
+		<div class="tttc-placement-pools">
+			<?php foreach ( array( 'A', 'B', 'C' ) as $pool ) : ?>
+				<section class="tttc-placement-pool" aria-labelledby="<?php echo esc_attr( 'tttc-placement-pool-' . $pool ); ?>">
+					<h2 id="<?php echo esc_attr( 'tttc-placement-pool-' . $pool ); ?>">
+						<?php echo esc_html( sprintf( __( 'Pool %s', 'table-tennis-tournament-for-clubs' ), $pool ) ); ?>
+						<span class="tttc-placement-pool-count"><?php echo esc_html( count( $pool_players[ $pool ] ) ); ?></span>
+					</h2>
+					<ul class="tttc-placement-pool-assignments">
+						<?php foreach ( $pool_players[ $pool ] as $assignment ) : ?>
+							<li>
+								<strong><?php echo esc_html( $assignment['player']->post_title ); ?></strong>
+								<span><?php echo esc_html( sprintf( __( 'Group %1$d, place %2$d', 'table-tennis-tournament-for-clubs' ), $assignment['group_index'] + 1, $assignment['rank'] + 1 ) ); ?></span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+				</section>
+			<?php endforeach; ?>
+		</div>
 	<?php else : ?>
 		<p><?php esc_html_e( 'Suggested pools are based on preliminary group places. Drag players between pools, or use each player’s pool selector, before starting placement matches.', 'table-tennis-tournament-for-clubs' ); ?></p>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-placement-pools-form">

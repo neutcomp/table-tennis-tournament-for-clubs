@@ -339,6 +339,20 @@
   list-style: none;
 }
 
+.tttc-placement-pool-assignments {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tttc-placement-pool-assignments li {
+  margin: 0 0 8px;
+}
+
+.tttc-placement-pool-assignments li:last-child {
+  margin-bottom: 0;
+}
+
 .tttc-placement-player {
   display: flex;
   flex-direction: column;
