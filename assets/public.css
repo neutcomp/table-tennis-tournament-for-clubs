@@ -481,6 +481,77 @@ ul.tttc-breadcrumbs__list > li::after {
   color: #b32d2e;
 }
 
+.tttc-public-signup-form__fields[hidden] {
+  display: none !important;
+}
+
+.tttc-public-signup-form .tttc-public-signup-form__joining {
+  border: 0;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 24px;
+  padding: 0;
+}
+
+.tttc-public-signup-form__joining legend {
+  color: #1d2327;
+  font-size: 20px;
+  font-weight: 600;
+  grid-column: 1 / -1;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.tttc-public-signup-form .tttc-public-signup-form__joining label {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  min-height: 56px;
+  padding: 12px 16px;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.tttc-public-signup-form .tttc-public-signup-form__joining label:has(input:checked) {
+  background: #eef6fc;
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+}
+
+.tttc-public-signup-form .tttc-public-signup-form__joining label:focus-within {
+  outline: 2px solid #2271b1;
+  outline-offset: 2px;
+}
+
+.tttc-public-signup-form .tttc-public-signup-form__joining input[type="radio"] {
+  accent-color: #2271b1;
+  flex: 0 0 20px;
+  height: 20px;
+  margin: 0;
+  max-width: 20px;
+  padding: 0;
+  width: 20px;
+}
+
+.tttc-public-signup-form textarea {
+  border: 1px solid #8c8f94;
+  box-sizing: border-box;
+  font: inherit;
+  max-width: 100%;
+  min-height: 110px;
+  padding: 9px 10px;
+  resize: vertical;
+  width: 100%;
+}
+
 .tttc-public-signup-form input,
 .tttc-public-signup-form select {
   border: 1px solid #8c8f94;
@@ -494,6 +565,12 @@ ul.tttc-breadcrumbs__list > li::after {
 
 .tttc-public-signup-form input:focus,
 .tttc-public-signup-form select:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.18);
+  outline: 0;
+}
+
+.tttc-public-signup-form textarea:focus {
   border-color: #2271b1;
   box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.18);
   outline: 0;
@@ -714,6 +791,10 @@ ul.tttc-breadcrumbs__list > li::after {
   }
 
   .tttc-public-signup-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tttc-public-signup-form .tttc-public-signup-form__joining {
     grid-template-columns: 1fr;
   }
 
