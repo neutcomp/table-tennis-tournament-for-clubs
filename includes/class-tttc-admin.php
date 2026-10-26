@@ -1926,7 +1926,7 @@ final class TTTC_Admin {
 		$submitted = isset( $_POST['pool_assignments'] ) && is_array( $_POST['pool_assignments'] ) ? wp_unslash( $_POST['pool_assignments'] ) : array();
 		$pools = array( 'A' => array(), 'B' => array(), 'C' => array() );
 		foreach ( $player_ids as $player_id ) {
-			$pool = isset( $submitted[ $player_id ] ) && is_scalar( $submitted[ $player_id ] ) ? sanitize_key( (string) $submitted[ $player_id ] ) : '';
+			$pool = isset( $submitted[ $player_id ] ) && is_scalar( $submitted[ $player_id ] ) ? strtoupper( sanitize_key( (string) $submitted[ $player_id ] ) ) : '';
 			if ( ! isset( $pools[ $pool ] ) ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=tttc-placement-pools&tournament_id=' . $tournament_id . '&error=1' ) );
 				exit;
