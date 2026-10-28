@@ -83,7 +83,7 @@ final class TTTC_Public {
 	}
 
 	public function enqueue_assets() {
-		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
 	}
 
 	public static function instance() {
@@ -393,7 +393,7 @@ final class TTTC_Public {
 
 		$this->handle_signup( $tournament_id );
 
-		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
 		wp_enqueue_script(
 			'tttc-qrcode',
 			TTTC_URL . 'assets/vendor/qrcode.js',
@@ -715,7 +715,7 @@ final class TTTC_Public {
 			return;
 		}
 
-		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
 		get_header();
 		$this->render_player_detail( $player_id );
 		get_footer();
@@ -819,7 +819,7 @@ final class TTTC_Public {
 	}
 
 	public function tournaments_shortcode( $atts ) {
-		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
 		$atts = shortcode_atts( array( 'id' => 0, 'limit' => 10 ), $atts, 'tttc_tournaments' );
 		$args = array(
 			'post_type'      => TTTC_Plugin::TOURNAMENT_POST_TYPE,
@@ -2200,7 +2200,7 @@ final class TTTC_Public {
 	}
 
 	public function players_shortcode( $atts ) {
-		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION );
+		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
 		$atts  = shortcode_atts( array( 'limit' => 50 ), $atts, 'tttc_players' );
 		$query = new WP_Query( array( 'post_type' => TTTC_Plugin::PLAYER_POST_TYPE, 'post_status' => 'publish', 'posts_per_page' => max( 1, absint( $atts['limit'] ) ), 'orderby' => 'title', 'order' => 'ASC', 'meta_query' => array( array( 'key' => TTTC_Plugin::PLAYER_META_ACTIVE, 'value' => '1' ) ) ) );
 		if ( ! $query->have_posts() ) {

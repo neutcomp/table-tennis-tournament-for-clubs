@@ -3073,7 +3073,7 @@ final class TTTC_Admin {
 			}
 
 			if ( false !== strpos( $hook, 'tttc-scores' ) ) {
-				wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array( 'tttc-admin' ), TTTC_VERSION );
+				wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array( 'tttc-admin' ), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
 				wp_enqueue_script( 'tttc-public', TTTC_URL . 'assets/public.js', array(), TTTC_VERSION, true );
 			}
 		}
