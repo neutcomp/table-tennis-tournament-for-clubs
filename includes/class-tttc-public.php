@@ -957,7 +957,7 @@ final class TTTC_Public {
 		<?php endif; ?>
 		<?php if ( ! $is_active ) : ?>
 		<details class="tttc-public-tournament__players">
-			<summary><span><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?></span> <span
+			<summary><span><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?> (<?php echo esc_html( count( $players ) ); ?>)</span> <span
 					class="tttc-players-expand-label"><?php esc_html_e( 'expand', 'table-tennis-tournament-for-clubs' ); ?></span><span
 					class="tttc-players-collapse-label"><?php esc_html_e( 'collapse', 'table-tennis-tournament-for-clubs' ); ?></span>
 			</summary>
