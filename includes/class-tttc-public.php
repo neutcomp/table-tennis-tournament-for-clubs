@@ -1370,8 +1370,12 @@ final class TTTC_Public {
 			}
 		}
 		?>
-		<details class="tttc-placement-group" open>
-			<summary><?php echo esc_html( $group_schedule['label'] . ' (' . count( $group_schedule['players'] ) . ' ' . __( 'players', 'table-tennis-tournament-for-clubs' ) . ')' ); ?></summary>
+		<section class="tttc-placement-group">
+			<?php if ( 'placement' === $phase ) : ?>
+				<h5><?php echo esc_html( $group_schedule['label'] . ' (' . count( $group_schedule['players'] ) . ' ' . __( 'players', 'table-tennis-tournament-for-clubs' ) . ')' ); ?></h5>
+			<?php else : ?>
+				<h4><?php echo esc_html( $group_schedule['label'] . ' (' . count( $group_schedule['players'] ) . ' ' . __( 'players', 'table-tennis-tournament-for-clubs' ) . ')' ); ?></h4>
+			<?php endif; ?>
 			<?php if ( 'placement' === $phase ) : ?>
 			<table class="tttc-public-matches">
 				<thead>
@@ -1442,7 +1446,7 @@ final class TTTC_Public {
 					<tbody><?php foreach ( $standing_group['standings'] as $rank => $standing ) : ?><tr><td><?php echo esc_html( $rank + 1 ); ?></td><td><a href="<?php echo esc_url( $this->player_url( $standing['player']->ID, $tournament_id ) ); ?>"><?php echo esc_html( $standing['player']->post_title ); ?></a></td><td><?php echo esc_html( $standing['wins'] ); ?></td><td><?php echo esc_html( $standing['games_for'] . '-' . $standing['games_against'] ); ?></td><td><?php echo esc_html( $standing['points_for'] . '-' . $standing['points_against'] ); ?></td></tr><?php endforeach; ?></tbody>
 				</table>
 			<?php endif; ?>
-		</details>
+		</section>
 		<?php
 	}
 
