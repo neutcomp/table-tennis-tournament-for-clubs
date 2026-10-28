@@ -572,8 +572,12 @@ final class TTTC_Admin {
 		$type   = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TYPE, true );
 		$competition_format = TTTC_Plugin::get_tournament_competition_format( $post->ID );
 		$description = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, true );
-		$phone_required = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, true );
-		$hide_ttapp_question = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_HIDE_TTAPP_QUESTION, true );
+		$show_phone = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_SHOW_PHONE, true );
+		$show_phone = '' === $show_phone ? '1' : $show_phone;
+		$show_ttapp_question = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_SHOW_TTAPP_QUESTION, true );
+		if ( '' === $show_ttapp_question ) {
+			$show_ttapp_question = '1' === get_post_meta( $post->ID, TTTC_Plugin::LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION, true ) ? '0' : '1';
+		}
 		$ask_joining = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true );
 		$not_joining_email = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true );
 		$tikkie_enabled = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_ENABLED, true );
@@ -656,10 +660,10 @@ final class TTTC_Admin {
 
 <p><label><input type="checkbox" name="tttc_hide_from_overview" value="1" <?php checked( '1', $hide_from_overview ); ?>>
 		<?php esc_html_e( 'Hide this tournament from the public tournament overview', 'table-tennis-tournament-for-clubs' ); ?></label></p>
-<p><label><input type="checkbox" name="tttc_phone_required" value="1" <?php checked( '1', $phone_required ); ?>>
-		<?php esc_html_e( 'Require a phone number when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
-<p><label><input type="checkbox" name="tttc_hide_ttapp_question" value="1" <?php checked( '1', $hide_ttapp_question ); ?>>
-		<?php esc_html_e( 'Hide the TTapp rating question when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
+<p><label><input type="checkbox" name="tttc_show_phone" value="1" <?php checked( '1', $show_phone ); ?>>
+		<?php esc_html_e( 'Show telephone when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
+<p><label><input type="checkbox" name="tttc_show_ttapp_question" value="1" <?php checked( '1', $show_ttapp_question ); ?>>
+		<?php esc_html_e( 'Show the TTapp rating question when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 <p><label><input type="checkbox" name="tttc_ask_joining" value="1" <?php checked( '1', $ask_joining ); ?>>
 		<?php esc_html_e( 'Ask: Are you joining?', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 <p><label for="tttc-not-joining-email"><strong><?php esc_html_e( 'Email not joining reply', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
@@ -837,8 +841,8 @@ final class TTTC_Admin {
 		$hide_from_overview = isset( $_POST['tttc_hide_from_overview'] ) ? '1' : '0';
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_HIDE_FROM_OVERVIEW, $hide_from_overview );
 		$description = isset( $_POST['tttc_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tttc_description'] ) ) : '';
-		$phone_required = isset( $_POST['tttc_phone_required'] ) ? '1' : '0';
-		$hide_ttapp_question = isset( $_POST['tttc_hide_ttapp_question'] ) ? '1' : '0';
+		$show_phone = isset( $_POST['tttc_show_phone'] ) ? '1' : '0';
+		$show_ttapp_question = isset( $_POST['tttc_show_ttapp_question'] ) ? '1' : '0';
 		$ask_joining = isset( $_POST['tttc_ask_joining'] ) ? '1' : '0';
 		$not_joining_email = isset( $_POST['tttc_not_joining_email'] ) ? sanitize_email( wp_unslash( $_POST['tttc_not_joining_email'] ) ) : '';
 		$tikkie_enabled = isset( $_POST['tttc_tikkie_enabled'] ) ? '1' : '0';
@@ -854,8 +858,8 @@ final class TTTC_Admin {
 		}
 		$tikkie_url = isset( $_POST['tttc_tikkie_url'] ) ? esc_url_raw( wp_unslash( $_POST['tttc_tikkie_url'] ) ) : '';
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, $description );
-		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, $phone_required );
-		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_HIDE_TTAPP_QUESTION, $hide_ttapp_question );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_SHOW_PHONE, $show_phone );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_SHOW_TTAPP_QUESTION, $show_ttapp_question );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, $ask_joining );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, $not_joining_email );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_ENABLED, $tikkie_enabled );
@@ -1064,8 +1068,9 @@ final class TTTC_Admin {
 			TTTC_Plugin::TOURNAMENT_META_FORMAT_RANGES,
 			TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP,
 			TTTC_Plugin::TOURNAMENT_META_DESCRIPTION,
-			TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED,
-			TTTC_Plugin::TOURNAMENT_META_HIDE_TTAPP_QUESTION,
+			TTTC_Plugin::TOURNAMENT_META_SHOW_PHONE,
+			TTTC_Plugin::TOURNAMENT_META_SHOW_TTAPP_QUESTION,
+			TTTC_Plugin::LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION,
 			TTTC_Plugin::TOURNAMENT_META_ASK_JOINING,
 			TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL,
 		);

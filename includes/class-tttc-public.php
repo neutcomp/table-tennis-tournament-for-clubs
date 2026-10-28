@@ -1431,6 +1431,21 @@ final class TTTC_Public {
 		return 'youth' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TYPE, true ) ? 'youth' : 'senior';
 	}
 
+	private function show_signup_phone( $tournament_id ) {
+		$show_phone = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_SHOW_PHONE, true );
+
+		return '' === $show_phone || '1' === $show_phone;
+	}
+
+	private function show_signup_ttapp_question( $tournament_id ) {
+		$show_ttapp_question = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_SHOW_TTAPP_QUESTION, true );
+		if ( '' !== $show_ttapp_question ) {
+			return '1' === $show_ttapp_question;
+		}
+
+		return '1' !== get_post_meta( $tournament_id, TTTC_Plugin::LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION, true );
+	}
+
 	private function is_signup_open( $tournament_id ) {
 		if ( 'upcoming' !== get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true ) ) {
 			return false;
@@ -1445,7 +1460,8 @@ final class TTTC_Public {
 	private function handle_signup( $tournament_id ) {
 		$default_player_type = $this->signup_default_player_type( $tournament_id );
 		$ask_joining = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true );
-		$hide_ttapp_question = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_HIDE_TTAPP_QUESTION, true );
+		$show_phone = $this->show_signup_phone( $tournament_id );
+		$show_ttapp_question = $this->show_signup_ttapp_question( $tournament_id );
 		$this->signup_form = array(
 			'name'   => '',
 			'rating' => '',
@@ -1472,9 +1488,9 @@ final class TTTC_Public {
 
 		$this->signup_form = array(
 			'name'   => isset( $_POST['tttc_signup_name'] ) ? $this->normalize_name( sanitize_text_field( wp_unslash( $_POST['tttc_signup_name'] ) ) ) : '',
-			'rating' => ! $hide_ttapp_question && isset( $_POST['tttc_signup_rating'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_rating'] ) ) : '',
+			'rating' => $show_ttapp_question && isset( $_POST['tttc_signup_rating'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_rating'] ) ) : '',
 			'email'  => isset( $_POST['tttc_signup_email'] ) ? strtolower( sanitize_email( wp_unslash( $_POST['tttc_signup_email'] ) ) ) : '',
-			'phone'  => isset( $_POST['tttc_signup_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_phone'] ) ) : '',
+			'phone'  => $show_phone && isset( $_POST['tttc_signup_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_signup_phone'] ) ) : '',
 			'gender' => isset( $_POST['tttc_signup_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_gender'] ) ) : 'male',
 			'type'   => isset( $_POST['tttc_signup_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_type'] ) ) : $default_player_type,
 			'joining' => isset( $_POST['tttc_signup_joining'] ) ? sanitize_key( wp_unslash( $_POST['tttc_signup_joining'] ) ) : '',
@@ -1513,7 +1529,7 @@ final class TTTC_Public {
 			$this->signup_error = __( 'Please enter your name.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
-		if ( ! $hide_ttapp_question && '' !== $this->signup_form['rating'] && ( ! preg_match( '/^[0-9]+$/', $this->signup_form['rating'] ) || (int) $this->signup_form['rating'] > 3000 ) ) {
+		if ( $show_ttapp_question && '' !== $this->signup_form['rating'] && ( ! preg_match( '/^[0-9]+$/', $this->signup_form['rating'] ) || (int) $this->signup_form['rating'] > 3000 ) ) {
 			$this->signup_error = __( 'Please enter a rating between 0 and 3000.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
@@ -1521,7 +1537,7 @@ final class TTTC_Public {
 			$this->signup_error = __( 'Please enter a valid email address so we can confirm your signup.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
-		if ( '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, true ) && '' === $this->signup_form['phone'] ) {
+		if ( $show_phone && '' === $this->signup_form['phone'] ) {
 			$this->signup_error = __( 'Please enter your phone number.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
@@ -1566,7 +1582,7 @@ final class TTTC_Public {
 				$this->signup_error = __( 'An existing player with this name and email has a type that is not allowed for this tournament.', 'table-tennis-tournament-for-clubs' );
 				return;
 			}
-			if ( ! $hide_ttapp_question ) {
+			if ( $show_ttapp_question ) {
 				update_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, '' === $this->signup_form['rating'] ? '' : absint( $this->signup_form['rating'] ) );
 			}
 			update_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_ACTIVE, '1' );
@@ -1609,8 +1625,8 @@ final class TTTC_Public {
 	}
 
 	private function render_signup_form( $tournament_id ) {
-		$phone_required = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_PHONE_REQUIRED, true );
-		$hide_ttapp_question = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_HIDE_TTAPP_QUESTION, true );
+		$show_phone = $this->show_signup_phone( $tournament_id );
+		$show_ttapp_question = $this->show_signup_ttapp_question( $tournament_id );
 		$ask_joining = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true );
 		$form = wp_parse_args( $this->signup_form, array( 'name' => '', 'rating' => '', 'email' => '', 'phone' => '', 'gender' => 'male', 'type' => $this->signup_default_player_type( $tournament_id ), 'joining' => '', 'reason' => '' ) );
 		?>
@@ -1636,7 +1652,7 @@ final class TTTC_Public {
 			<p><label for="tttc-signup-name"><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?> <span
 						aria-hidden="true">*</span></label><input type="text" id="tttc-signup-name" name="tttc_signup_name"
 					value="<?php echo esc_attr( $form['name'] ); ?>" required></p>
-			<?php if ( ! $hide_ttapp_question ) : ?>
+			<?php if ( $show_ttapp_question ) : ?>
 			<p><label for="tttc-signup-rating"><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?> (<a
 						href="https://ttapp.nl/">TTapp.nl</a>)</label><input type="number" min="0" max="3000" step="1" id="tttc-signup-rating"
 					name="tttc_signup_rating" value="<?php echo esc_attr( $form['rating'] ); ?>"></p>
@@ -1644,7 +1660,9 @@ final class TTTC_Public {
 			<p><label for="tttc-signup-email"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?> <span
 						aria-hidden="true">*</span></label><input type="email" id="tttc-signup-email" name="tttc_signup_email"
 					value="<?php echo esc_attr( $form['email'] ); ?>" required></p>
-			<p><label for="tttc-signup-phone"><?php esc_html_e( 'Phone number', 'table-tennis-tournament-for-clubs' ); ?><?php if ( $phone_required ) : ?> <span aria-hidden="true">*</span><?php endif; ?></label><input type="tel" id="tttc-signup-phone" name="tttc_signup_phone" value="<?php echo esc_attr( $form['phone'] ); ?>" <?php echo $phone_required ? 'required' : ''; ?>></p>
+			<?php if ( $show_phone ) : ?>
+			<p><label for="tttc-signup-phone"><?php esc_html_e( 'Phone number', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="tel" id="tttc-signup-phone" name="tttc_signup_phone" value="<?php echo esc_attr( $form['phone'] ); ?>" required></p>
+			<?php endif; ?>
 			<p><label
 					for="tttc-signup-gender"><?php esc_html_e( 'Gender', 'table-tennis-tournament-for-clubs' ); ?></label><select
 					id="tttc-signup-gender" name="tttc_signup_gender">

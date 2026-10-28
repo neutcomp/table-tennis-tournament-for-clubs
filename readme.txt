@@ -20,8 +20,8 @@ Player emails are stored for club administration and are not shown in public sho
 
 * Player records with name, rating, email, and active status.
 * Tournament records with name, description, date, time, separate best-of formats for preliminary rounds, intermediate rounds, and finals, player type, and status.
-* Optional phone number collection, configurable as required per tournament.
-* Option to hide the TTapp rating question from a tournament's signup form.
+* Per-tournament option to show a required phone number field on the signup form.
+* Per-tournament option to show or hide the TTapp rating question on the signup form.
 * Optional per-tournament attendance question with email notifications for people who cannot attend.
 * Optional Tikkie QR-code registration payments with a fee and direct payment link; configure a bank account for manual transfers.
 * Tournament Players screen for adding and removing participants.
@@ -64,7 +64,7 @@ Each published tournament title links to `/{tournament-url-base}/{tournament-nam
 
 Upcoming tournament pages also accept player signups. A new signup creates an active player and assigns them to the tournament. If the same name and email already exist, the existing player's rating is updated, the player is reactivated, and the player is assigned to the tournament without creating a duplicate. The tournament's player type restriction is enforced. Tournaments can optionally first ask whether the visitor is joining; a "No" response collects their name, email, and an optional reason, then emails the configured tournament contact without creating a player or assignment.
 
-Players must provide an email address when signing up. A phone number is collected and is required only when enabled for that tournament. After a successful signup, the plugin sends an HTML confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. When payment details are enabled for the tournament, the email appends the registration fee and configured payment instructions, including the uploaded QR-code image and optional direct payment link. The success page also shows configured payment instructions. Signup closes at the start of the tournament date in the WordPress site's local timezone; expired tournaments show a disabled signup button. Tournament times use the 24-hour `HH:MM` format. The email subject and body support `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
+Players must provide an email address when signing up. A tournament can require a phone number by enabling the telephone field; when the field is hidden, no phone number is collected. The TTapp rating question can also be shown or hidden per tournament. After a successful signup, the plugin sends an HTML confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. When payment details are enabled for the tournament, the email appends the registration fee and configured payment instructions, including the uploaded QR-code image and optional direct payment link. The success page also shows configured payment instructions. Signup closes at the start of the tournament date in the WordPress site's local timezone; expired tournaments show a disabled signup button. Tournament times use the 24-hour `HH:MM` format. The email subject and body support `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
 
 Optional attributes:
 
@@ -110,6 +110,7 @@ Tournament QR codes are generated in the visitor's browser using JavaScript incl
 
 = 2.0.0 =
 * Add a Groups of 3 → A/B/C placement-pool competition format with editable pool assignments and separate standings.
+* Allow tournaments to show or hide the required telephone field and TTapp rating question on the signup form.
 
 = 1.0.8 =
 * Add an optional per-tournament attendance question and non-attendance email notification.

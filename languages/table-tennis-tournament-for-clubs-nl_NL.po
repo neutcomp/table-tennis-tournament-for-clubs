@@ -27,8 +27,11 @@ msgstr "Telefoonnummer"
 msgid "Description"
 msgstr "Beschrijving"
 
-msgid "Require a phone number when signing up"
-msgstr "Telefoonnummer verplicht bij inschrijving"
+msgid "Show telephone when signing up"
+msgstr "Toon telefoonnummer bij inschrijving"
+
+msgid "Show the TTapp rating question when signing up"
+msgstr "Toon de TTapp-ratingvraag bij inschrijving"
 
 msgid "Ask: Are you joining?"
 msgstr "Vragen: Doe je mee?"
