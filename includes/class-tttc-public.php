@@ -1274,7 +1274,7 @@ final class TTTC_Public {
 				$no_follow_up_rounds = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
 				$pool_competitions = $this->placement_pool_competitions( $tournament_id, $pool_schedule, $scores, $game_formats, $no_follow_up_rounds );
 				?>
-				<h3><?php esc_html_e( 'A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></h3>
+				<h3 class="tttc-placement-pools-heading"><?php esc_html_e( 'A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></h3>
 				<p><?php esc_html_e( 'Each A/B/C follow-up group has its own standings; enabled follow-up rounds determine its final places.', 'table-tennis-tournament-for-clubs' ); ?></p>
 				<?php foreach ( $pool_competitions as $pool => $pool_result ) :
 					$pool_competition = $pool_result['competition'];

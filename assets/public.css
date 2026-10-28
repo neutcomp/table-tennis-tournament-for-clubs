@@ -633,6 +633,10 @@ ul.tttc-breadcrumbs__list > li::after {
   padding-top: 20px;
 }
 
+.tttc-placement-pools-heading {
+  margin-top: 32px;
+}
+
 .tttc-placement-pool-title {
   margin-bottom: 12px;
 }
