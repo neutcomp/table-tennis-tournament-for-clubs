@@ -1513,8 +1513,8 @@ final class TTTC_Public {
 			$this->signup_error = __( 'Please enter your name.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
-		if ( ! $hide_ttapp_question && '' !== $this->signup_form['rating'] && ! preg_match( '/^[0-9]+$/', $this->signup_form['rating'] ) ) {
-			$this->signup_error = __( 'Please enter a valid nonnegative rating.', 'table-tennis-tournament-for-clubs' );
+		if ( ! $hide_ttapp_question && '' !== $this->signup_form['rating'] && ( ! preg_match( '/^[0-9]+$/', $this->signup_form['rating'] ) || (int) $this->signup_form['rating'] > 3000 ) ) {
+			$this->signup_error = __( 'Please enter a rating between 0 and 3000.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
 		if ( '' === $this->signup_form['email'] || ! is_email( $this->signup_form['email'] ) ) {
@@ -1638,7 +1638,7 @@ final class TTTC_Public {
 					value="<?php echo esc_attr( $form['name'] ); ?>" required></p>
 			<?php if ( ! $hide_ttapp_question ) : ?>
 			<p><label for="tttc-signup-rating"><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?> (<a
-						href="https://ttapp.nl/">TTapp.nl</a>)</label><input type="number" min="0" step="1" id="tttc-signup-rating"
+						href="https://ttapp.nl/">TTapp.nl</a>)</label><input type="number" min="0" max="3000" step="1" id="tttc-signup-rating"
 					name="tttc_signup_rating" value="<?php echo esc_attr( $form['rating'] ); ?>"></p>
 			<?php endif; ?>
 			<p><label for="tttc-signup-email"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?> <span
