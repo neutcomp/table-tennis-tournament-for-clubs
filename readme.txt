@@ -21,6 +21,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Player records with name, rating, email, and active status.
 * Tournament records with name, description, date, time, separate best-of formats for preliminary rounds, intermediate rounds, and finals, player type, and status.
 * Optional phone number collection, configurable as required per tournament.
+* Option to hide the TTapp rating question from a tournament's signup form.
 * Optional per-tournament attendance question with email notifications for people who cannot attend.
 * Optional Tikkie QR-code registration payments with a fee and direct payment link; configure a bank account for manual transfers.
 * Tournament Players screen for adding and removing participants.
