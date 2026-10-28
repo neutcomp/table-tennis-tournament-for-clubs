@@ -627,6 +627,16 @@ ul.tttc-breadcrumbs__list > li::after {
   padding-bottom: 2px;
 }
 
+.tttc-placement-pool-results + .tttc-placement-pool-results {
+  border-top: 1px solid #dcdcde;
+  margin-top: 28px;
+  padding-top: 20px;
+}
+
+.tttc-placement-pool-title {
+  margin-bottom: 12px;
+}
+
 .tttc-public-group-tab {
   background: #f0f0f1;
   border: 1px solid #c3c4c7;
