@@ -816,6 +816,15 @@ msgstr "Poule %1$d, plaats %2$d"
 msgid "Pool %s"
 msgstr "Poule %s"
 
+msgid "Pools"
+msgstr "Poules"
+
+msgid "Placement results"
+msgstr "Plaatsingsresultaten"
+
+msgid "Placement pools"
+msgstr "Plaatsingspoules"
+
 msgid "Save pool assignments and continue"
 msgstr "Poule-indeling opslaan en doorgaan"
 

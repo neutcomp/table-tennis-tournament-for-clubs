@@ -1276,83 +1276,113 @@ final class TTTC_Public {
 				?>
 				<h3 class="tttc-placement-pools-heading"><?php esc_html_e( 'A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></h3>
 				<p><?php esc_html_e( 'Each A/B/C follow-up group has its own standings; enabled follow-up rounds determine its final places.', 'table-tennis-tournament-for-clubs' ); ?></p>
-				<?php foreach ( $pool_competitions as $pool => $pool_result ) :
-					$pool_competition = $pool_result['competition'];
-					$pool_label = sprintf( __( 'Pool %s', 'table-tennis-tournament-for-clubs' ), $pool );
-					$pool_tab_base = 'tttc-placement-pool-' . strtolower( $pool );
-					$stages = $pool_competition['stages'];
-					if ( 2 === count( $stages ) && 'final' === $stages[0]['id'] && 'third-place' === $stages[1]['id'] ) {
-						$stages = array_reverse( $stages );
+				<?php
+				$stage_tabs = array();
+				foreach ( $pool_competitions as $pool_result ) {
+					foreach ( $pool_result['competition']['stages'] as $stage ) {
+						$stage_tabs[ $stage['id'] ] = $stage['label'];
 					}
-					$first_tab_id = ! empty( $stages ) ? $pool_tab_base . '-tab-' . sanitize_key( $stages[0]['id'] ) : $pool_tab_base . '-tab-standings';
-					$standings_tab_id = $pool_tab_base . '-tab-standings';
-					$standings_panel_id = $pool_tab_base . '-panel-standings';
-					$standings_active = empty( $stages );
-					?>
-					<section class="tttc-placement-pool-results" aria-labelledby="<?php echo esc_attr( $pool_tab_base . '-heading' ); ?>">
-						<h4 id="<?php echo esc_attr( $pool_tab_base . '-heading' ); ?>" class="tttc-placement-pool-title"><?php echo esc_html( $pool_label ); ?></h4>
-						<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php echo esc_attr( $pool_label ); ?>">
-							<?php foreach ( $stages as $stage ) :
-								$tab_id = $pool_tab_base . '-tab-' . sanitize_key( $stage['id'] );
-								$panel_id = $pool_tab_base . '-panel-' . sanitize_key( $stage['id'] );
-								$is_active = $tab_id === $first_tab_id;
+				}
+				$stage_order = array( 'semifinals', 'third-place', 'final', 'winner-round' );
+				$ordered_stage_tabs = array();
+				foreach ( $stage_order as $stage_id ) {
+					if ( isset( $stage_tabs[ $stage_id ] ) ) {
+						$ordered_stage_tabs[ $stage_id ] = $stage_tabs[ $stage_id ];
+						unset( $stage_tabs[ $stage_id ] );
+					}
+				}
+				$ordered_stage_tabs += $stage_tabs;
+				$active_pool = array_key_first( $pool_competitions );
+				?>
+				<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Placement results', 'table-tennis-tournament-for-clubs' ); ?>">
+					<button id="tttc-placement-pools-tab" class="tttc-public-group-tab is-active" type="button" role="tab"
+						aria-controls="tttc-placement-pools-panel" aria-selected="true" tabindex="0"><?php esc_html_e( 'Pools', 'table-tennis-tournament-for-clubs' ); ?></button>
+					<?php foreach ( $ordered_stage_tabs as $stage_id => $stage_label ) :
+						$tab_id = 'tttc-placement-stage-tab-' . sanitize_key( $stage_id );
+						$panel_id = 'tttc-placement-stage-panel-' . sanitize_key( $stage_id );
+						?>
+						<button id="<?php echo esc_attr( $tab_id ); ?>" class="tttc-public-group-tab" type="button" role="tab"
+							aria-controls="<?php echo esc_attr( $panel_id ); ?>" aria-selected="false"
+							tabindex="-1"><?php echo esc_html( $stage_label ); ?></button>
+					<?php endforeach; ?>
+				</div>
+				<div class="tttc-public-group-grid">
+					<section id="tttc-placement-pools-panel" class="tttc-public-group is-active" role="tabpanel"
+						aria-labelledby="tttc-placement-pools-tab">
+						<div class="tttc-public-group-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Placement pools', 'table-tennis-tournament-for-clubs' ); ?>">
+							<?php foreach ( $pool_competitions as $pool => $pool_result ) :
+								$pool_id = 'tttc-placement-pool-' . strtolower( $pool );
+								$pool_tab_id = $pool_id . '-tab';
+								$pool_panel_id = $pool_id . '-panel';
+								$is_active = $active_pool === $pool;
+								$pool_label = sprintf( __( 'Pool %s', 'table-tennis-tournament-for-clubs' ), $pool );
 								?>
-								<button id="<?php echo esc_attr( $tab_id ); ?>"
+								<button id="<?php echo esc_attr( $pool_tab_id ); ?>"
 									class="tttc-public-group-tab<?php echo $is_active ? ' is-active' : ''; ?>" type="button" role="tab"
-									aria-controls="<?php echo esc_attr( $panel_id ); ?>"
+									aria-controls="<?php echo esc_attr( $pool_panel_id ); ?>"
 									aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
-									tabindex="<?php echo $is_active ? '0' : '-1'; ?>"><?php echo esc_html( $stage['label'] ); ?></button>
+									tabindex="<?php echo $is_active ? '0' : '-1'; ?>"><?php echo esc_html( $pool_label ); ?></button>
 							<?php endforeach; ?>
-							<button id="<?php echo esc_attr( $standings_tab_id ); ?>"
-								class="tttc-public-group-tab<?php echo $standings_active ? ' is-active' : ''; ?>" type="button" role="tab"
-								aria-controls="<?php echo esc_attr( $standings_panel_id ); ?>"
-								aria-selected="<?php echo $standings_active ? 'true' : 'false'; ?>"
-								tabindex="<?php echo $standings_active ? '0' : '-1'; ?>"><?php esc_html_e( 'Standings', 'table-tennis-tournament-for-clubs' ); ?></button>
 						</div>
 						<div class="tttc-public-group-grid">
-							<?php foreach ( $stages as $stage ) :
-								$tab_id = $pool_tab_base . '-tab-' . sanitize_key( $stage['id'] );
-								$panel_id = $pool_tab_base . '-panel-' . sanitize_key( $stage['id'] );
-								$is_active = $tab_id === $first_tab_id;
+							<?php foreach ( $pool_competitions as $pool => $pool_result ) :
+								$pool_competition = $pool_result['competition'];
+								$pool_id = 'tttc-placement-pool-' . strtolower( $pool );
+								$pool_tab_id = $pool_id . '-tab';
+								$pool_panel_id = $pool_id . '-panel';
+								$is_active = $active_pool === $pool;
 								?>
-								<section id="<?php echo esc_attr( $panel_id ); ?>"
+								<section id="<?php echo esc_attr( $pool_panel_id ); ?>"
 									class="tttc-public-group<?php echo $is_active ? ' is-active' : ''; ?>" role="tabpanel"
-									aria-labelledby="<?php echo esc_attr( $tab_id ); ?>" <?php echo $is_active ? '' : 'hidden'; ?>>
-									<h5><?php echo esc_html( $stage['label'] ); ?></h5>
+									aria-labelledby="<?php echo esc_attr( $pool_tab_id ); ?>" <?php echo $is_active ? '' : 'hidden'; ?>>
+									<?php foreach ( $pool_result['schedule'] as $group_index => $group_schedule ) :
+										$standing_group = $pool_competition['groups'][ $group_index ];
+										$this->render_placement_group( $tournament_id, $group_schedule, $scores, 'placement', $group_schedule['score_group'], $standing_group );
+										if ( $no_follow_up_rounds && ! empty( $standing_group['complete'] ) ) :
+											?>
+											<h5><?php echo esc_html( sprintf( __( '%s final places', 'table-tennis-tournament-for-clubs' ), $group_schedule['label'] ) ); ?></h5>
+											<ol class="tttc-public-places"><?php foreach ( array_slice( $standing_group['standings'], 0, 3 ) as $standing ) : ?><li><?php echo esc_html( $standing['player']->post_title ); ?></li><?php endforeach; ?></ol>
+										<?php endif; ?>
+									<?php endforeach; ?>
+									<?php if ( ! empty( $pool_competition['places'] ) ) : ?>
+										<h5><?php echo esc_html( sprintf( __( 'Pool %s final places', 'table-tennis-tournament-for-clubs' ), $pool ) ); ?></h5>
+										<ol class="tttc-public-places"><?php foreach ( array_slice( $pool_competition['places'], 0, 3 ) as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol>
+									<?php endif; ?>
+								</section>
+							<?php endforeach; ?>
+						</div>
+					</section>
+					<?php foreach ( $ordered_stage_tabs as $stage_id => $stage_label ) :
+						$tab_id = 'tttc-placement-stage-tab-' . sanitize_key( $stage_id );
+						$panel_id = 'tttc-placement-stage-panel-' . sanitize_key( $stage_id );
+						?>
+						<section id="<?php echo esc_attr( $panel_id ); ?>" class="tttc-public-group tttc-placement-stage-panel" role="tabpanel"
+							aria-labelledby="<?php echo esc_attr( $tab_id ); ?>" hidden>
+							<?php foreach ( $pool_competitions as $pool => $pool_result ) :
+								foreach ( $pool_result['competition']['stages'] as $stage ) :
+									if ( $stage_id !== $stage['id'] ) {
+										continue;
+									}
+									$pool_label = sprintf( __( 'Pool %s', 'table-tennis-tournament-for-clubs' ), $pool );
+									?>
+									<h4><?php echo esc_html( $pool_label ); ?></h4>
 									<table class="tttc-public-matches">
 										<thead><tr><th><?php esc_html_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?></th><th><?php esc_html_e( 'Games won', 'table-tennis-tournament-for-clubs' ); ?></th></tr></thead>
 										<tbody>
-										<?php foreach ( $stage['matches'] as $match_number => $match ) :
-											$available = $match['players'][0] && $match['players'][1];
-											$match_scores = isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array();
-											$games_won = $this->games_won( $match_scores, $game_formats[ $stage['phase'] ] );
-											?>
-											<tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $games_won[0] . '-' . $games_won[1] ); ?></td></tr>
-										<?php endforeach; ?>
+											<?php foreach ( $stage['matches'] as $match_number => $match ) :
+												$available = $match['players'][0] && $match['players'][1];
+												$match_scores = isset( $scores[ $match['score_key'] ] ) ? $scores[ $match['score_key'] ] : array();
+												$games_won = $this->games_won( $match_scores, $game_formats[ $stage['phase'] ] );
+												?>
+												<tr><td><?php echo esc_html( $match_number + 1 ); ?></td><td><?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $games_won[0] . '-' . $games_won[1] ); ?></td></tr>
+											<?php endforeach; ?>
 										</tbody>
 									</table>
-								</section>
-							<?php endforeach; ?>
-							<section id="<?php echo esc_attr( $standings_panel_id ); ?>"
-								class="tttc-public-group<?php echo $standings_active ? ' is-active' : ''; ?>" role="tabpanel"
-								aria-labelledby="<?php echo esc_attr( $standings_tab_id ); ?>" <?php echo $standings_active ? '' : 'hidden'; ?>>
-								<?php foreach ( $pool_result['schedule'] as $group_index => $group_schedule ) :
-									$standing_group = $pool_competition['groups'][ $group_index ];
-									$this->render_placement_group( $tournament_id, $group_schedule, $scores, 'placement', $group_schedule['score_group'], $standing_group );
-									if ( $no_follow_up_rounds && ! empty( $standing_group['complete'] ) ) :
-										?>
-										<h5><?php echo esc_html( sprintf( __( '%s final places', 'table-tennis-tournament-for-clubs' ), $group_schedule['label'] ) ); ?></h5>
-										<ol class="tttc-public-places"><?php foreach ( array_slice( $standing_group['standings'], 0, 3 ) as $standing ) : ?><li><?php echo esc_html( $standing['player']->post_title ); ?></li><?php endforeach; ?></ol>
-									<?php endif; ?>
 								<?php endforeach; ?>
-								<?php if ( ! empty( $pool_competition['places'] ) ) : ?>
-									<h5><?php echo esc_html( sprintf( __( 'Pool %s final places', 'table-tennis-tournament-for-clubs' ), $pool ) ); ?></h5>
-									<ol class="tttc-public-places"><?php foreach ( array_slice( $pool_competition['places'], 0, 3 ) as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol>
-								<?php endif; ?>
-							</section>
-						</div>
-					</section>
-				<?php endforeach; ?>
+							<?php endforeach; ?>
+						</section>
+					<?php endforeach; ?>
+				</div>
 			<?php endif; ?>
 		</section>
 		<?php

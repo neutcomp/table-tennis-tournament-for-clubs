@@ -627,17 +627,11 @@ ul.tttc-breadcrumbs__list > li::after {
   padding-bottom: 2px;
 }
 
-.tttc-placement-pool-results + .tttc-placement-pool-results {
-  border-top: 1px solid #dcdcde;
-  margin-top: 28px;
-  padding-top: 20px;
-}
-
 .tttc-placement-pools-heading {
   margin-top: 32px;
 }
 
-.tttc-placement-pool-title {
+.tttc-placement-stage-panel h4 {
   margin-bottom: 12px;
 }
 
