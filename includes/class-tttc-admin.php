@@ -1577,7 +1577,7 @@ final class TTTC_Admin {
 								</tr>
 							</thead>
 							<tbody>
-								<?php $counters = TTTC_Public::instance()->round_counters( $group_schedule['players'], $round ); ?>
+								<?php $counters = TTTC_Public::instance()->round_counters( $group_schedule['players'], $round, $round_number ); ?>
 								<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); ?>
 								<tr>
 									<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>">

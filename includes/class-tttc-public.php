@@ -339,24 +339,42 @@ final class TTTC_Public {
 		return $schedule;
 	}
 
-	// Counters are players without a match this round, handed out in order; empty when everyone plays.
-	public function round_counters( $players, $round ) {
-		$playing = array();
-		foreach ( $round as $match ) {
-			$playing[ $match[0]->ID ] = true;
-			$playing[ $match[1]->ID ] = true;
-		}
-
-		$idle = array();
+	// Assign each match a counter who is not playing in that match, balancing assignments within the round.
+	public function round_counters( $players, $round, $round_number = 0 ) {
+		$assignment_counts = array();
+		$player_count      = count( $players );
 		foreach ( $players as $player ) {
-			if ( ! isset( $playing[ $player->ID ] ) ) {
-				$idle[] = $player->post_title;
-			}
+			$assignment_counts[ $player->ID ] = 0;
 		}
-
 		$counters = array();
-		foreach ( array_keys( $round ) as $position => $match_index ) {
-			$counters[ $match_index ] = isset( $idle[ $position ] ) ? $idle[ $position ] : '';
+		foreach ( $round as $match_index => $match ) {
+			$playing = array(
+				$match[0]->ID => true,
+				$match[1]->ID => true,
+			);
+			$eligible = array();
+			if ( $player_count > 0 ) {
+				$start = ( $round_number + count( $counters ) ) % $player_count;
+				for ( $offset = 0; $offset < $player_count; $offset++ ) {
+					$player = $players[ ( $start + $offset ) % $player_count ];
+					if ( ! isset( $playing[ $player->ID ] ) ) {
+						$eligible[] = $player;
+					}
+				}
+			}
+
+			$candidates = $eligible;
+			if ( empty( $candidates ) ) {
+				$candidates = array( $match[0], $match[1] );
+			}
+			$counter = $candidates[0];
+			foreach ( $candidates as $candidate ) {
+				if ( $assignment_counts[ $candidate->ID ] < $assignment_counts[ $counter->ID ] ) {
+					$counter = $candidate;
+				}
+			}
+			$counters[ $match_index ]        = $counter->post_title;
+			$assignment_counts[ $counter->ID ]++;
 		}
 
 		return $counters;
@@ -500,7 +518,7 @@ final class TTTC_Public {
 					<h3><?php echo esc_html( $round_label ); ?></h3>
 					<?php
 										$rows     = array();
-										$counters = $this->round_counters( $group_schedule['players'], $round );
+										$counters = $this->round_counters( $group_schedule['players'], $round, $round_number );
 										foreach ( $round as $match_index => $match ) {
 											$match_key = $this->match_key( $match[0]->ID, $match[1]->ID );
 											$rows[]    = array( $match[0]->post_title, $match[1]->post_title, isset( $scores[ $match_key ] ) ? $scores[ $match_key ] : array(), $counters[ $match_index ] );
