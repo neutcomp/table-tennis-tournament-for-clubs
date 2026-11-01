@@ -394,6 +394,36 @@
   margin-bottom: 16px;
 }
 
+.tttc-scores-overview {
+  margin: 20px 0;
+}
+
+.tttc-scores-overview > summary {
+  color: #2271b1;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tttc-scores-overview > summary:focus-visible {
+  outline: 2px solid #2271b1;
+  outline-offset: 3px;
+}
+
+.tttc-scores-overview__hide,
+.tttc-scores-overview[open] .tttc-scores-overview__show {
+  display: none;
+}
+
+.tttc-scores-overview[open] .tttc-scores-overview__hide {
+  display: inline;
+}
+
+.tttc-scores-overview__content {
+  margin-top: 12px;
+}
+
 .tttc-admin-group-tabs {
   display: flex;
   gap: 8px;
@@ -564,6 +594,7 @@
   .wrap > h1,
   .tttc-scores-help,
   .tttc-scores-toolbar,
+  .tttc-scores-overview,
   .tttc-random-scores-form,
   .tttc-remove-scores-form,
   .tttc-admin-group-tabs,

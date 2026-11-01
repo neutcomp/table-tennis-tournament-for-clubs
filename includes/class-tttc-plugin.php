@@ -30,6 +30,7 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_COMPETITION_FORMAT = '_tttc_competition_format';
 	const TOURNAMENT_META_PLACEMENT_POOLS = '_tttc_placement_pools';
 	const TOURNAMENT_META_FORMAT_RANGES = '_tttc_format_ranges';
+	const TOURNAMENT_META_GROUP_DISTRIBUTION = '_tttc_group_distribution';
 	const TOURNAMENT_META_NO_FOLLOW_UP = '_tttc_no_follow_up';
 	const TOURNAMENT_META_DESCRIPTION = '_tttc_description';
 	const TOURNAMENT_META_SHOW_PHONE = '_tttc_show_phone';
@@ -117,6 +118,16 @@ final class TTTC_Plugin {
 		$format = get_post_meta( $tournament_id, self::TOURNAMENT_META_COMPETITION_FORMAT, true );
 
 		return 'placement_pools' === $format ? $format : 'standard';
+	}
+
+	public static function sanitize_group_distribution( $distribution ) {
+		$distribution = sanitize_key( (string) $distribution );
+
+		return in_array( $distribution, array( 'snake', 'straight' ), true ) ? $distribution : 'snake';
+	}
+
+	public static function get_tournament_group_distribution( $tournament_id ) {
+		return self::sanitize_group_distribution( get_post_meta( $tournament_id, self::TOURNAMENT_META_GROUP_DISTRIBUTION, true ) );
 	}
 
 	public static function placement_group_sizes( $player_count ) {

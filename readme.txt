@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,7 @@ Player emails are stored for club administration and are not shown in public sho
 
 * Player records with name, rating, email, and active status.
 * Tournament records with name, description, date, time, separate best-of formats for preliminary rounds, intermediate rounds, and finals, player type, and status.
+* Per-tournament group distribution setting for snake-style seeding or consecutive top-to-bottom ranked groups.
 * Per-tournament option to show a required phone number field on the signup form.
 * Per-tournament option to show or hide the TTapp rating question on the signup form.
 * Optional per-tournament attendance question with email notifications for people who cannot attend.
@@ -46,7 +47,7 @@ Player emails are stored for club administration and are not shown in public sho
 2. Activate the plugin from Plugins in WordPress.
 3. Use the Table Tennis menu to create players and tournaments.
 4. Open Tournament Players, select a tournament, and save its participants.
-5. Set the tournament date and optional start time, choose the competition format and a Best of 1, 3, or 5 format for preliminary rounds, intermediate rounds, and finals, optionally select No follow-up rounds, then use Scores in the tournament overview to enter match scores.
+5. Set the tournament date and optional start time, choose the competition format and a Best of 1, 3, or 5 format for preliminary rounds, intermediate rounds, and finals, optionally select No follow-up rounds, then use Scores in the tournament overview to enter match scores. The Scores screen includes a collapsed group schedule that can be expanded before score entry.
 
 Use the Duplicate action in the tournament list to create an unpublished draft copy. It keeps the tournament date, setup, and assigned players, adds "copy" to the title, and clears payment details and scores.
 
@@ -54,7 +55,7 @@ Group matches use the preliminary format. Four-group semi-finals and the three-g
 
 After every group match has a completed score, the Scores screen reveals the applicable crossover matches unless No follow-up rounds is selected. In that mode, each group's standings are the tournament results and there is no overall winner. The option, like other match format settings, cannot be changed after scores have been entered. Later four-group matches remain unavailable until their semi-finals are complete. Public tournament pages show crossover results and final places when the deciding matches have been completed.
 
-The "Groups of 3 → A/B/C placement pools" competition format is available from 9 assigned active players. Preliminary groups are made up of 3 players, with as few 4-player groups as needed to fit the signup count. Players are seeded into the groups in rating/seed snake order. First, second, and third place advance to pools A, B, and C; fourth place in any 4-player preliminary group defaults to B. After every preliminary match is complete, an organizer can review and change the suggested pool assignments before saving the placements to unlock the pool round-robin score sheets. Each A/B/C pool is split into follow-up groups according to the tournament's configured player-count ranges, so a placement pool can have multiple groups when its player count calls for them. When No follow-up rounds is unchecked, each set of groups plays the applicable crossover rounds (including semi-finals and finals where the group count calls for them); when checked, group standings are final. This format does not declare one overall tournament champion.
+The "Groups of 3 → A/B/C placement pools" competition format is available from 9 assigned active players. Preliminary groups are made up of 3 players, with as few 4-player groups as needed to fit the signup count. Players are seeded into groups according to the tournament's group distribution setting, using either rating/seed snake order or consecutive top-to-bottom ranks. First, second, and third place advance to pools A, B, and C; fourth place in any 4-player preliminary group defaults to B. After every preliminary match is complete, an organizer can review and change the suggested pool assignments before saving the placements to unlock the pool round-robin score sheets. Each A/B/C pool is split into follow-up groups according to the tournament's configured player-count ranges, so a placement pool can have multiple groups when its player count calls for them. When No follow-up rounds is unchecked, each set of groups plays the applicable crossover rounds (including semi-finals and finals where the group count calls for them); when checked, group standings are final. This format does not declare one overall tournament champion.
 
 == Shortcodes ==
 
@@ -107,6 +108,9 @@ Player phone numbers are stored with player records and available to administrat
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 2.1.0 =
+* Add a per-tournament option for snake-style or consecutive top-to-bottom group distribution.
 
 = 2.0.0 =
 * Add a Groups of 3 → A/B/C placement-pool competition format with editable pool assignments and separate standings.

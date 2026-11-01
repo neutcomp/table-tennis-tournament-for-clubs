@@ -301,6 +301,12 @@ msgstr "Een Best of %1$d-wedstrijd moet een winnaar hebben met minstens %2$d gew
 msgid "Round %d"
 msgstr "Ronde %d"
 
+msgid "Show group schedule"
+msgstr "Groepsschema tonen"
+
+msgid "Hide group schedule"
+msgstr "Groepsschema verbergen"
+
 msgid "Games won"
 msgstr "Gewonnen games"
 
@@ -633,11 +639,23 @@ msgstr[1] "%d groepen"
 msgid "Note:"
 msgstr "Let op:"
 
-msgid "Match scores have already been recorded for this tournament. Match formats, group player brackets, and follow-up round settings cannot be changed."
-msgstr "Er zijn al wedstrijdscores voor dit toernooi vastgelegd. De wedstrijdformaten, spelersaantallen per groep en vervolgrondes kunnen niet worden gewijzigd."
+msgid "Match scores have already been recorded for this tournament. Match formats, group player brackets, group distribution, and follow-up round settings cannot be changed."
+msgstr "Er zijn al wedstrijdscores voor dit toernooi vastgelegd. De wedstrijdformaten, spelersaantallen per groep, groepsindeling en vervolgrondes kunnen niet worden gewijzigd."
 
 msgid "Group player brackets (format)"
 msgstr "Spelersaantallen per groep (formaat)"
+
+msgid "Group distribution"
+msgstr "Groepsindeling"
+
+msgid "Snake style"
+msgstr "Slangindeling"
+
+msgid "Top to bottom"
+msgstr "Van boven naar beneden"
+
+msgid "Snake style alternates ranked players between groups; top to bottom fills each group with consecutive ranks."
+msgstr "De slangindeling verdeelt spelers afwisselend over de groepen; van boven naar beneden plaatst opeenvolgende posities samen in elke groep."
 
 msgid "Customize player count brackets for this tournament or leave default."
 msgstr "Pas de spelersaantallen per groep voor dit toernooi aan of laat de standaardwaarden staan."

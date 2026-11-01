@@ -206,9 +206,10 @@ final class TTTC_Public {
 	}
 
 	public function tournament_schedule( $tournament_id ) {
-		$players     = $this->assigned_players( $tournament_id );
+		$players      = $this->assigned_players( $tournament_id );
+		$distribution = TTTC_Plugin::get_tournament_group_distribution( $tournament_id );
 		if ( 'placement_pools' === TTTC_Plugin::get_tournament_competition_format( $tournament_id ) ) {
-			$placement_schedule = $this->placement_schedule_from_players( $players );
+			$placement_schedule = $this->placement_schedule_from_players( $players, $distribution );
 			if ( ! empty( $placement_schedule ) ) {
 				return $placement_schedule;
 			}
@@ -216,7 +217,7 @@ final class TTTC_Public {
 		$group_count = $this->group_count( count( $players ), $tournament_id );
 		$schedule    = array();
 
-		foreach ( $this->build_groups( $players, $group_count ) as $group ) {
+		foreach ( $this->build_groups( $players, $group_count, $distribution ) as $group ) {
 			$schedule[] = array(
 				'players' => $group,
 				'rounds'  => $this->group_matches( $group ),
@@ -267,6 +268,7 @@ final class TTTC_Public {
 		if ( ! is_array( $pools ) ) {
 			return array();
 		}
+		$distribution = TTTC_Plugin::get_tournament_group_distribution( $tournament_id );
 
 		$players_by_id = array();
 		foreach ( $this->assigned_players( $tournament_id ) as $player ) {
@@ -284,7 +286,7 @@ final class TTTC_Public {
 			}
 			$group_count = $this->group_count( count( $players ), $tournament_id );
 			$group_count = max( 1, min( count( $players ), $group_count ) );
-			$groups      = 1 === $group_count ? array( $players ) : $this->build_groups( $players, $group_count );
+			$groups      = 1 === $group_count ? array( $players ) : $this->build_groups( $players, $group_count, $distribution );
 			foreach ( $groups as $group_index => $group_players ) {
 				$group_key = 1 === count( $groups ) ? $pool : $pool . '-' . ( $group_index + 1 );
 				$label     = sprintf( __( 'Pool %s', 'table-tennis-tournament-for-clubs' ), $pool );
@@ -305,29 +307,13 @@ final class TTTC_Public {
 		return $schedule;
 	}
 
-	private function placement_schedule_from_players( $players ) {
+	private function placement_schedule_from_players( $players, $distribution = 'snake' ) {
 		$sizes = TTTC_Plugin::placement_group_sizes( count( $players ) );
 		if ( empty( $sizes ) ) {
 			return array();
 		}
 
-		$groups = array_fill( 0, count( $sizes ), array() );
-		$direction = 1;
-		while ( count( $players ) ) {
-			$indexes = range( 0, count( $sizes ) - 1 );
-			if ( -1 === $direction ) {
-				$indexes = array_reverse( $indexes );
-			}
-			foreach ( $indexes as $group_index ) {
-				if ( empty( $players ) ) {
-					break;
-				}
-				if ( count( $groups[ $group_index ] ) < $sizes[ $group_index ] ) {
-					$groups[ $group_index ][] = array_shift( $players );
-				}
-			}
-			$direction *= -1;
-		}
+		$groups = $this->build_groups( $players, count( $sizes ), $distribution, $sizes );
 
 		$schedule = array();
 		foreach ( $groups as $index => $group ) {
@@ -2167,8 +2153,54 @@ final class TTTC_Public {
 		return 0;
 	}
 
-	private function build_groups( $players, $group_count ) {
+	private function build_groups( $players, $group_count, $distribution = 'snake', $group_sizes = null ) {
+		if ( $group_count < 1 ) {
+			return array();
+		}
+
+		$players = array_values( $players );
 		$groups = array_fill( 0, $group_count, array() );
+		if ( 'straight' === TTTC_Plugin::sanitize_group_distribution( $distribution ) ) {
+			if ( ! is_array( $group_sizes ) || count( $group_sizes ) !== $group_count ) {
+				$base_size = intdiv( count( $players ), $group_count );
+				$remainder = count( $players ) % $group_count;
+				$group_sizes = array_fill( 0, $group_count, $base_size );
+				for ( $index = 0; $index < $remainder; $index++ ) {
+					$group_sizes[ $index ]++;
+				}
+			}
+
+			$player_index = 0;
+			foreach ( $group_sizes as $group_index => $group_size ) {
+				for ( $index = 0; $index < $group_size && isset( $players[ $player_index ] ); $index++ ) {
+					$groups[ $group_index ][] = $players[ $player_index++ ];
+				}
+			}
+
+			return $groups;
+		}
+
+		if ( is_array( $group_sizes ) && count( $group_sizes ) === $group_count ) {
+			$direction = 1;
+			while ( count( $players ) ) {
+				$indexes = range( 0, $group_count - 1 );
+				if ( -1 === $direction ) {
+					$indexes = array_reverse( $indexes );
+				}
+				foreach ( $indexes as $group_index ) {
+					if ( empty( $players ) ) {
+						break;
+					}
+					if ( count( $groups[ $group_index ] ) < $group_sizes[ $group_index ] ) {
+						$groups[ $group_index ][] = array_shift( $players );
+					}
+				}
+				$direction *= -1;
+			}
+
+			return $groups;
+		}
+
 		$direction = 1;
 		$group_index = 0;
 		foreach ( $players as $player ) {
