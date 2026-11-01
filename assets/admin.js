@@ -97,7 +97,9 @@
 
 	$(document).ready(function () {
 		var $placementPoolForm = $(".tttc-placement-pools-form");
-		var $placementPoolLists = $placementPoolForm.find(".tttc-placement-pool-list");
+		var $placementPoolLists = $placementPoolForm.find(
+			".tttc-placement-pool-list",
+		);
 		const updatePlacementPools = () => {
 			$placementPoolLists.each(function () {
 				var $list = $(this);
@@ -260,9 +262,7 @@
 			if (previous !== undefined) {
 				$select.val(previous);
 			}
-			$feedback
-				.addClass("is-error")
-				.text(message || tttcStatusData.error);
+			$feedback.addClass("is-error").text(message || tttcStatusData.error);
 		};
 
 		$select.prop("disabled", true);
