@@ -665,40 +665,34 @@ final class TTTC_Public {
 	}
 
 	private function render_tv_match_table( $rows, $games ) {
-		$required     = (int) ceil( $games / 2 );
-		$has_counters = false;
-		foreach ( $rows as $row ) {
-			if ( ! empty( $row[3] ) ) {
-				$has_counters = true;
-			}
-		}
+		$required = (int) ceil( $games / 2 );
 		?>
-<table class="tttc-tv-matches">
-	<tbody>
-		<?php foreach ( $rows as $row ) : list( $first_name, $second_name, $match_scores ) = $row; $counter = isset( $row[3] ) ? $row[3] : ''; $games_won = $this->games_won( $match_scores, $games ); $played = array_sum( $games_won ) > 0; ?>
-		<tr class="<?php echo $played ? 'is-played' : 'is-pending'; ?>">
-			<td class="tttc-tv-name tttc-tv-name--home<?php echo $games_won[0] >= $required ? ' is-winner' : ''; ?>">
-				<?php echo esc_html( $first_name ); ?></td>
-			<td class="tttc-tv-result"><span
+<div class="tttc-tv-matches">
+	<?php foreach ( $rows as $row ) : list( $first_name, $second_name, $match_scores ) = $row; $counter = isset( $row[3] ) ? $row[3] : ''; $games_won = $this->games_won( $match_scores, $games ); $played = array_sum( $games_won ) > 0; ?>
+	<div class="tttc-tv-match <?php echo $played ? 'is-played' : 'is-pending'; ?>">
+		<div class="tttc-tv-match__players">
+			<span class="tttc-tv-name tttc-tv-name--home<?php echo $games_won[0] >= $required ? ' is-winner' : ''; ?>">
+				<?php echo esc_html( $first_name ); ?></span>
+			<span class="tttc-tv-result"><span
 					class="tttc-tv-result__pill"><?php echo $played ? esc_html( $games_won[0] . ' - ' . $games_won[1] ) : '&ndash;'; ?></span>
-			</td>
-			<td class="tttc-tv-name tttc-tv-name--away<?php echo $games_won[1] >= $required ? ' is-winner' : ''; ?>">
-				<?php echo esc_html( $second_name ); ?></td>
-			<td class="tttc-tv-games">
-				<?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
-				<?php if ( '' !== (string) $game_score[0] || '' !== (string) $game_score[1] ) : ?>
-				<span
-					class="tttc-tv-game<?php echo absint( $game_score[0] ) > absint( $game_score[1] ) ? ' is-home' : ' is-away'; ?>"><?php echo esc_html( $game_score[0] . '-' . $game_score[1] ); ?></span>
-				<?php endif; ?>
-				<?php endfor; ?>
-			</td>
-			<?php if ( $has_counters ) : ?>
-			<td class="tttc-tv-counter"><?php echo '' !== $counter ? esc_html( sprintf( __( 'Counter: %s', 'table-tennis-tournament-for-clubs' ), $counter ) ) : ''; ?></td>
+			</span>
+			<span class="tttc-tv-name tttc-tv-name--away<?php echo $games_won[1] >= $required ? ' is-winner' : ''; ?>">
+				<?php echo esc_html( $second_name ); ?></span>
+		</div>
+		<div class="tttc-tv-games">
+			<?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
+			<?php if ( '' !== (string) $game_score[0] || '' !== (string) $game_score[1] ) : ?>
+			<span
+				class="tttc-tv-game<?php echo absint( $game_score[0] ) > absint( $game_score[1] ) ? ' is-home' : ' is-away'; ?>"><?php echo esc_html( $game_score[0] . '-' . $game_score[1] ); ?></span>
 			<?php endif; ?>
-		</tr>
-		<?php endforeach; ?>
-	</tbody>
-</table>
+			<?php endfor; ?>
+		</div>
+		<?php if ( '' !== $counter ) : ?>
+		<div class="tttc-tv-counter"><?php echo esc_html( sprintf( __( 'Counter: %s', 'table-tennis-tournament-for-clubs' ), $counter ) ); ?></div>
+		<?php endif; ?>
+	</div>
+	<?php endforeach; ?>
+</div>
 <?php
 	}
 

@@ -261,52 +261,55 @@ body.tttc-tv {
 .tttc-tv-matches,
 .tttc-tv-standings {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 0.35em;
 }
 
-.tttc-tv-matches td {
+.tttc-tv-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+.tttc-tv-match {
   padding: 0.45em 0.5em;
+  border-radius: 10px;
   background: var(--tttc-tv-surface);
-  white-space: nowrap;
 }
 
-.tttc-tv-matches td:first-child {
-  border-radius: 10px 0 0 10px;
-}
-
-.tttc-tv-matches td:last-child {
-  border-radius: 0 10px 10px 0;
-}
-
-.tttc-tv-counter {
-  max-width: 10em;
-  overflow: hidden;
-  color: var(--tttc-tv-muted);
-  font-size: 0.78em;
-  text-overflow: ellipsis;
-}
-
-.tttc-tv-name {
-  max-width: 10em;
-  overflow: hidden;
-  font-weight: 600;
-  text-overflow: ellipsis;
-}
-
-.tttc-tv-name--home {
-  width: 34%;
-  text-align: right;
-}
-
-.tttc-tv-name--away {
-  width: 34%;
-  text-align: left;
+.tttc-tv-match__players {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4em;
 }
 
 .tttc-tv-matches .is-pending .tttc-tv-name {
   color: var(--tttc-tv-muted);
   font-weight: 500;
+}
+
+.tttc-tv-counter {
+  margin-top: 0.35em;
+  padding-top: 0.3em;
+  border-top: 1px solid var(--tttc-tv-border);
+  color: var(--tttc-tv-muted);
+  font-size: 0.78em;
+  text-align: center;
+}
+
+.tttc-tv-name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tttc-tv-name--home {
+  text-align: right;
+}
+
+.tttc-tv-name--away {
+  text-align: left;
 }
 
 .tttc-tv-name.is-winner {
@@ -315,7 +318,6 @@ body.tttc-tv {
 }
 
 .tttc-tv-result {
-  width: 1%;
   text-align: center;
 }
 
@@ -337,13 +339,14 @@ body.tttc-tv {
 }
 
 .tttc-tv-games {
-  width: 1%;
-  text-align: right;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25em;
 }
 
 .tttc-tv-game {
   display: inline-block;
-  margin-left: 0.25em;
   padding: 0.05em 0.4em;
   border-radius: 6px;
   background: var(--tttc-tv-surface-strong);
