@@ -260,6 +260,17 @@
   margin-top: 28px;
 }
 
+.tttc-scores-admin-actions {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.tttc-scores-admin-actions form {
+  margin: 0;
+}
+
 .tttc-seed-list {
   max-width: 480px;
   margin: 12px 0 20px;

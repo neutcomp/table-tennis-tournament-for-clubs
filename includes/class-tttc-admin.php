@@ -1759,24 +1759,27 @@ final class TTTC_Admin {
 			return;
 		}
 		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-random-scores-form" data-confirm="<?php echo esc_attr__( 'This will replace existing scores with random results. Continue?', 'table-tennis-tournament-for-clubs' ); ?>">
-			<input type="hidden" name="action" value="tttc_random_scores">
-			<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
-			<input type="hidden" name="tttc_random_group" value="<?php echo esc_attr( $group ); ?>">
-			<input type="hidden" name="tttc_random_round" value="<?php echo esc_attr( null === $round ? '' : $round ); ?>">
-			<input type="hidden" name="tttc_random_phase" value="<?php echo esc_attr( $phase ); ?>">
-			<?php wp_nonce_field( 'tttc_random_scores_' . $tournament_id, 'tttc_random_scores_nonce' ); ?>
-			<p><button type="submit" class="button"><?php esc_html_e( 'Fill all scores with random results', 'table-tennis-tournament-for-clubs' ); ?></button></p>
-		</form>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-remove-scores-form" data-confirm="<?php echo esc_attr__( 'This will permanently remove all scores and reset confirmed placement-pool assignments so preliminary scores can be entered again. Continue?', 'table-tennis-tournament-for-clubs' ); ?>">
-			<input type="hidden" name="action" value="tttc_remove_scores">
-			<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
-			<input type="hidden" name="tttc_random_group" value="<?php echo esc_attr( $group ); ?>">
-			<input type="hidden" name="tttc_random_round" value="<?php echo esc_attr( null === $round ? '' : $round ); ?>">
-			<input type="hidden" name="tttc_random_phase" value="<?php echo esc_attr( $phase ); ?>">
-			<?php wp_nonce_field( 'tttc_remove_scores_' . $tournament_id, 'tttc_remove_scores_nonce' ); ?>
-			<p><button type="submit" class="button"><?php esc_html_e( 'Remove all scores', 'table-tennis-tournament-for-clubs' ); ?></button></p>
-		</form>
+		<div class="tttc-scores-admin-actions">
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-random-scores-form" data-confirm="<?php echo esc_attr__( 'This will replace existing scores with random results. Continue?', 'table-tennis-tournament-for-clubs' ); ?>">
+				<input type="hidden" name="action" value="tttc_random_scores">
+				<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
+				<input type="hidden" name="tttc_random_group" value="<?php echo esc_attr( $group ); ?>">
+				<input type="hidden" name="tttc_random_round" value="<?php echo esc_attr( null === $round ? '' : $round ); ?>">
+				<input type="hidden" name="tttc_random_phase" value="<?php echo esc_attr( $phase ); ?>">
+				<?php wp_nonce_field( 'tttc_random_scores_' . $tournament_id, 'tttc_random_scores_nonce' ); ?>
+				<button type="submit" class="button-link"><?php esc_html_e( 'Fill all scores', 'table-tennis-tournament-for-clubs' ); ?></button>
+			</form>
+			<span class="tttc-scores-admin-actions__separator" aria-hidden="true">|</span>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="tttc-remove-scores-form" data-confirm="<?php echo esc_attr__( 'This will permanently remove all scores and reset confirmed placement-pool assignments so preliminary scores can be entered again. Continue?', 'table-tennis-tournament-for-clubs' ); ?>">
+				<input type="hidden" name="action" value="tttc_remove_scores">
+				<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
+				<input type="hidden" name="tttc_random_group" value="<?php echo esc_attr( $group ); ?>">
+				<input type="hidden" name="tttc_random_round" value="<?php echo esc_attr( null === $round ? '' : $round ); ?>">
+				<input type="hidden" name="tttc_random_phase" value="<?php echo esc_attr( $phase ); ?>">
+				<?php wp_nonce_field( 'tttc_remove_scores_' . $tournament_id, 'tttc_remove_scores_nonce' ); ?>
+				<button type="submit" class="button-link"><?php esc_html_e( 'Remove all scores', 'table-tennis-tournament-for-clubs' ); ?></button>
+			</form>
+		</div>
 		<?php
 	}
 
