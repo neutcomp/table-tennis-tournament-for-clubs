@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class TTTC_Admin {
 	private $score_error = '';
 	private $score_form_scores = null;
+	private $group_size_error = false;
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
@@ -594,7 +595,8 @@ final class TTTC_Admin {
 		$intermediate_games = in_array( $intermediate_games, array( '1', '3', '5' ), true ) ? $intermediate_games : $games;
 		$finals_games = in_array( $finals_games, array( '1', '3', '5' ), true ) ? $finals_games : $games;
 
-		$format_ranges = TTTC_Plugin::get_format_ranges( $post->ID );
+		$group_sizes = TTTC_Plugin::get_tournament_group_sizes( $post->ID );
+		$group_sizes = is_array( $group_sizes ) ? $group_sizes : array();
 		$group_distribution = TTTC_Plugin::get_tournament_group_distribution( $post->ID );
 		$has_scores    = TTTC_Plugin::has_scores( $post->ID );
 		$no_follow_up_rounds = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP, true );
@@ -688,7 +690,10 @@ final class TTTC_Admin {
 </div>
 
 <div class="tttc-tournament-format-section" style="margin-top: 16px; border-top: 1px solid #dcdcde; padding-top: 12px;">
-	<p><strong><?php esc_html_e( 'Group player brackets (format)', 'table-tennis-tournament-for-clubs' ); ?></strong></p>
+	<?php if ( 'placement_pools' === $competition_format && count( $this->assigned_player_ids( $post->ID ) ) >= 9 ) : ?>
+	<p class="description"><?php esc_html_e( 'Placement-pool tournaments use automatic group sizes.', 'table-tennis-tournament-for-clubs' ); ?></p>
+	<?php else : ?>
+	<p><strong><?php esc_html_e( 'Exact group sizes', 'table-tennis-tournament-for-clubs' ); ?></strong></p>
 	<p><label><input type="checkbox" name="tttc_no_follow_up" value="1" <?php checked( '1', $no_follow_up_rounds ); ?> <?php disabled( $has_scores ); ?>>
 			<?php esc_html_e( 'No follow-up rounds', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 	<p class="description"><?php esc_html_e( 'When enabled, group standings are final and there is no overall winner. When disabled, the configured follow-up rounds are played, including after A/B/C placement pools are split into groups.', 'table-tennis-tournament-for-clubs' ); ?></p>
@@ -699,35 +704,31 @@ final class TTTC_Admin {
 		</select></p>
 	<p class="description"><?php esc_html_e( 'Snake style alternates ranked players between groups; top to bottom fills each group with consecutive ranks.', 'table-tennis-tournament-for-clubs' ); ?></p>
 	<p class="description">
-		<?php esc_html_e( 'Customize player count brackets for this tournament or leave default.', 'table-tennis-tournament-for-clubs' ); ?>
+		<?php esc_html_e( 'Enter group sizes from top to bottom and leave unused rows blank. Leave all rows blank to use automatic group allocation. Otherwise, the sizes must add up to the players assigned to this tournament.', 'table-tennis-tournament-for-clubs' ); ?>
 	</p>
 	<table class="widefat striped tttc-format-table" style="max-width: 500px; margin-top: 8px;">
 		<thead>
 			<tr>
 				<th><?php esc_html_e( 'Groups', 'table-tennis-tournament-for-clubs' ); ?></th>
-				<th><?php esc_html_e( 'Min', 'table-tennis-tournament-for-clubs' ); ?></th>
-				<th><?php esc_html_e( 'Max', 'table-tennis-tournament-for-clubs' ); ?></th>
+				<th><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
 			<?php for ( $g = 1; $g <= 4; $g++ ) :
-						$min = isset( $format_ranges[ $g ]['min'] ) ? $format_ranges[ $g ]['min'] : 2;
-						$max = isset( $format_ranges[ $g ]['max'] ) ? $format_ranges[ $g ]['max'] : 2;
+						$size = isset( $group_sizes[ $g - 1 ] ) ? $group_sizes[ $g - 1 ] : '';
 						// translators: %d is the number of groups.
-						$group_count_label = sprintf( _n( '%d Group', '%d Groups', $g, 'table-tennis-tournament-for-clubs' ), $g );
+						$group_count_label = sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $g );
 						?>
 			<tr>
 				<td><strong><?php echo esc_html( $group_count_label ); ?></strong></td>
 				<td><input type="number" class="small-text" min="2" step="1"
-						name="tttc_format_ranges[<?php echo esc_attr( $g ); ?>][min]" value="<?php echo esc_attr( $min ); ?>"
-						required <?php disabled( $has_scores ); ?>></td>
-				<td><input type="number" class="small-text" min="2" step="1"
-						name="tttc_format_ranges[<?php echo esc_attr( $g ); ?>][max]" value="<?php echo esc_attr( $max ); ?>"
-						required <?php disabled( $has_scores ); ?>></td>
+						name="tttc_group_sizes[]" value="<?php echo esc_attr( $size ); ?>"
+						<?php disabled( $has_scores || 'active' === $status ); ?>></td>
 			</tr>
 			<?php endfor; ?>
 		</tbody>
 	</table>
+	<?php endif; ?>
 </div>
 <?php
 	}
@@ -832,6 +833,8 @@ final class TTTC_Admin {
 		$type   = isset( $_POST['tttc_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_type'] ) ) : 'both';
 		$competition_format = isset( $_POST['tttc_competition_format'] ) ? sanitize_key( wp_unslash( $_POST['tttc_competition_format'] ) ) : 'standard';
 		$status = isset( $_POST['tttc_status'] ) ? sanitize_key( $_POST['tttc_status'] ) : 'draft';
+		$previous_status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+		$previous_status = $previous_status ? $previous_status : 'draft';
 		if ( ! in_array( $type, array( 'senior', 'youth', 'both' ), true ) ) {
 			$type = 'both';
 		}
@@ -844,7 +847,6 @@ final class TTTC_Admin {
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DATE, $date );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIME, $time );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TYPE, $type );
-		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
 		$hide_from_overview = isset( $_POST['tttc_hide_from_overview'] ) ? '1' : '0';
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_HIDE_FROM_OVERVIEW, $hide_from_overview );
 		$description = isset( $_POST['tttc_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tttc_description'] ) ) : '';
@@ -875,6 +877,7 @@ final class TTTC_Admin {
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_URL, $tikkie_url );
 
 		$has_scores = TTTC_Plugin::has_scores( $post_id );
+		$this->group_size_error = false;
 		if ( ! $has_scores ) {
 			update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_COMPETITION_FORMAT, $competition_format );
 			$group_distribution = isset( $_POST['tttc_group_distribution'] ) ? TTTC_Plugin::sanitize_group_distribution( wp_unslash( $_POST['tttc_group_distribution'] ) ) : 'snake';
@@ -901,7 +904,31 @@ final class TTTC_Admin {
 				$ranges = TTTC_Plugin::sanitize_format_ranges( wp_unslash( $_POST['tttc_format_ranges'] ) );
 				update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_FORMAT_RANGES, $ranges );
 			}
+
+			$assigned_count = count( $this->assigned_player_ids( $post_id ) );
+			$uses_custom_group_sizes = 'placement_pools' !== $competition_format || $assigned_count < 9;
+			if ( isset( $_POST['tttc_group_sizes'] ) && 'active' !== $previous_status && $uses_custom_group_sizes ) {
+				$group_sizes = TTTC_Plugin::sanitize_group_sizes( wp_unslash( $_POST['tttc_group_sizes'] ) );
+				if ( false === $group_sizes || ( ! empty( $group_sizes ) && array_sum( $group_sizes ) !== $assigned_count ) ) {
+					$this->group_size_error = true;
+				} elseif ( empty( $group_sizes ) ) {
+					delete_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GROUP_SIZES );
+				} else {
+					update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_GROUP_SIZES, $group_sizes );
+				}
+			}
 		}
+
+		$stored_group_sizes = TTTC_Plugin::get_tournament_group_sizes( $post_id );
+		$assigned_count = count( $this->assigned_player_ids( $post_id ) );
+		$uses_custom_group_sizes = 'placement_pools' !== TTTC_Plugin::get_tournament_competition_format( $post_id ) || $assigned_count < 9;
+		if ( $uses_custom_group_sizes && ( false === $stored_group_sizes || ( ! empty( $stored_group_sizes ) && array_sum( $stored_group_sizes ) !== $assigned_count ) ) ) {
+			$this->group_size_error = true;
+		}
+		if ( 'active' === $status && 'active' !== $previous_status && $this->group_size_error ) {
+			$status = $previous_status;
+		}
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
 	}
 
 	public function redirect_after_post_save( $location, $post_id ) {
@@ -910,7 +937,12 @@ final class TTTC_Admin {
 			return $location;
 		}
 
-		return admin_url( 'edit.php?post_type=' . $post_type );
+		$location = admin_url( 'edit.php?post_type=' . $post_type );
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE === $post_type && $this->group_size_error ) {
+			$location = add_query_arg( 'tttc_group_size_error', '1', $location );
+		}
+
+		return $location;
 	}
 
 	private function can_save( $post_id ) {
@@ -1075,6 +1107,7 @@ final class TTTC_Admin {
 			TTTC_Plugin::TOURNAMENT_META_TYPE,
 			TTTC_Plugin::TOURNAMENT_META_COMPETITION_FORMAT,
 			TTTC_Plugin::TOURNAMENT_META_FORMAT_RANGES,
+			TTTC_Plugin::TOURNAMENT_META_GROUP_SIZES,
 			TTTC_Plugin::TOURNAMENT_META_GROUP_DISTRIBUTION,
 			TTTC_Plugin::TOURNAMENT_META_NO_FOLLOW_UP,
 			TTTC_Plugin::TOURNAMENT_META_DESCRIPTION,
@@ -1257,6 +1290,18 @@ final class TTTC_Admin {
 		$status = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
 		if ( ! array_key_exists( $status, TTTC_Plugin::statuses() ) ) {
 			wp_send_json_error( null, 400 );
+		}
+		$current_status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+		$assigned_count = count( $this->assigned_player_ids( $post_id ) );
+		$uses_custom_group_sizes = 'placement_pools' !== TTTC_Plugin::get_tournament_competition_format( $post_id ) || $assigned_count < 9;
+		if ( 'active' === $status && 'active' !== $current_status && $uses_custom_group_sizes ) {
+			$group_sizes = TTTC_Plugin::get_tournament_group_sizes( $post_id );
+			if ( false === $group_sizes || ( ! empty( $group_sizes ) && array_sum( $group_sizes ) !== $assigned_count ) ) {
+				wp_send_json_error(
+					array( 'message' => __( 'Group sizes must be at least 2 players each and add up to the number of players assigned to this tournament.', 'table-tennis-tournament-for-clubs' ) ),
+					400
+				);
+			}
 		}
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, $status );
 
@@ -3149,7 +3194,14 @@ final class TTTC_Admin {
 
 	public function merge_admin_notices() {
 		$screen = get_current_screen();
-		if ( ! $screen || 'edit-' . TTTC_Plugin::PLAYER_POST_TYPE !== $screen->id ) {
+		if ( ! $screen ) {
+			return;
+		}
+		if ( 'edit-' . TTTC_Plugin::TOURNAMENT_POST_TYPE === $screen->id && isset( $_GET['tttc_group_size_error'] ) ) {
+			echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Group sizes were not saved because each group needs at least 2 players and the sizes must total the assigned players. Review the sizes before activating the tournament.', 'table-tennis-tournament-for-clubs' ) . '</p></div>';
+			return;
+		}
+		if ( 'edit-' . TTTC_Plugin::PLAYER_POST_TYPE !== $screen->id ) {
 			return;
 		}
 

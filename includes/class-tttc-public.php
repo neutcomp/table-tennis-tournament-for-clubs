@@ -214,10 +214,22 @@ final class TTTC_Public {
 				return $placement_schedule;
 			}
 		}
-		$group_count = $this->group_count( count( $players ), $tournament_id );
+		$group_sizes = TTTC_Plugin::get_tournament_group_sizes( $tournament_id );
+		if ( false === $group_sizes ) {
+			return array();
+		}
+		if ( ! empty( $group_sizes ) ) {
+			if ( array_sum( $group_sizes ) !== count( $players ) ) {
+				return array();
+			}
+			$group_count = count( $group_sizes );
+		} else {
+			$group_count = $this->group_count( count( $players ), $tournament_id );
+			$group_sizes = null;
+		}
 		$schedule    = array();
 
-		foreach ( $this->build_groups( $players, $group_count, $distribution ) as $group ) {
+		foreach ( $this->build_groups( $players, $group_count, $distribution, $group_sizes ) as $group ) {
 			$schedule[] = array(
 				'players' => $group,
 				'rounds'  => $this->group_matches( $group ),

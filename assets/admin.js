@@ -256,11 +256,13 @@
 		var $row = $select.closest("tr");
 		var $feedback = $select.siblings(".tttc-status-feedback");
 		var previous = $select.data("previous");
-		var onError = function () {
+		const onError = (message) => {
 			if (previous !== undefined) {
 				$select.val(previous);
 			}
-			$feedback.addClass("is-error").text(tttcStatusData.error);
+			$feedback
+				.addClass("is-error")
+				.text(message || tttcStatusData.error);
 		};
 
 		$select.prop("disabled", true);
@@ -272,21 +274,23 @@
 			nonce: $select.data("nonce"),
 			status: $select.val(),
 		})
-			.done(function (response) {
-				if (!response || !response.success) {
-					onError();
+			.done((response) => {
+				if (!response?.success) {
+					onError(response?.data?.message);
 					return;
 				}
 				$row.find("td.column-tttc_players").html(response.data.tttc_players);
 				$row.find("td.column-tttc_scores").html(response.data.tttc_scores);
 				$select.data("previous", $select.val());
 				$feedback.text(tttcStatusData.saved);
-				setTimeout(function () {
+				setTimeout(() => {
 					$feedback.text("");
 				}, 2000);
 			})
-			.fail(onError)
-			.always(function () {
+			.fail((xhr) => {
+				onError(xhr.responseJSON?.data?.message);
+			})
+			.always(() => {
 				$select.prop("disabled", false);
 			});
 	});

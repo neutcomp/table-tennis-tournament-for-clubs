@@ -30,6 +30,7 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_COMPETITION_FORMAT = '_tttc_competition_format';
 	const TOURNAMENT_META_PLACEMENT_POOLS = '_tttc_placement_pools';
 	const TOURNAMENT_META_FORMAT_RANGES = '_tttc_format_ranges';
+	const TOURNAMENT_META_GROUP_SIZES = '_tttc_group_sizes';
 	const TOURNAMENT_META_GROUP_DISTRIBUTION = '_tttc_group_distribution';
 	const TOURNAMENT_META_NO_FOLLOW_UP = '_tttc_no_follow_up';
 	const TOURNAMENT_META_DESCRIPTION = '_tttc_description';
@@ -413,6 +414,40 @@ final class TTTC_Plugin {
 		}
 
 		return self::default_format_ranges();
+	}
+
+	public static function sanitize_group_sizes( $input ) {
+		if ( ! is_array( $input ) || count( $input ) > 4 ) {
+			return false;
+		}
+
+		$sizes = array();
+		$empty_seen = false;
+		foreach ( $input as $value ) {
+			if ( ! is_scalar( $value ) ) {
+				return false;
+			}
+			$value = trim( (string) $value );
+			if ( '' === $value ) {
+				$empty_seen = true;
+				continue;
+			}
+			if ( $empty_seen || ! ctype_digit( $value ) || (int) $value < 2 ) {
+				return false;
+			}
+			$sizes[] = (int) $value;
+		}
+
+		return $sizes;
+	}
+
+	public static function get_tournament_group_sizes( $tournament_id ) {
+		$stored = get_post_meta( $tournament_id, self::TOURNAMENT_META_GROUP_SIZES, true );
+		if ( '' === $stored || array() === $stored ) {
+			return array();
+		}
+
+		return self::sanitize_group_sizes( $stored );
 	}
 
 	public static function has_scores( $tournament_id ) {

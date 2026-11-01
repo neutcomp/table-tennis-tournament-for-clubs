@@ -642,8 +642,11 @@ msgstr "Let op:"
 msgid "Match scores have already been recorded for this tournament. Match formats, group player brackets, group distribution, and follow-up round settings cannot be changed."
 msgstr "Er zijn al wedstrijdscores voor dit toernooi vastgelegd. De wedstrijdformaten, spelersaantallen per groep, groepsindeling en vervolgrondes kunnen niet worden gewijzigd."
 
-msgid "Group player brackets (format)"
-msgstr "Spelersaantallen per groep (formaat)"
+msgid "Exact group sizes"
+msgstr "Exacte groepsgroottes"
+
+msgid "Placement-pool tournaments use automatic group sizes."
+msgstr "Toernooien met plaatsingsgroepen gebruiken automatische groepsgroottes."
 
 msgid "Group distribution"
 msgstr "Groepsindeling"
@@ -657,8 +660,14 @@ msgstr "Van boven naar beneden"
 msgid "Snake style alternates ranked players between groups; top to bottom fills each group with consecutive ranks."
 msgstr "De slangindeling verdeelt spelers afwisselend over de groepen; van boven naar beneden plaatst opeenvolgende posities samen in elke groep."
 
-msgid "Customize player count brackets for this tournament or leave default."
-msgstr "Pas de spelersaantallen per groep voor dit toernooi aan of laat de standaardwaarden staan."
+msgid "Enter group sizes from top to bottom and leave unused rows blank. Leave all rows blank to use automatic group allocation. Otherwise, the sizes must add up to the players assigned to this tournament."
+msgstr "Vul de groepsgroottes van boven naar beneden in en laat ongebruikte rijen leeg. Laat alle rijen leeg voor automatische groepsindeling. Anders moeten de aantallen overeenkomen met het aantal toegewezen spelers aan dit toernooi."
+
+msgid "Group sizes must be at least 2 players each and add up to the number of players assigned to this tournament."
+msgstr "Elke groep moet minstens 2 spelers bevatten en de groepsgroottes moeten overeenkomen met het aantal toegewezen spelers aan dit toernooi."
+
+msgid "Group sizes were not saved because each group needs at least 2 players and the sizes must total the assigned players. Review the sizes before activating the tournament."
+msgstr "De groepsgroottes zijn niet opgeslagen. Elke groep moet minstens 2 spelers bevatten en de aantallen moeten overeenkomen met het aantal toegewezen spelers. Controleer de aantallen voordat je het toernooi activeert."
 
 msgid "Min"
 msgstr "Min."
