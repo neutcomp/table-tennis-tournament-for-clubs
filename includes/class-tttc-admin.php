@@ -26,6 +26,8 @@ final class TTTC_Admin {
 		add_filter( 'manage_edit-' . TTTC_Plugin::PLAYER_POST_TYPE . '_sortable_columns', array( $this, 'player_sortable_columns' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'player_filters' ) );
 		add_action( 'pre_get_posts', array( $this, 'filter_players' ) );
+		add_action( 'pre_get_posts', array( $this, 'filter_tournaments_by_event_date' ) );
+		add_filter( 'months_dropdown_results', array( $this, 'tournament_months_dropdown_results' ), 10, 2 );
 		add_filter( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_columns', array( $this, 'tournament_columns' ) );
 		add_action( 'manage_' . TTTC_Plugin::TOURNAMENT_POST_TYPE . '_posts_custom_column', array( $this, 'tournament_column' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'tournament_row_actions' ), 10, 2 );
@@ -1050,6 +1052,70 @@ final class TTTC_Admin {
 			$query->set( 'meta_key', $sortable_meta_keys[ $orderby ]['key'] );
 			$query->set( 'orderby', $sortable_meta_keys[ $orderby ]['orderby'] );
 		}
+	}
+
+	public function filter_tournaments_by_event_date( $query ) {
+		if ( ! is_admin() || ! $query->is_main_query() || TTTC_Plugin::TOURNAMENT_POST_TYPE !== $query->get( 'post_type' ) ) {
+			return;
+		}
+
+		$month = $query->get( 'm' );
+		if ( ! preg_match( '/^([0-9]{4})(0[1-9]|1[0-2])$/', (string) $month, $matches ) ) {
+			return;
+		}
+
+		$first_day = $matches[1] . '-' . $matches[2] . '-01';
+		$date      = DateTime::createFromFormat( '!Y-m-d', $first_day );
+		if ( ! $date ) {
+			return;
+		}
+
+		$last_day = $date->modify( 'last day of this month' )->format( 'Y-m-d' );
+		$date_clause = array(
+			'key'     => TTTC_Plugin::TOURNAMENT_META_DATE,
+			'value'   => array( $first_day, $last_day ),
+			'compare' => 'BETWEEN',
+			'type'    => 'DATE',
+		);
+
+		$meta_query = (array) $query->get( 'meta_query' );
+		$query->set(
+			'meta_query',
+			empty( $meta_query )
+				? array( $date_clause )
+				: array(
+					'relation' => 'AND',
+					$meta_query,
+					$date_clause,
+				)
+		);
+
+		$query->set( 'm', 0 );
+		$query->set( 'date_query', array() );
+	}
+
+	public function tournament_months_dropdown_results( $months, $post_type ) {
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== $post_type ) {
+			return $months;
+		}
+
+		global $wpdb;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT DISTINCT LEFT( event_date.meta_value, 4 ) AS year, SUBSTRING( event_date.meta_value, 6, 2 ) AS month
+				FROM {$wpdb->postmeta} AS event_date
+				INNER JOIN {$wpdb->posts} AS tournament ON tournament.ID = event_date.post_id
+				WHERE tournament.post_type = %s
+				AND tournament.post_status != 'auto-draft'
+				AND event_date.meta_key = %s
+				AND event_date.meta_value REGEXP %s
+				ORDER BY year DESC, month DESC",
+				$post_type,
+				TTTC_Plugin::TOURNAMENT_META_DATE,
+				'^[0-9]{4}-(0[1-9]|1[0-2])-[0-9]{2}$'
+			)
+		);
 	}
 
 	public function tournament_row_actions( $actions, $post ) {
