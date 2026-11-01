@@ -1614,6 +1614,10 @@ final class TTTC_Admin {
 			<?php endforeach; ?>
 		</div>
 		<?php foreach ( $schedule as $group_index => $group_schedule ) :
+						$player_numbers = array();
+						foreach ( $group_schedule['players'] as $player_index => $player ) {
+							$player_numbers[ (int) $player->ID ] = $player_index + 1;
+						}
 						// translators: %d is the group number.
 						$group_label = sprintf( __( 'Group %d', 'table-tennis-tournament-for-clubs' ), $group_index + 1 );
 						?>
@@ -1649,9 +1653,9 @@ final class TTTC_Admin {
 									<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>">
 										<?php echo esc_html( $match_number + 1 ); ?></td>
 									<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>">
-										<?php echo esc_html( $match[0]->post_title ); ?></td>
+										<?php echo esc_html( $player_numbers[ (int) $match[0]->ID ] . '. ' . $match[0]->post_title ); ?></td>
 									<td data-label="<?php esc_attr_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?>">
-										<?php echo esc_html( $match[1]->post_title ); ?></td>
+										<?php echo esc_html( $player_numbers[ (int) $match[1]->ID ] . '. ' . $match[1]->post_title ); ?></td>
 									<?php for ( $game = 0; $game < $games; $game++ ) :
 										// translators: %d is the game number.
 										$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game + 1 );
@@ -2445,7 +2449,12 @@ final class TTTC_Admin {
 			<?php wp_nonce_field( 'tttc_save_scores', 'tttc_scores_nonce' ); ?>
 		<?php endif; ?>
 			<div class="tttc-scores-toolbar"><button type="button" class="button tttc-print-button" onclick="window.print(); return false;"><?php esc_html_e( 'Print scores', 'table-tennis-tournament-for-clubs' ); ?></button></div>
-			<?php foreach ( $visible_schedule as $group_key => $group_schedule ) : ?>
+			<?php foreach ( $visible_schedule as $group_key => $group_schedule ) :
+				$player_numbers = array();
+				foreach ( $group_schedule['players'] as $player_index => $player ) {
+					$player_numbers[ (int) $player->ID ] = $player_index + 1;
+				}
+				?>
 				<section class="tttc-admin-placement-group">
 					<h2><?php echo esc_html( $group_schedule['label'] ); ?> <span class="description">(<?php echo esc_html( count( $group_schedule['players'] ) ); ?> <?php esc_html_e( 'players', 'table-tennis-tournament-for-clubs' ); ?>)</span></h2>
 					<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) : ?>
@@ -2457,7 +2466,7 @@ final class TTTC_Admin {
 									$score_key = TTTC_Plugin::placement_score_key( $phase, 'placement' === $phase ? $group_schedule['score_group'] : '', $match[0]->ID, $match[1]->ID );
 									$match_scores = isset( $all_scores[ $score_key ] ) ? $all_scores[ $score_key ] : array();
 									?>
-									<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $match[0]->post_title ); ?></td><td><?php echo esc_html( $match[1]->post_title ); ?></td>
+									<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $match[0]->ID ] . '. ' . $match[0]->post_title ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $match[1]->ID ] . '. ' . $match[1]->post_title ); ?></td>
 										<?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
 											<td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( $game_score[0] ); ?>"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( $game_score[1] ); ?>"></span></td>
 										<?php endfor; ?>
