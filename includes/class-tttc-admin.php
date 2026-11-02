@@ -1648,24 +1648,32 @@ final class TTTC_Admin {
 							</thead>
 							<tbody>
 								<?php $counters = TTTC_Public::instance()->round_counters( $group_schedule['players'], $round, $round_number ); ?>
-								<?php foreach ( $round as $match_number => $match ) : $match_key = $this->match_key( $match[0]->ID, $match[1]->ID ); ?>
+								<?php foreach ( $round as $match_number => $match ) :
+									$match_key = $this->match_key( $match[0]->ID, $match[1]->ID );
+									$display_match = $match;
+									if ( $player_numbers[ (int) $display_match[0]->ID ] > $player_numbers[ (int) $display_match[1]->ID ] ) {
+										$display_match = array( $match[1], $match[0] );
+									}
+									$first_score_side = (int) $display_match[0]->ID === (int) $match[0]->ID ? 0 : 1;
+									$second_score_side = 1 - $first_score_side;
+									?>
 								<tr>
 									<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>">
 										<?php echo esc_html( $match_number + 1 ); ?></td>
 									<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>">
-										<?php echo esc_html( $player_numbers[ (int) $match[0]->ID ] . '. ' . $match[0]->post_title ); ?></td>
+										<?php echo esc_html( $player_numbers[ (int) $display_match[0]->ID ] . '. ' . $display_match[0]->post_title ); ?></td>
 									<td data-label="<?php esc_attr_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?>">
-										<?php echo esc_html( $player_numbers[ (int) $match[1]->ID ] . '. ' . $match[1]->post_title ); ?></td>
+										<?php echo esc_html( $player_numbers[ (int) $display_match[1]->ID ] . '. ' . $display_match[1]->post_title ); ?></td>
 									<?php for ( $game = 0; $game < $games; $game++ ) :
 										// translators: %d is the game number.
 										$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game + 1 );
 										?><td data-label="<?php echo esc_attr( $game_label ); ?>"><span class="tttc-score-pair"><input
 												class="small-text" type="number" min="0" inputmode="numeric"
-												name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][0]"
-												value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][0] ) ? $saved_scores[ $match_key ][ $game ][0] : '' ); ?>"><input
+												name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][<?php echo esc_attr( $first_score_side ); ?>]"
+												value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][ $first_score_side ] ) ? $saved_scores[ $match_key ][ $game ][ $first_score_side ] : '' ); ?>"><input
 												class="small-text" type="number" min="0" inputmode="numeric"
-												name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][1]"
-												value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][1] ) ? $saved_scores[ $match_key ][ $game ][1] : '' ); ?>"></span>
+												name="scores[<?php echo esc_attr( $match_key ); ?>][<?php echo esc_attr( $game ); ?>][<?php echo esc_attr( $second_score_side ); ?>]"
+												value="<?php echo esc_attr( isset( $saved_scores[ $match_key ][ $game ][ $second_score_side ] ) ? $saved_scores[ $match_key ][ $game ][ $second_score_side ] : '' ); ?>"></span>
 									</td><?php endfor; ?>
 									<td class="tttc-print-only"><?php echo esc_html( $counters[ $match_number ] ); ?></td>
 								</tr>
@@ -2465,10 +2473,16 @@ final class TTTC_Admin {
 								<?php foreach ( $round as $match_index => $match ) :
 									$score_key = TTTC_Plugin::placement_score_key( $phase, 'placement' === $phase ? $group_schedule['score_group'] : '', $match[0]->ID, $match[1]->ID );
 									$match_scores = isset( $all_scores[ $score_key ] ) ? $all_scores[ $score_key ] : array();
+									$display_match = $match;
+									if ( $player_numbers[ (int) $display_match[0]->ID ] > $player_numbers[ (int) $display_match[1]->ID ] ) {
+										$display_match = array( $match[1], $match[0] );
+									}
+									$first_score_side = (int) $display_match[0]->ID === (int) $match[0]->ID ? 0 : 1;
+									$second_score_side = 1 - $first_score_side;
 									?>
-									<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $match[0]->ID ] . '. ' . $match[0]->post_title ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $match[1]->ID ] . '. ' . $match[1]->post_title ); ?></td>
+									<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $display_match[0]->ID ] . '. ' . $display_match[0]->post_title ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $display_match[1]->ID ] . '. ' . $display_match[1]->post_title ); ?></td>
 										<?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
-											<td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( $game_score[0] ); ?>"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( $game_score[1] ); ?>"></span></td>
+											<td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][<?php echo esc_attr( $first_score_side ); ?>]" value="<?php echo esc_attr( isset( $game_score[ $first_score_side ] ) ? $game_score[ $first_score_side ] : '' ); ?>"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][<?php echo esc_attr( $second_score_side ); ?>]" value="<?php echo esc_attr( isset( $game_score[ $second_score_side ] ) ? $game_score[ $second_score_side ] : '' ); ?>"></span></td>
 										<?php endfor; ?>
 									</tr>
 								<?php endforeach; ?>
