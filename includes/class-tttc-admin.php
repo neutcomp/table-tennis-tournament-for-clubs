@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Admin {
+	private const REMINDER_FROM_EMAIL = 'info@thevictory.nl';
+
 	private $score_error = '';
 	private $score_form_scores = null;
 	private $group_size_error = false;
@@ -39,6 +41,7 @@ final class TTTC_Admin {
 		add_action( 'admin_post_tttc_remove_scores', array( $this, 'remove_scores' ) );
 		add_action( 'admin_post_tttc_save_placement_pools', array( $this, 'save_placement_pools' ) );
 		add_action( 'admin_post_tttc_duplicate_tournament', array( $this, 'duplicate_tournament' ) );
+		add_action( 'admin_post_tttc_send_tournament_reminders', array( $this, 'send_tournament_reminders' ) );
 		add_action( 'admin_post_tttc_merge_players', array( $this, 'merge_players' ) );
 		add_action( 'wp_ajax_tttc_quick_status', array( $this, 'ajax_quick_status' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
@@ -65,6 +68,7 @@ final class TTTC_Admin {
 		add_submenu_page( null, __( 'Order Players', 'table-tennis-tournament-for-clubs' ), __( 'Order Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-order', array( $this, 'order_page' ) );
 		add_submenu_page( null, __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), __( 'Tournament Scores', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-scores', array( $this, 'scores_page' ) );
 		add_submenu_page( null, __( 'Placement Pools', 'table-tennis-tournament-for-clubs' ), __( 'Placement Pools', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-placement-pools', array( $this, 'placement_pools_page' ) );
+		add_submenu_page( null, __( 'Email Players', 'table-tennis-tournament-for-clubs' ), __( 'Email Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-reminder', array( $this, 'reminder_page' ) );
 		add_submenu_page( null, __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-merge-players', array( $this, 'merge_page' ) );
 	}
 
@@ -1295,6 +1299,9 @@ final class TTTC_Admin {
 			<li><span class="dashicons dashicons-sort" aria-hidden="true"></span>
 				<?php esc_html_e( 'Order the players by strength.', 'table-tennis-tournament-for-clubs' ); ?>
 			</li>
+			<li><span class="dashicons dashicons-email-alt" aria-hidden="true"></span>
+				<?php esc_html_e( 'Send an individual reminder email to each assigned active player.', 'table-tennis-tournament-for-clubs' ); ?>
+			</li>
 		</ul>
 	</div>
 </div>
@@ -1327,6 +1334,7 @@ final class TTTC_Admin {
 			$count = $this->assigned_player_ids( $post_id );
 			$status = get_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 			echo esc_html( count( $count ) );
+			echo ' <a class="button-link tttc-icon-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-reminder&tournament_id=' . $post_id ) ) . '" title="' . esc_attr__( 'Email players', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-email-alt" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Email players', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
 			if ( ! in_array( $status, array( 'active', 'completed' ), true ) ) {
 				echo ' <a class="button-link tttc-icon-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-assignments&tournament_id=' . $post_id ) ) . '" title="' . esc_attr__( 'Manage', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-groups" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Manage', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
 				echo ' <a class="button-link tttc-icon-link" href="' . esc_url( admin_url( 'admin.php?page=tttc-order&tournament_id=' . $post_id ) ) . '" title="' . esc_attr__( 'Order', 'table-tennis-tournament-for-clubs' ) . '"><span class="dashicons dashicons-sort" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Order', 'table-tennis-tournament-for-clubs' ) . '</span></a>';
@@ -2836,6 +2844,182 @@ final class TTTC_Admin {
 		sort( $player_ids, SORT_NUMERIC );
 
 		return $player_ids[0] . '-' . $player_ids[1];
+	}
+
+	public function reminder_page() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		$tournament_id = isset( $_GET['tournament_id'] ) ? absint( wp_unslash( $_GET['tournament_id'] ) ) : 0;
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		if ( ! current_user_can( 'edit_post', $tournament_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$recipient_data = $this->tournament_reminder_recipients( $tournament_id );
+		$recipients     = $recipient_data['recipients'];
+		$skipped        = $recipient_data['skipped'];
+		$tournament_name = get_the_title( $tournament_id );
+		?>
+<div class="wrap">
+	<h1><?php esc_html_e( 'Email players', 'table-tennis-tournament-for-clubs' ); ?></h1>
+	<h2><?php echo esc_html( $tournament_name ); ?></h2>
+	<?php if ( isset( $_GET['sent_count'] ) ) : ?>
+		<?php
+		$sent_count   = absint( wp_unslash( $_GET['sent_count'] ) );
+		$skipped_count = isset( $_GET['skipped_count'] ) ? absint( wp_unslash( $_GET['skipped_count'] ) ) : 0;
+		$failed_count = isset( $_GET['failed_count'] ) ? absint( wp_unslash( $_GET['failed_count'] ) ) : 0;
+		$notice_class = $failed_count || ! $sent_count ? 'notice-warning' : 'notice-success';
+		?>
+	<div class="notice <?php echo esc_attr( $notice_class ); ?> is-dismissible"><p>
+		<?php
+		echo esc_html(
+			sprintf(
+				/* translators: 1: sent email count, 2: skipped player count, 3: failed email count. */
+				__( 'Emails sent: %1$d. Players skipped: %2$d. Emails failed: %3$d.', 'table-tennis-tournament-for-clubs' ),
+				$sent_count,
+				$skipped_count,
+				$failed_count
+			)
+		);
+		?>
+	</p></div>
+	<?php endif; ?>
+	<p><?php echo esc_html( sprintf( __( 'This will send one separate email to each of the %d assigned active players with a valid email address. No CC or BCC recipients are used.', 'table-tennis-tournament-for-clubs' ), count( $recipients ) ) ); ?>
+		<?php if ( $skipped ) : ?>
+		<?php echo esc_html( sprintf( _n( '%d assigned active player will be skipped because their email address is missing or invalid.', '%d assigned active players will be skipped because their email address is missing or invalid.', $skipped, 'table-tennis-tournament-for-clubs' ), $skipped ) ); ?>
+		<?php endif; ?>
+	</p>
+	<?php if ( empty( $recipients ) ) : ?>
+	<div class="notice notice-info"><p><?php esc_html_e( 'There are no assigned active players with valid email addresses to email.', 'table-tennis-tournament-for-clubs' ); ?></p></div>
+	<?php endif; ?>
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<input type="hidden" name="action" value="tttc_send_tournament_reminders">
+		<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament_id ); ?>">
+		<?php wp_nonce_field( 'tttc_send_tournament_reminders_' . $tournament_id, 'tttc_reminder_nonce' ); ?>
+		<p>
+			<label for="tttc-reminder-title"><strong><?php esc_html_e( 'Title', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
+			<input type="text" class="large-text" id="tttc-reminder-title" name="tttc_reminder_title" value="<?php echo esc_attr( 'Reminder [tournament-name]' ); ?>" required>
+		</p>
+		<p>
+			<label for="tttc-reminder-body"><strong><?php esc_html_e( 'Body', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
+			<textarea class="large-text" rows="10" id="tttc-reminder-body" name="tttc_reminder_body" required><?php echo esc_textarea( "Best [player-name],\n\nThis is a reminder for the tournament [tournament-name] at [tournament-date] - [tournament-time].\n\nSee you soon,\nThe Victory" ); ?></textarea>
+		</p>
+		<p class="description"><?php esc_html_e( 'Available placeholders: [player-name], [tournament-name], [tournament-date], and [tournament-time].', 'table-tennis-tournament-for-clubs' ); ?></p>
+		<p><button type="submit" class="button button-primary" <?php disabled( empty( $recipients ) ); ?>><?php esc_html_e( 'Send', 'table-tennis-tournament-for-clubs' ); ?></button></p>
+	</form>
+</div>
+		<?php
+	}
+
+	public function send_tournament_reminders() {
+		$tournament_id = isset( $_POST['tournament_id'] ) ? absint( wp_unslash( $_POST['tournament_id'] ) ) : 0;
+		check_admin_referer( 'tttc_send_tournament_reminders_' . $tournament_id, 'tttc_reminder_nonce' );
+
+		if ( TTTC_Plugin::TOURNAMENT_POST_TYPE !== get_post_type( $tournament_id ) ) {
+			wp_die( esc_html__( 'The tournament could not be found.', 'table-tennis-tournament-for-clubs' ) );
+		}
+		if ( ! current_user_can( 'edit_post', $tournament_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$title = isset( $_POST['tttc_reminder_title'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_reminder_title'] ) ) : '';
+		$body  = isset( $_POST['tttc_reminder_body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tttc_reminder_body'] ) ) : '';
+		if ( '' === $title || '' === $body ) {
+			wp_die( esc_html__( 'Enter a title and body before sending reminder emails.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$reply_to_raw = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true );
+		$reply_to     = '' === trim( (string) $reply_to_raw ) ? self::REMINDER_FROM_EMAIL : sanitize_email( $reply_to_raw );
+		if ( ! is_email( $reply_to ) ) {
+			wp_die( esc_html__( 'The tournament notification email is invalid. Update it in the tournament details before sending reminders.', 'table-tennis-tournament-for-clubs' ) );
+		}
+
+		$recipient_data = $this->tournament_reminder_recipients( $tournament_id );
+		$sent_count     = 0;
+		$failed_count   = 0;
+		$tournament_name = get_the_title( $tournament_id );
+		$date = (string) get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DATE, true );
+		$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
+		$tournament_date = $date_object ? $date_object->format( 'd-m-Y' ) : $date;
+		$tournament_time = (string) get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_TIME, true );
+
+		foreach ( $recipient_data['recipients'] as $recipient ) {
+			$placeholders = array(
+				'[player-name]'     => sanitize_text_field( $recipient['name'] ),
+				'[tournament-name]' => sanitize_text_field( $tournament_name ),
+				'[tournament-date]' => sanitize_text_field( $tournament_date ),
+				'[tournament-time]' => sanitize_text_field( $tournament_time ),
+			);
+			$personalized_title = sanitize_text_field( strtr( $title, $placeholders ) );
+			$personalized_body  = sanitize_textarea_field( strtr( $body, $placeholders ) );
+			$headers = array(
+				'Content-Type: text/plain; charset=UTF-8',
+				'From: The Victory <' . self::REMINDER_FROM_EMAIL . '>',
+				'Reply-To: ' . $reply_to,
+			);
+
+			if ( wp_mail( $recipient['email'], $personalized_title, $personalized_body, $headers ) ) {
+				++$sent_count;
+			} else {
+				++$failed_count;
+			}
+		}
+
+		$redirect_url = add_query_arg(
+			array(
+				'page'          => 'tttc-reminder',
+				'tournament_id' => $tournament_id,
+				'sent_count'    => $sent_count,
+				'skipped_count' => $recipient_data['skipped'],
+				'failed_count'  => $failed_count,
+			),
+			admin_url( 'admin.php' )
+		);
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	private function tournament_reminder_recipients( $tournament_id ) {
+		$player_ids = $this->assigned_player_ids( $tournament_id );
+		if ( empty( $player_ids ) ) {
+			return array( 'recipients' => array(), 'skipped' => 0 );
+		}
+
+		$players = get_posts(
+			array(
+				'post_type'      => TTTC_Plugin::PLAYER_POST_TYPE,
+				'post_status'    => 'publish',
+				'numberposts'    => -1,
+				'post__in'       => $player_ids,
+				'orderby'        => 'post__in',
+			)
+		);
+		$players_by_id = array();
+		foreach ( $players as $player ) {
+			$players_by_id[ $player->ID ] = $player;
+		}
+
+		$recipients = array();
+		$skipped    = 0;
+		foreach ( $player_ids as $player_id ) {
+			if ( ! isset( $players_by_id[ $player_id ] ) || '1' !== get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_ACTIVE, true ) ) {
+				continue;
+			}
+			$email = sanitize_email( get_post_meta( $player_id, TTTC_Plugin::PLAYER_META_EMAIL, true ) );
+			if ( ! is_email( $email ) ) {
+				++$skipped;
+				continue;
+			}
+			$recipients[] = array(
+				'name'  => $players_by_id[ $player_id ]->post_title,
+				'email' => $email,
+			);
+		}
+
+		return array( 'recipients' => $recipients, 'skipped' => $skipped );
 	}
 
 	public function assignments_page() {

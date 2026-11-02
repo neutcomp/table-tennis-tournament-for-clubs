@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,7 @@ Player emails are stored for club administration and are not shown in public sho
 * Optional per-tournament attendance question with email notifications for people who cannot attend.
 * Optional Tikkie QR-code registration payments with a fee and direct payment link; configure a bank account for manual transfers.
 * Tournament Players screen for adding and removing participants.
+* Send editable, personalized tournament reminders to assigned players, one email per player.
 * Duplicate tournaments as unpublished drafts with the same players and settings, but without match scores or payment details.
 * Inactive players cannot be assigned to new tournaments.
 * Tournament Scores screen with one, three, or five score fields per generated match.
@@ -67,6 +68,8 @@ Upcoming tournament pages also accept player signups. A new signup creates an ac
 
 Players must provide an email address when signing up. A tournament can require a phone number by enabling the telephone field; when the field is hidden, no phone number is collected. The TTapp rating question can also be shown or hidden per tournament. After a successful signup, the plugin sends an HTML confirmation email using the sender address, subject, and body configured under Settings > Table Tennis. When payment details are enabled for the tournament, the email appends the registration fee and configured payment instructions, including the uploaded QR-code image and optional direct payment link. The success page also shows configured payment instructions. Signup closes at the start of the tournament date in the WordPress site's local timezone; expired tournaments show a disabled signup button. Tournament times use the 24-hour `HH:MM` format. The email subject and body support `[tournament-name]`, `[tournament-date]`, `[tournament-time]`, and `[tournament-link]`. Email delivery does not undo a saved signup.
 
+Use the email icon in a tournament's Players column to edit and send a reminder to its assigned active players. The reminder subject and body support `[player-name]`, `[tournament-name]`, `[tournament-date]`, and `[tournament-time]`. Each player receives an individual email with no CC or BCC; the sender is `info@thevictory.nl`, and Reply-To uses the tournament's not-joining notification email or the sender address when that setting is empty.
+
 Optional attributes:
 
 * `[tttc_tournaments limit="10"]`
@@ -100,6 +103,8 @@ When a visitor successfully signs up for an upcoming tournament, the plugin uses
 
 When a visitor indicates that they are not joining and this option is enabled, the plugin also uses WordPress's `wp_mail()` function to send their name and optional reason to the tournament's configured notification address, using the configured sender and the visitor's email as Reply-To. The website's mail transport is configured by the site owner and may be the hosting provider or a separately installed mail service. This plugin does not select or connect to a specific email provider, so the applicable provider's terms of service and privacy policy depend on the website's configuration.
 
+When an administrator sends tournament reminders, the plugin uses `wp_mail()` separately for each assigned active player with a valid email address. Each message contains that player's personalized title and body, uses `info@thevictory.nl` as the sender, and uses the tournament's not-joining notification address as Reply-To (or `info@thevictory.nl` if that setting is empty). No CC or BCC recipients are used.
+
 Tournament QR codes are generated in the visitor's browser using JavaScript bundled with the plugin. The tournament URL is not sent to a QR-code service.
 
 == Privacy ==
@@ -109,6 +114,9 @@ Player phone numbers are stored with player records and available to administrat
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 2.2.0 =
+* Add personalized reminder emails for assigned tournament players.
 
 = 2.1.0 =
 * Add a per-tournament option for snake-style or consecutive top-to-bottom group distribution.

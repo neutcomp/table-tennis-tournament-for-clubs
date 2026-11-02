@@ -140,6 +140,12 @@ msgstr "Toernooien"
 msgid "Tournament Players"
 msgstr "Toernooispelers"
 
+msgid "Email Players"
+msgstr "Spelers e-mailen"
+
+msgid "Email players"
+msgstr "Spelers e-mailen"
+
 msgid "Order Players"
 msgstr "Spelers ordenen"
 
@@ -175,6 +181,38 @@ msgstr "Rating"
 
 msgid "Email"
 msgstr "E-mail"
+
+msgid "Send an individual reminder email to each assigned active player."
+msgstr "Stuur elke toegewezen actieve speler een afzonderlijke herinneringsmail."
+
+msgid "Emails sent: %1$d. Players skipped: %2$d. Emails failed: %3$d."
+msgstr "E-mails verzonden: %1$d. Spelers overgeslagen: %2$d. E-mails mislukt: %3$d."
+
+msgid "This will send one separate email to each of the %d assigned active players with a valid email address. No CC or BCC recipients are used."
+msgstr "Er wordt een afzonderlijke e-mail verzonden naar elk van de %d toegewezen actieve spelers met een geldig e-mailadres. CC en BCC worden niet gebruikt."
+
+msgid "There are no assigned active players with valid email addresses to email."
+msgstr "Er zijn geen toegewezen actieve spelers met een geldig e-mailadres om te e-mailen."
+
+msgid "%d assigned active player will be skipped because their email address is missing or invalid."
+msgid_plural "%d assigned active players will be skipped because their email address is missing or invalid."
+msgstr[0] "%d toegewezen actieve speler wordt overgeslagen omdat het e-mailadres ontbreekt of ongeldig is."
+msgstr[1] "%d toegewezen actieve spelers worden overgeslagen omdat het e-mailadres ontbreekt of ongeldig is."
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Available placeholders: [player-name], [tournament-name], [tournament-date], and [tournament-time]."
+msgstr "Beschikbare samenvoegvelden: [player-name], [tournament-name], [tournament-date] en [tournament-time]."
+
+msgid "Send"
+msgstr "Verzenden"
+
+msgid "Enter a title and body before sending reminder emails."
+msgstr "Vul een titel en inhoud in voordat je herinneringsmails verzendt."
+
+msgid "The tournament notification email is invalid. Update it in the tournament details before sending reminders."
+msgstr "Het meldingsadres van het toernooi is ongeldig. Pas dit aan bij de toernooigegevens voordat je herinneringen verzendt."
 
 msgid "Active"
 msgstr "Actief"
