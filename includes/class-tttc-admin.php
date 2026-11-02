@@ -1448,10 +1448,15 @@ final class TTTC_Admin {
 						);
 					}
 				}
-				$group_ranks = array();
-				if ( ! empty( $competition['groups'][ $group_key ]['complete'] ) ) {
+				$group_points = array();
+				$group_ranks  = array();
+				if ( isset( $competition['groups'][ $group_key ]['standings'] ) ) {
 					foreach ( $competition['groups'][ $group_key ]['standings'] as $rank => $standing ) {
-						$group_ranks[ (int) $standing['player']->ID ] = $rank + 1;
+						$player_id = (int) $standing['player']->ID;
+						$group_points[ $player_id ] = $standing['wins'];
+						if ( ! empty( $competition['groups'][ $group_key ]['complete'] ) ) {
+							$group_ranks[ $player_id ] = $rank + 1;
+						}
 					}
 				}
 				?>
@@ -1469,6 +1474,7 @@ final class TTTC_Admin {
 								echo esc_html( sprintf( __( 'Round %d', 'table-tennis-tournament-for-clubs' ), $round_number + 1 ) );
 							?></th>
 							<?php endforeach; ?>
+							<th><?php esc_html_e( 'Points', 'table-tennis-tournament-for-clubs' ); ?></th>
 							<th><?php esc_html_e( 'Results', 'table-tennis-tournament-for-clubs' ); ?></th>
 						</tr>
 					</thead>
@@ -1508,6 +1514,7 @@ final class TTTC_Admin {
 							<td><?php echo esc_html( $match_result ); ?></td>
 								<?php endif; ?>
 							<?php endforeach; ?>
+							<td><?php echo isset( $group_points[ (int) $player->ID ] ) ? esc_html( $group_points[ (int) $player->ID ] ) : '0'; ?></td>
 							<td><?php echo isset( $group_ranks[ (int) $player->ID ] ) ? esc_html( $group_ranks[ (int) $player->ID ] ) : ''; ?></td>
 						</tr>
 						<?php endforeach; ?>
