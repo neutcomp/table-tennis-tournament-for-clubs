@@ -36,11 +36,11 @@ msgstr "Toon de TTapp-ratingvraag bij inschrijving"
 msgid "Ask: Are you joining?"
 msgstr "Vragen: Doe je mee?"
 
-msgid "Email not joining reply"
-msgstr "E-mailadres melding niet-deelnemer"
+msgid "Email tournament leader"
+msgstr "E-mailadres toernooileider"
 
-msgid "Notification recipient for people who are not joining."
-msgstr "Ontvanger van meldingen van mensen die niet deelnemen."
+msgid "Enter a valid tournament leader email address."
+msgstr "Vul een geldig e-mailadres van de toernooileider in."
 
 msgid "QR-Code Tikkie"
 msgstr "Tikkie QR-code"
@@ -211,8 +211,8 @@ msgstr "Verzenden"
 msgid "Enter a title and body before sending reminder emails."
 msgstr "Vul een titel en inhoud in voordat je herinneringsmails verzendt."
 
-msgid "The tournament notification email is invalid. Update it in the tournament details before sending reminders."
-msgstr "Het meldingsadres van het toernooi is ongeldig. Pas dit aan bij de toernooigegevens voordat je herinneringen verzendt."
+msgid "The tournament leader email is invalid. Update it in the tournament details before sending reminders."
+msgstr "Het e-mailadres van de toernooileider is ongeldig. Pas dit aan bij de toernooigegevens voordat je herinneringen verzendt."
 
 msgid "Active"
 msgstr "Actief"

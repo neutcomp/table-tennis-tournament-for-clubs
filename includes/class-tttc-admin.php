@@ -10,8 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Admin {
-	private const REMINDER_FROM_EMAIL = 'info@thevictory.nl';
-
 	private $score_error = '';
 	private $score_form_scores = null;
 	private $group_size_error = false;
@@ -586,7 +584,7 @@ final class TTTC_Admin {
 			$show_ttapp_question = '1' === get_post_meta( $post->ID, TTTC_Plugin::LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION, true ) ? '0' : '1';
 		}
 		$ask_joining = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true );
-		$not_joining_email = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true );
+		$tournament_leader_email = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true );
 		$tikkie_enabled = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_ENABLED, true );
 		$tikkie_qr = absint( get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_QR, true ) );
 		$tikkie_amount = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_AMOUNT, true );
@@ -622,6 +620,8 @@ final class TTTC_Admin {
 		type="time" id="tttc-time" name="tttc_time" value="<?php echo esc_attr( $time ); ?>" step="60"></p>
 <p><label for="tttc-description"><strong><?php esc_html_e( 'Description', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
 	<textarea class="large-text" rows="4" id="tttc-description" name="tttc_description"><?php echo esc_textarea( $description ); ?></textarea></p>
+<p><label for="tttc-not-joining-email"><strong><?php esc_html_e( 'Email tournament leader', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
+	<input type="email" class="regular-text" id="tttc-not-joining-email" name="tttc_not_joining_email" value="<?php echo esc_attr( $tournament_leader_email ); ?>" required></p>
 <p><label
 		for="tttc-games"><strong><?php esc_html_e( 'Preliminary rounds best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
 		id="tttc-games" name="tttc_games" required <?php disabled( $has_scores ); ?>>
@@ -675,9 +675,6 @@ final class TTTC_Admin {
 		<?php esc_html_e( 'Show the TTapp rating question when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 <p><label><input type="checkbox" name="tttc_ask_joining" value="1" <?php checked( '1', $ask_joining ); ?>>
 		<?php esc_html_e( 'Ask: Are you joining?', 'table-tennis-tournament-for-clubs' ); ?></label></p>
-<p><label for="tttc-not-joining-email"><strong><?php esc_html_e( 'Email not joining reply', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
-	<input type="email" class="regular-text" id="tttc-not-joining-email" name="tttc_not_joining_email" value="<?php echo esc_attr( $not_joining_email ); ?>">
-	<span class="description"><?php esc_html_e( 'Notification recipient for people who are not joining.', 'table-tennis-tournament-for-clubs' ); ?></span></p>
 <div class="tttc-tikkie-settings">
 	<p><label><input type="checkbox" name="tttc_tikkie_enabled" value="1" <?php checked( '1', $tikkie_enabled ); ?>>
 			<?php esc_html_e( 'QR-Code Tikkie', 'table-tennis-tournament-for-clubs' ); ?></label></p>
@@ -826,6 +823,10 @@ final class TTTC_Admin {
 		if ( ! isset( $_POST['tttc_tournament_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_tournament_nonce'] ) ), 'tttc_save_tournament' ) ) {
 			return;
 		}
+		$tournament_leader_email = isset( $_POST['tttc_not_joining_email'] ) ? sanitize_email( wp_unslash( $_POST['tttc_not_joining_email'] ) ) : '';
+		if ( ! is_email( $tournament_leader_email ) ) {
+			wp_die( esc_html__( 'Enter a valid tournament leader email address.', 'table-tennis-tournament-for-clubs' ) );
+		}
 		$date   = isset( $_POST['tttc_date'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_date'] ) ) : '';
 		$time   = isset( $_POST['tttc_time'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_time'] ) ) : '';
 		$date_object = DateTime::createFromFormat( 'Y-m-d', $date );
@@ -859,7 +860,6 @@ final class TTTC_Admin {
 		$show_phone = isset( $_POST['tttc_show_phone'] ) ? '1' : '0';
 		$show_ttapp_question = isset( $_POST['tttc_show_ttapp_question'] ) ? '1' : '0';
 		$ask_joining = isset( $_POST['tttc_ask_joining'] ) ? '1' : '0';
-		$not_joining_email = isset( $_POST['tttc_not_joining_email'] ) ? sanitize_email( wp_unslash( $_POST['tttc_not_joining_email'] ) ) : '';
 		$tikkie_enabled = isset( $_POST['tttc_tikkie_enabled'] ) ? '1' : '0';
 		$tikkie_qr = isset( $_POST['tttc_tikkie_qr'] ) ? absint( $_POST['tttc_tikkie_qr'] ) : 0;
 		if ( ! $tikkie_qr || ! wp_attachment_is_image( $tikkie_qr ) ) {
@@ -876,7 +876,7 @@ final class TTTC_Admin {
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_SHOW_PHONE, $show_phone );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_SHOW_TTAPP_QUESTION, $show_ttapp_question );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, $ask_joining );
-		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, $not_joining_email );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, $tournament_leader_email );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_ENABLED, $tikkie_enabled );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_QR, $tikkie_qr );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_AMOUNT, $tikkie_amount );
@@ -2931,10 +2931,11 @@ final class TTTC_Admin {
 			wp_die( esc_html__( 'Enter a title and body before sending reminder emails.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
-		$reply_to_raw = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true );
-		$reply_to     = '' === trim( (string) $reply_to_raw ) ? self::REMINDER_FROM_EMAIL : sanitize_email( $reply_to_raw );
-		if ( ! is_email( $reply_to ) ) {
-			wp_die( esc_html__( 'The tournament notification email is invalid. Update it in the tournament details before sending reminders.', 'table-tennis-tournament-for-clubs' ) );
+		$tournament_leader_email = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true );
+		$default_email = sanitize_email( get_option( 'admin_email' ) );
+		$reply_to      = '' === trim( (string) $tournament_leader_email ) ? $default_email : sanitize_email( $tournament_leader_email );
+		if ( ! is_email( $default_email ) || ! is_email( $reply_to ) ) {
+			wp_die( esc_html__( 'The tournament leader email is invalid. Update it in the tournament details before sending reminders.', 'table-tennis-tournament-for-clubs' ) );
 		}
 
 		$recipient_data = $this->tournament_reminder_recipients( $tournament_id );
@@ -2957,7 +2958,7 @@ final class TTTC_Admin {
 			$personalized_body  = sanitize_textarea_field( strtr( $body, $placeholders ) );
 			$headers = array(
 				'Content-Type: text/plain; charset=UTF-8',
-				'From: The Victory <' . self::REMINDER_FROM_EMAIL . '>',
+				'From: ' . $default_email,
 				'Reply-To: ' . $reply_to,
 			);
 
