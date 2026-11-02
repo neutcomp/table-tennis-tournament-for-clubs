@@ -1694,6 +1694,10 @@ final class TTTC_Public {
 			$this->signup_error = __( 'The player was saved, but could not be added to the tournament. Please try again.', 'table-tennis-tournament-for-clubs' );
 			return;
 		}
+		if ( $assigned ) {
+			$this->signup_error = __( 'You are already signed up for this tournament.', 'table-tennis-tournament-for-clubs' );
+			return;
+		}
 
 		$this->send_signup_email( $tournament_id, $this->signup_form['email'] );
 
