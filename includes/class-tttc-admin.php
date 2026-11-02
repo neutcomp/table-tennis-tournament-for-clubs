@@ -74,6 +74,8 @@ final class TTTC_Admin {
 		register_setting( 'tttc_email_settings', TTTC_Plugin::OPTION_EMAIL_FROM, array( 'sanitize_callback' => 'sanitize_email' ) );
 		register_setting( 'tttc_email_settings', TTTC_Plugin::OPTION_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'tttc_email_settings', TTTC_Plugin::OPTION_EMAIL_BODY, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+		register_setting( 'tttc_reminder_email_settings', TTTC_Plugin::OPTION_REMINDER_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'tttc_reminder_email_settings', TTTC_Plugin::OPTION_REMINDER_EMAIL_BODY, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 
 		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_DEFAULT_GAMES, array( 'sanitize_callback' => array( $this, 'sanitize_games_setting' ) ) );
 		register_setting( 'tttc_format_settings', TTTC_Plugin::OPTION_DEFAULT_TYPE, array( 'sanitize_callback' => array( $this, 'sanitize_type_setting' ) ) );
@@ -84,6 +86,8 @@ final class TTTC_Admin {
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_FROM, array( 'sanitize_callback' => 'sanitize_email' ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_EMAIL_BODY, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_REMINDER_EMAIL_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_REMINDER_EMAIL_BODY, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_DEFAULT_GAMES, array( 'sanitize_callback' => array( $this, 'sanitize_games_setting' ) ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_DEFAULT_TYPE, array( 'sanitize_callback' => array( $this, 'sanitize_type_setting' ) ) );
 		register_setting( 'tttc_settings', TTTC_Plugin::OPTION_FORMAT_RANGES, array( 'sanitize_callback' => array( 'TTTC_Plugin', 'sanitize_format_ranges' ) ) );
@@ -114,7 +118,7 @@ final class TTTC_Admin {
 		}
 
 		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'email';
-		if ( ! in_array( $active_tab, array( 'email', 'formats', 'tv', 'urls', 'payments' ), true ) ) {
+		if ( ! in_array( $active_tab, array( 'email', 'email_reminder', 'formats', 'tv', 'urls', 'payments' ), true ) ) {
 			$active_tab = 'email';
 		}
 		?>
@@ -123,6 +127,8 @@ final class TTTC_Admin {
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=email' ) ); ?>"
 			class="nav-tab <?php echo 'email' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=email_reminder' ) ); ?>"
+			class="nav-tab <?php echo 'email_reminder' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Email reminder', 'table-tennis-tournament-for-clubs' ); ?></a>
 		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=formats' ) ); ?>"
 			class="nav-tab <?php echo 'formats' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Tournament Formats', 'table-tennis-tournament-for-clubs' ); ?></a>
 		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=tttc-settings&tab=tv' ) ); ?>"
@@ -175,6 +181,35 @@ final class TTTC_Admin {
 					<p class="description">
 						<?php esc_html_e( 'Available merge fields: [tournament-name], [tournament-date], [tournament-time], and [tournament-link].', 'table-tennis-tournament-for-clubs' ); ?>
 					</p>
+				</td>
+			</tr>
+		</table>
+		<?php submit_button(); ?>
+	</form>
+	<?php elseif ( 'email_reminder' === $active_tab ) :
+				$subject = get_option( TTTC_Plugin::OPTION_REMINDER_EMAIL_SUBJECT, 'Reminder [tournament-name]' );
+				$body    = get_option( TTTC_Plugin::OPTION_REMINDER_EMAIL_BODY, "Best [player-name],\n\nThis is a reminder for the tournament [tournament-name] at [tournament-date] - [tournament-time].\n\nSee you soon,\nThe Victory" );
+				?>
+	<p><?php esc_html_e( 'Configure the default reminder email sent to assigned players. These values prefill the tournament reminder form and can be edited before sending.', 'table-tennis-tournament-for-clubs' ); ?></p>
+	<form method="post" action="options.php">
+		<?php settings_fields( 'tttc_reminder_email_settings' ); ?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="tttc-reminder-email-subject"><?php esc_html_e( 'Title', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+				<td>
+					<input type="text" class="large-text" id="tttc-reminder-email-subject"
+						name="<?php echo esc_attr( TTTC_Plugin::OPTION_REMINDER_EMAIL_SUBJECT ); ?>"
+						value="<?php echo esc_attr( $subject ); ?>" required>
+					<p class="description"><?php esc_html_e( 'Available placeholders: [player-name], [tournament-name], [tournament-date], and [tournament-time].', 'table-tennis-tournament-for-clubs' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="tttc-reminder-email-body"><?php esc_html_e( 'Body', 'table-tennis-tournament-for-clubs' ); ?></label></th>
+				<td>
+					<textarea class="large-text" rows="10" id="tttc-reminder-email-body"
+						name="<?php echo esc_attr( TTTC_Plugin::OPTION_REMINDER_EMAIL_BODY ); ?>"
+						required><?php echo esc_textarea( $body ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'Available placeholders: [player-name], [tournament-name], [tournament-date], and [tournament-time].', 'table-tennis-tournament-for-clubs' ); ?></p>
 				</td>
 			</tr>
 		</table>
@@ -2862,6 +2897,8 @@ final class TTTC_Admin {
 		$recipients     = $recipient_data['recipients'];
 		$skipped        = $recipient_data['skipped'];
 		$tournament_name = get_the_title( $tournament_id );
+		$reminder_subject = get_option( TTTC_Plugin::OPTION_REMINDER_EMAIL_SUBJECT, 'Reminder [tournament-name]' );
+		$reminder_body = get_option( TTTC_Plugin::OPTION_REMINDER_EMAIL_BODY, "Best [player-name],\n\nThis is a reminder for the tournament [tournament-name] at [tournament-date] - [tournament-time].\n\nSee you soon,\nThe Victory" );
 		?>
 <div class="wrap">
 	<h1><?php esc_html_e( 'Email players', 'table-tennis-tournament-for-clubs' ); ?></h1>
@@ -2901,11 +2938,11 @@ final class TTTC_Admin {
 		<?php wp_nonce_field( 'tttc_send_tournament_reminders_' . $tournament_id, 'tttc_reminder_nonce' ); ?>
 		<p>
 			<label for="tttc-reminder-title"><strong><?php esc_html_e( 'Title', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
-			<input type="text" class="large-text" id="tttc-reminder-title" name="tttc_reminder_title" value="<?php echo esc_attr( 'Reminder [tournament-name]' ); ?>" required>
+			<input type="text" class="large-text" id="tttc-reminder-title" name="tttc_reminder_title" value="<?php echo esc_attr( $reminder_subject ); ?>" required>
 		</p>
 		<p>
 			<label for="tttc-reminder-body"><strong><?php esc_html_e( 'Body', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
-			<textarea class="large-text" rows="10" id="tttc-reminder-body" name="tttc_reminder_body" required><?php echo esc_textarea( "Best [player-name],\n\nThis is a reminder for the tournament [tournament-name] at [tournament-date] - [tournament-time].\n\nSee you soon,\nThe Victory" ); ?></textarea>
+			<textarea class="large-text" rows="10" id="tttc-reminder-body" name="tttc_reminder_body" required><?php echo esc_textarea( $reminder_body ); ?></textarea>
 		</p>
 		<p class="description"><?php esc_html_e( 'Available placeholders: [player-name], [tournament-name], [tournament-date], and [tournament-time].', 'table-tennis-tournament-for-clubs' ); ?></p>
 		<p><button type="submit" class="button button-primary" <?php disabled( empty( $recipients ) ); ?>><?php esc_html_e( 'Send', 'table-tennis-tournament-for-clubs' ); ?></button></p>

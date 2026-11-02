@@ -46,6 +46,8 @@ final class TTTC_Plugin {
 	const OPTION_EMAIL_FROM = 'tttc_email_from';
 	const OPTION_EMAIL_SUBJECT = 'tttc_email_subject';
 	const OPTION_EMAIL_BODY = 'tttc_email_body';
+	const OPTION_REMINDER_EMAIL_SUBJECT = 'tttc_reminder_email_subject';
+	const OPTION_REMINDER_EMAIL_BODY = 'tttc_reminder_email_body';
 	const OPTION_DEFAULT_GAMES = 'tttc_default_games';
 	const OPTION_DEFAULT_TYPE = 'tttc_default_type';
 	const OPTION_FORMAT_RANGES = 'tttc_format_ranges';

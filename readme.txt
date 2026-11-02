@@ -70,6 +70,8 @@ Players must provide an email address when signing up. A tournament can require 
 
 Use the email icon in a tournament's Players column to edit and send a reminder to its assigned active players. The reminder subject and body support `[player-name]`, `[tournament-name]`, `[tournament-date]`, and `[tournament-time]`. Each player receives an individual email with no CC or BCC; the sender is the WordPress administration email, and Reply-To uses the tournament leader email or the sender address when that setting is empty. The required tournament leader email is also used for notifications when someone declines to join.
 
+Configure the default reminder title and body under Settings > Table Tennis > Email reminder. These defaults prefill the tournament reminder form and remain editable before sending.
+
 Optional attributes:
 
 * `[tttc_tournaments limit="10"]`

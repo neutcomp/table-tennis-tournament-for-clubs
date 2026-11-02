@@ -143,8 +143,14 @@ msgstr "Toernooispelers"
 msgid "Email Players"
 msgstr "Spelers e-mailen"
 
+msgid "Email reminder"
+msgstr "E-mailherinnering"
+
 msgid "Email players"
 msgstr "Spelers e-mailen"
+
+msgid "Configure the default reminder email sent to assigned players. These values prefill the tournament reminder form and can be edited before sending."
+msgstr "Configureer de standaardherinnering voor toegewezen spelers. Deze waarden worden vooraf ingevuld op het herinneringsformulier van het toernooi en kunnen voor verzending worden aangepast."
 
 msgid "Order Players"
 msgstr "Spelers ordenen"
@@ -205,14 +211,14 @@ msgstr "Titel"
 msgid "Available placeholders: [player-name], [tournament-name], [tournament-date], and [tournament-time]."
 msgstr "Beschikbare samenvoegvelden: [player-name], [tournament-name], [tournament-date] en [tournament-time]."
 
-msgid "Send"
-msgstr "Verzenden"
-
 msgid "Enter a title and body before sending reminder emails."
 msgstr "Vul een titel en inhoud in voordat je herinneringsmails verzendt."
 
 msgid "The tournament leader email is invalid. Update it in the tournament details before sending reminders."
 msgstr "Het e-mailadres van de toernooileider is ongeldig. Pas dit aan bij de toernooigegevens voordat je herinneringen verzendt."
+
+msgid "Send"
+msgstr "Verzenden"
 
 msgid "Active"
 msgstr "Actief"
