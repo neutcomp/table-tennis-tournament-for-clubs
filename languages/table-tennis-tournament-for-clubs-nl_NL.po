@@ -250,6 +250,15 @@ msgstr "Website"
 msgid "Date"
 msgstr "Datum"
 
+msgid "General settings"
+msgstr "Algemene instellingen"
+
+msgid "Sign-up settings"
+msgstr "Inschrijvingsinstellingen"
+
+msgid "Tournament settings"
+msgstr "Toernooi-instellingen"
+
 msgid "Time"
 msgstr "Tijd"
 

@@ -509,8 +509,14 @@
   width: 60px;
 }
 
-.tttc-tournament-format-section {
-  max-width: 600px;
+.tttc-tournament-settings-section {
+  margin-top: 20px;
+  border-top: 1px solid #dcdcde;
+  padding-top: 12px;
+}
+
+.tttc-tournament-settings-section h3 {
+  margin: 0 0 12px;
 }
 
 @media (max-width: 640px) {

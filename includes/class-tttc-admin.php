@@ -647,6 +647,8 @@ final class TTTC_Admin {
 	</p>
 </div>
 <?php endif; ?>
+<section class="tttc-tournament-settings-section">
+	<h3><?php esc_html_e( 'General settings', 'table-tennis-tournament-for-clubs' ); ?></h3>
 <p><label
 		for="tttc-date"><strong><?php esc_html_e( 'Date', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input
 		type="date" id="tttc-date" name="tttc_date" value="<?php echo esc_attr( $date ); ?>" required></p>
@@ -655,27 +657,6 @@ final class TTTC_Admin {
 		type="time" id="tttc-time" name="tttc_time" value="<?php echo esc_attr( $time ); ?>" step="60"></p>
 <p><label for="tttc-description"><strong><?php esc_html_e( 'Description', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
 	<textarea class="large-text" rows="4" id="tttc-description" name="tttc_description"><?php echo esc_textarea( $description ); ?></textarea></p>
-<p><label for="tttc-not-joining-email"><strong><?php esc_html_e( 'Email tournament leader', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
-	<input type="email" class="regular-text" id="tttc-not-joining-email" name="tttc_not_joining_email" value="<?php echo esc_attr( $tournament_leader_email ); ?>" required></p>
-<p><label
-		for="tttc-games"><strong><?php esc_html_e( 'Preliminary rounds best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
-		id="tttc-games" name="tttc_games" required <?php disabled( $has_scores ); ?>>
-		<option value="1" <?php selected( $games, '1' ); ?>>1</option>
-		<option value="3" <?php selected( $games, '3' ); ?>>3</option>
-		<option value="5" <?php selected( $games, '5' ); ?>>5</option>
-	</select></p>
-<p><label for="tttc-intermediate-games"><strong><?php esc_html_e( 'Intermediate rounds best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
-	id="tttc-intermediate-games" name="tttc_intermediate_games" required <?php disabled( $has_scores ); ?>>
-		<option value="1" <?php selected( $intermediate_games, '1' ); ?>>1</option>
-		<option value="3" <?php selected( $intermediate_games, '3' ); ?>>3</option>
-		<option value="5" <?php selected( $intermediate_games, '5' ); ?>>5</option>
-	</select></p>
-<p><label for="tttc-finals-games"><strong><?php esc_html_e( 'Finals best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
-	id="tttc-finals-games" name="tttc_finals_games" required <?php disabled( $has_scores ); ?>>
-		<option value="1" <?php selected( $finals_games, '1' ); ?>>1</option>
-		<option value="3" <?php selected( $finals_games, '3' ); ?>>3</option>
-		<option value="5" <?php selected( $finals_games, '5' ); ?>>5</option>
-	</select></p>
 <p><label
 		for="tttc-type"><strong><?php esc_html_e( 'Player type', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
 		id="tttc-type" name="tttc_type">
@@ -686,13 +667,6 @@ final class TTTC_Admin {
 		<option value="both" <?php selected( $type, 'both' ); ?>>
 			<?php esc_html_e( 'Both', 'table-tennis-tournament-for-clubs' ); ?></option>
 	</select></p>
-<p><label for="tttc-competition-format"><strong><?php esc_html_e( 'Competition format', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
-	<select id="tttc-competition-format" name="tttc_competition_format" <?php disabled( $has_scores ); ?>>
-		<option value="standard" <?php selected( $competition_format, 'standard' ); ?>><?php esc_html_e( 'Standard groups and follow-up rounds', 'table-tennis-tournament-for-clubs' ); ?></option>
-		<option value="placement_pools" <?php selected( $competition_format, 'placement_pools' ); ?>><?php esc_html_e( 'Groups of 3 → A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></option>
-	</select>
-	<p class="description"><?php esc_html_e( 'The placement-pool format is available for 9 or more players. Preliminary groups contain 3 or 4 players; first, second, and third place advance to pools A, B, and C. Fourth place in a group of 4 defaults to pool B. Tournament group-size settings also split each A/B/C pool into multiple groups when needed. The No follow-up rounds checkbox controls whether those groups play crossover rounds.', 'table-tennis-tournament-for-clubs' ); ?></p>
-</p>
 <p><label
 		for="tttc-status"><strong><?php esc_html_e( 'Status', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
 		id="tttc-status" name="tttc_status">
@@ -704,6 +678,12 @@ final class TTTC_Admin {
 
 <p><label><input type="checkbox" name="tttc_hide_from_overview" value="1" <?php checked( '1', $hide_from_overview ); ?>>
 		<?php esc_html_e( 'Hide this tournament from the public tournament overview', 'table-tennis-tournament-for-clubs' ); ?></label></p>
+</section>
+
+<section class="tttc-tournament-settings-section">
+	<h3><?php esc_html_e( 'Sign-up settings', 'table-tennis-tournament-for-clubs' ); ?></h3>
+<p><label for="tttc-not-joining-email"><strong><?php esc_html_e( 'Email tournament leader', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
+	<input type="email" class="regular-text" id="tttc-not-joining-email" name="tttc_not_joining_email" value="<?php echo esc_attr( $tournament_leader_email ); ?>" required></p>
 <p><label><input type="checkbox" name="tttc_show_phone" value="1" <?php checked( '1', $show_phone ); ?>>
 		<?php esc_html_e( 'Show telephone when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 <p><label><input type="checkbox" name="tttc_show_ttapp_question" value="1" <?php checked( '1', $show_ttapp_question ); ?>>
@@ -726,8 +706,36 @@ final class TTTC_Admin {
 	<p><label for="tttc-tikkie-url"><strong><?php esc_html_e( 'Direct payment link (optional)', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
 		<input type="url" class="large-text" id="tttc-tikkie-url" name="tttc_tikkie_url" value="<?php echo esc_attr( $tikkie_url ); ?>"></p>
 </div>
+</section>
 
-<div class="tttc-tournament-format-section" style="margin-top: 16px; border-top: 1px solid #dcdcde; padding-top: 12px;">
+<section class="tttc-tournament-settings-section">
+	<h3><?php esc_html_e( 'Tournament settings', 'table-tennis-tournament-for-clubs' ); ?></h3>
+<p><label
+		for="tttc-games"><strong><?php esc_html_e( 'Preliminary rounds best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
+		id="tttc-games" name="tttc_games" required <?php disabled( $has_scores ); ?>>
+		<option value="1" <?php selected( $games, '1' ); ?>>1</option>
+		<option value="3" <?php selected( $games, '3' ); ?>>3</option>
+		<option value="5" <?php selected( $games, '5' ); ?>>5</option>
+	</select></p>
+<p><label for="tttc-intermediate-games"><strong><?php esc_html_e( 'Intermediate rounds best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
+	id="tttc-intermediate-games" name="tttc_intermediate_games" required <?php disabled( $has_scores ); ?>>
+		<option value="1" <?php selected( $intermediate_games, '1' ); ?>>1</option>
+		<option value="3" <?php selected( $intermediate_games, '3' ); ?>>3</option>
+		<option value="5" <?php selected( $intermediate_games, '5' ); ?>>5</option>
+	</select></p>
+<p><label for="tttc-finals-games"><strong><?php esc_html_e( 'Finals best of', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><select
+	id="tttc-finals-games" name="tttc_finals_games" required <?php disabled( $has_scores ); ?>>
+		<option value="1" <?php selected( $finals_games, '1' ); ?>>1</option>
+		<option value="3" <?php selected( $finals_games, '3' ); ?>>3</option>
+		<option value="5" <?php selected( $finals_games, '5' ); ?>>5</option>
+	</select></p>
+<div><label for="tttc-competition-format"><strong><?php esc_html_e( 'Competition format', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br>
+	<select id="tttc-competition-format" name="tttc_competition_format" <?php disabled( $has_scores ); ?>>
+		<option value="standard" <?php selected( $competition_format, 'standard' ); ?>><?php esc_html_e( 'Standard groups and follow-up rounds', 'table-tennis-tournament-for-clubs' ); ?></option>
+		<option value="placement_pools" <?php selected( $competition_format, 'placement_pools' ); ?>><?php esc_html_e( 'Groups of 3 → A/B/C placement pools', 'table-tennis-tournament-for-clubs' ); ?></option>
+	</select>
+	<p class="description"><?php esc_html_e( 'The placement-pool format is available for 9 or more players. Preliminary groups contain 3 or 4 players; first, second, and third place advance to pools A, B, and C. Fourth place in a group of 4 defaults to pool B. Tournament group-size settings also split each A/B/C pool into multiple groups when needed. The No follow-up rounds checkbox controls whether those groups play crossover rounds.', 'table-tennis-tournament-for-clubs' ); ?></p>
+</div>
 	<?php if ( 'placement_pools' === $competition_format && count( $this->assigned_player_ids( $post->ID ) ) >= 9 ) : ?>
 	<p class="description"><?php esc_html_e( 'Placement-pool tournaments use automatic group sizes.', 'table-tennis-tournament-for-clubs' ); ?></p>
 	<?php else : ?>
@@ -767,7 +775,7 @@ final class TTTC_Admin {
 		</tbody>
 	</table>
 	<?php endif; ?>
-</div>
+</section>
 <?php
 	}
 
