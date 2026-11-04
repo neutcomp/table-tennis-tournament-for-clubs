@@ -19,6 +19,7 @@ final class TTTC_Public {
 		add_shortcode( 'tttc_tournaments', array( $this, 'tournaments_shortcode' ) );
 		add_shortcode( 'tttc_players', array( $this, 'players_shortcode' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_filter( 'script_loader_tag', array( $this, 'exclude_public_scripts_from_delay' ), 10, 2 );
 		add_action( 'init', array( $this, 'register_rewrite' ) );
 		add_action( 'init', array( $this, 'flush_pending_tournament_rewrite_rules' ), 99 );
 		add_filter( 'query_vars', array( $this, 'query_vars' ) );
@@ -84,6 +85,14 @@ final class TTTC_Public {
 
 	public function enqueue_assets() {
 		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
+	}
+
+	public function exclude_public_scripts_from_delay( $tag, $handle ) {
+		if ( ! in_array( $handle, array( 'tttc-qrcode', 'tttc-qrcode-utf8', 'tttc-public' ), true ) ) {
+			return $tag;
+		}
+
+		return str_replace( '<script ', '<script data-no-defer="1" ', $tag );
 	}
 
 	public static function instance() {
