@@ -122,6 +122,9 @@ final class TTTC_Public {
 		$vars[] = 'tttc_tournament_id';
 		$vars[] = 'tournament_id';
 		$vars[] = 'tttc_signup';
+		$vars[] = 'tttc_unsubscribe';
+		$vars[] = 'tttc_unsubscribe_player';
+		$vars[] = 'tttc_unsubscribe_nonce';
 		$vars[] = 'showtv';
 
 		return $vars;
@@ -907,7 +910,7 @@ final class TTTC_Public {
 		$description = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, true );
 		$is_active         = 'active' === $status;
 		$signup_state = sanitize_key( get_query_var( 'tttc_signup' ) );
-		$is_signup_confirmation = in_array( $signup_state, array( 'success', 'not_joining' ), true );
+		$is_signup_confirmation = in_array( $signup_state, array( 'success', 'not_joining', 'unsubscribed', 'unsubscribe_failed' ), true );
 		$players     = $this->assigned_players( $tournament_id );
 		$placement_format = 'placement_pools' === TTTC_Plugin::get_tournament_competition_format( $tournament_id ) && count( $players ) >= 9;
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
@@ -969,6 +972,16 @@ final class TTTC_Public {
 			</section>
 		<?php elseif ( 'success' === $signup_state ) : ?>
 			<?php $this->render_signup_confirmation( $tournament_id ); ?>
+		<?php elseif ( 'unsubscribed' === $signup_state ) : ?>
+			<section class="tttc-public-tournament__signup" aria-labelledby="tttc-unsubscribe-heading">
+				<h2 id="tttc-unsubscribe-heading"><?php esc_html_e( 'You have unsubscribed.', 'table-tennis-tournament-for-clubs' ); ?></h2>
+				<p role="status"><?php esc_html_e( 'Your registration for this tournament has been removed.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			</section>
+		<?php elseif ( 'unsubscribe_failed' === $signup_state ) : ?>
+			<section class="tttc-public-tournament__signup" aria-labelledby="tttc-unsubscribe-failed-heading">
+				<h2 id="tttc-unsubscribe-failed-heading"><?php esc_html_e( 'Could not unsubscribe.', 'table-tennis-tournament-for-clubs' ); ?></h2>
+				<p role="status"><?php esc_html_e( 'This link is invalid or unsubscribing is no longer available.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			</section>
 		<?php elseif ( $this->is_signup_open( $tournament_id ) ) : ?>
 			<?php $this->render_signup_form( $tournament_id ); ?>
 		<?php elseif ( 'upcoming' === $status ) : ?>
@@ -1544,6 +1557,7 @@ final class TTTC_Public {
 	}
 
 	private function handle_signup( $tournament_id ) {
+		$this->handle_unsubscribe( $tournament_id );
 		$default_player_type = $this->signup_default_player_type( $tournament_id );
 		$ask_joining = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true );
 		$show_phone = $this->show_signup_phone( $tournament_id );
@@ -1708,9 +1722,38 @@ final class TTTC_Public {
 			return;
 		}
 
-		$this->send_signup_email( $tournament_id, $this->signup_form['email'] );
+		$this->send_signup_email( $tournament_id, $this->signup_form['email'], $player->ID );
 
 		wp_safe_redirect( add_query_arg( 'tttc_signup', 'success', $this->tournament_url( $tournament_id ) ) );
+		exit;
+	}
+
+	private function handle_unsubscribe( $tournament_id ) {
+		if ( '1' !== sanitize_key( get_query_var( 'tttc_unsubscribe' ) ) ) {
+			return;
+		}
+
+		$status = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+		$enabled = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_UNSUBSCRIBE_POSSIBLE, true );
+		$player_id = absint( get_query_var( 'tttc_unsubscribe_player' ) );
+		$nonce = sanitize_text_field( get_query_var( 'tttc_unsubscribe_nonce' ) );
+
+		if ( 'upcoming' !== $status || ! $enabled || ! $player_id || ! wp_verify_nonce( $nonce, 'tttc_unsubscribe_' . $tournament_id . '_' . $player_id ) ) {
+			wp_safe_redirect( add_query_arg( 'tttc_signup', 'unsubscribe_failed', $this->tournament_url( $tournament_id ) ) );
+			exit;
+		}
+
+		global $wpdb;
+		$wpdb->delete(
+			TTTC_Plugin::table_name(),
+			array(
+				'tournament_id' => absint( $tournament_id ),
+				'player_id'     => $player_id,
+			),
+			array( '%d', '%d' )
+		);
+
+		wp_safe_redirect( add_query_arg( 'tttc_signup', 'unsubscribed', $this->tournament_url( $tournament_id ) ) );
 		exit;
 	}
 
@@ -1829,7 +1872,7 @@ final class TTTC_Public {
 		return preg_replace( '/\s+/', ' ', trim( $name ) );
 	}
 
-	private function send_signup_email( $tournament_id, $recipient ) {
+	private function send_signup_email( $tournament_id, $recipient, $player_id ) {
 		$from    = sanitize_email( get_option( TTTC_Plugin::OPTION_EMAIL_FROM, get_option( 'admin_email' ) ) );
 		$subject = get_option( TTTC_Plugin::OPTION_EMAIL_SUBJECT, __( 'Signup confirmed for [tournament-name]', 'table-tennis-tournament-for-clubs' ) );
 		$body    = get_option( TTTC_Plugin::OPTION_EMAIL_BODY, __( "Hello,\n\nYour signup for [tournament-name] on [tournament-date] at [tournament-time] has been received.\n\nView the tournament: [tournament-link]\n\nWe look forward to seeing you.", 'table-tennis-tournament-for-clubs' ) );
@@ -1869,6 +1912,20 @@ final class TTTC_Public {
 				$html_body .= esc_html__( 'Payment link:', 'table-tennis-tournament-for-clubs' ) . ' <a href="' . esc_url( $payment_url ) . '">' . esc_html__( 'Click here to pay directly', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
 			}
 			$html_body .= '</div>';
+		}
+
+		$status = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
+		$unsubscribe_possible = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_UNSUBSCRIBE_POSSIBLE, true );
+		if ( $unsubscribe_possible && 'upcoming' === $status ) {
+			$unsubscribe_url = add_query_arg(
+				array(
+					'tttc_unsubscribe'          => '1',
+					'tttc_unsubscribe_player'   => absint( $player_id ),
+					'tttc_unsubscribe_nonce'    => wp_create_nonce( 'tttc_unsubscribe_' . $tournament_id . '_' . absint( $player_id ) ),
+				),
+				$this->tournament_url( $tournament_id )
+			);
+			$html_body .= '<p><a href="' . esc_url( $unsubscribe_url ) . '">' . esc_html__( 'Unsubscribe from this tournament', 'table-tennis-tournament-for-clubs' ) . '</a></p>';
 		}
 
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );

@@ -624,6 +624,7 @@ final class TTTC_Admin {
 		$tikkie_qr = absint( get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_QR, true ) );
 		$tikkie_amount = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_AMOUNT, true );
 		$tikkie_url = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_TIKKIE_URL, true );
+		$unsubscribe_possible = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_UNSUBSCRIBE_POSSIBLE, true );
 		$tikkie_qr_url = $tikkie_qr ? wp_get_attachment_image_url( $tikkie_qr, 'medium' ) : '';
 		$status = $status ? $status : 'draft';
 		if ( '' === $type ) {
@@ -690,6 +691,8 @@ final class TTTC_Admin {
 		<?php esc_html_e( 'Show the TTapp rating question when signing up', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 <p><label><input type="checkbox" name="tttc_ask_joining" value="1" <?php checked( '1', $ask_joining ); ?>>
 		<?php esc_html_e( 'Ask: Are you joining?', 'table-tennis-tournament-for-clubs' ); ?></label></p>
+<p><label><input type="checkbox" name="tttc_unsubscribe_possible" value="1" <?php checked( '1', $unsubscribe_possible ); ?>>
+		<?php esc_html_e( 'Unsubscribe possible', 'table-tennis-tournament-for-clubs' ); ?></label></p>
 <div class="tttc-tikkie-settings">
 	<p><label><input type="checkbox" name="tttc_tikkie_enabled" value="1" <?php checked( '1', $tikkie_enabled ); ?>>
 			<?php esc_html_e( 'QR-Code Tikkie', 'table-tennis-tournament-for-clubs' ); ?></label></p>
@@ -915,6 +918,7 @@ final class TTTC_Admin {
 			$tikkie_amount = number_format( (float) $tikkie_amount, 2, '.', '' );
 		}
 		$tikkie_url = isset( $_POST['tttc_tikkie_url'] ) ? esc_url_raw( wp_unslash( $_POST['tttc_tikkie_url'] ) ) : '';
+		$unsubscribe_possible = isset( $_POST['tttc_unsubscribe_possible'] ) ? '1' : '0';
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, $description );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_SHOW_PHONE, $show_phone );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_SHOW_TTAPP_QUESTION, $show_ttapp_question );
@@ -924,6 +928,7 @@ final class TTTC_Admin {
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_QR, $tikkie_qr );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_AMOUNT, $tikkie_amount );
 		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_TIKKIE_URL, $tikkie_url );
+		update_post_meta( $post_id, TTTC_Plugin::TOURNAMENT_META_UNSUBSCRIBE_POSSIBLE, $unsubscribe_possible );
 
 		$has_scores = TTTC_Plugin::has_scores( $post_id );
 		$this->group_size_error = false;

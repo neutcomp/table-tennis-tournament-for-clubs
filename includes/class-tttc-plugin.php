@@ -43,6 +43,7 @@ final class TTTC_Plugin {
 	const TOURNAMENT_META_TIKKIE_QR = '_tttc_tikkie_qr';
 	const TOURNAMENT_META_TIKKIE_AMOUNT = '_tttc_tikkie_amount';
 	const TOURNAMENT_META_TIKKIE_URL = '_tttc_tikkie_url';
+	const TOURNAMENT_META_UNSUBSCRIBE_POSSIBLE = '_tttc_unsubscribe_possible';
 	const OPTION_EMAIL_FROM = 'tttc_email_from';
 	const OPTION_EMAIL_SUBJECT = 'tttc_email_subject';
 	const OPTION_EMAIL_BODY = 'tttc_email_body';
