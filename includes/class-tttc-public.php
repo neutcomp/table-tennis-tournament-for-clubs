@@ -1739,8 +1739,21 @@ final class TTTC_Public {
 		$enabled = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_UNSUBSCRIBE_POSSIBLE, true );
 		$player_id = absint( get_query_var( 'tttc_unsubscribe_player' ) );
 		$nonce = sanitize_text_field( get_query_var( 'tttc_unsubscribe_nonce' ) );
+		$nonce_valid = $player_id && wp_verify_nonce( $nonce, 'tttc_unsubscribe_' . $tournament_id . '_' . $player_id );
+		error_log(
+			sprintf(
+				'[TTTC-UNSUBSCRIBE-DEBUG] tournament=%d status=%s enabled=%d unsubscribe_flag=%d player_present=%d nonce_present=%d nonce_valid=%d',
+				absint( $tournament_id ),
+				sanitize_key( $status ),
+				(int) $enabled,
+				(int) ( '1' === sanitize_key( get_query_var( 'tttc_unsubscribe' ) ) ),
+				(int) (bool) $player_id,
+				(int) ( '' !== $nonce ),
+				(int) (bool) $nonce_valid
+			)
+		);
 
-		if ( 'upcoming' !== $status || ! $enabled || ! $player_id || ! wp_verify_nonce( $nonce, 'tttc_unsubscribe_' . $tournament_id . '_' . $player_id ) ) {
+		if ( 'upcoming' !== $status || ! $enabled || ! $player_id || ! $nonce_valid ) {
 			wp_safe_redirect( add_query_arg( 'tttc_signup', 'unsubscribe_failed', $this->tournament_url( $tournament_id ) ) );
 			exit;
 		}
