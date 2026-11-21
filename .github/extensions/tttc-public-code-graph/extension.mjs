@@ -2,9 +2,9 @@ import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createCanvas, CanvasError, joinSession } from "@github/copilot-sdk/extension";
-import { buildGraph } from "./graph.mjs";
+import { buildGraph, buildDirectoryGraph } from "./graph.mjs";
 
-const DEFAULT_FILE = "includes/class-tttc-public.php";
+const DEFAULT_FILE = ".";
 const instances = new Map();
 
 function validateFilePath(input) {
@@ -20,6 +20,10 @@ function validateFilePath(input) {
 
 async function readGraph(filePath) {
   try {
+    const stat = await fs.stat(filePath);
+    if (stat.isDirectory()) {
+      return buildDirectoryGraph(filePath, process.cwd());
+    }
     const source = await fs.readFile(filePath, "utf8");
     return buildGraph(source, path.relative(process.cwd(), filePath).replaceAll(path.sep, "/"));
   } catch (error) {

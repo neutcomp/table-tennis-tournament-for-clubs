@@ -62,3 +62,53 @@ export function buildGraph(source, displayPath) {
 
   return { displayPath, nodes, edges };
 }
+
+export async function buildDirectoryGraph(directory, workspaceRoot) {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const excluded = new Set([".git", ".github", "node_modules", "vendor"]);
+  const files = [];
+
+  async function visit(current) {
+    const entries = await fs.readdir(current, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (!excluded.has(entry.name)) {
+          await visit(path.join(current, entry.name));
+        }
+      } else if (entry.isFile() && entry.name.endsWith(".php")) {
+        files.push(path.join(current, entry.name));
+      }
+    }
+  }
+
+  await visit(directory);
+  const nodes = [];
+  const edges = [];
+  for (const file of files.sort()) {
+    const source = await fs.readFile(file, "utf8");
+    const displayPath = path.relative(workspaceRoot, file).replaceAll(path.sep, "/");
+    const graph = buildGraph(source, displayPath);
+    const fileKey = displayPath.replace(/[^a-zA-Z0-9]+/g, "-");
+    for (const node of graph.nodes) {
+      nodes.push({
+        ...node,
+        id: `${fileKey}:${node.id}`,
+        file: displayPath,
+      });
+    }
+    for (const edge of graph.edges) {
+      edges.push({
+        ...edge,
+        from: `${fileKey}:${edge.from}`,
+        to: `${fileKey}:${edge.to}`,
+      });
+    }
+  }
+
+  return {
+    displayPath: path.relative(workspaceRoot, directory).replaceAll(path.sep, "/") || ".",
+    nodes,
+    edges,
+  };
+}
