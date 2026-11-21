@@ -125,6 +125,7 @@ final class TTTC_Public {
 		$vars[] = 'tttc_unsubscribe';
 		$vars[] = 'tttc_unsubscribe_player';
 		$vars[] = 'tttc_unsubscribe_nonce';
+		$vars[] = 'tttc_unsubscribe_token';
 		$vars[] = 'showtv';
 
 		return $vars;
@@ -1738,22 +1739,12 @@ final class TTTC_Public {
 		$status = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_STATUS, true );
 		$enabled = '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_UNSUBSCRIBE_POSSIBLE, true );
 		$player_id = absint( get_query_var( 'tttc_unsubscribe_player' ) );
-		$nonce = sanitize_text_field( get_query_var( 'tttc_unsubscribe_nonce' ) );
-		$nonce_valid = $player_id && wp_verify_nonce( $nonce, 'tttc_unsubscribe_' . $tournament_id . '_' . $player_id );
-		error_log(
-			sprintf(
-				'[TTTC-UNSUBSCRIBE-DEBUG] tournament=%d status=%s enabled=%d unsubscribe_flag=%d player_present=%d nonce_present=%d nonce_valid=%d',
-				absint( $tournament_id ),
-				sanitize_key( $status ),
-				(int) $enabled,
-				(int) ( '1' === sanitize_key( get_query_var( 'tttc_unsubscribe' ) ) ),
-				(int) (bool) $player_id,
-				(int) ( '' !== $nonce ),
-				(int) (bool) $nonce_valid
-			)
-		);
+		$token = sanitize_text_field( get_query_var( 'tttc_unsubscribe_token' ) );
+		$token_valid = $player_id && $this->is_unsubscribe_token_valid( $token, $tournament_id, $player_id );
+		$legacy_nonce = sanitize_text_field( get_query_var( 'tttc_unsubscribe_nonce' ) );
+		$legacy_nonce_valid = $player_id && wp_verify_nonce( $legacy_nonce, 'tttc_unsubscribe_' . $tournament_id . '_' . $player_id );
 
-		if ( 'upcoming' !== $status || ! $enabled || ! $player_id || ! $nonce_valid ) {
+		if ( 'upcoming' !== $status || ! $enabled || ! $player_id || ( ! $token_valid && ! $legacy_nonce_valid ) ) {
 			wp_safe_redirect( add_query_arg( 'tttc_signup', 'unsubscribe_failed', $this->tournament_url( $tournament_id ) ) );
 			exit;
 		}
@@ -1770,6 +1761,20 @@ final class TTTC_Public {
 
 		wp_safe_redirect( add_query_arg( 'tttc_signup', 'unsubscribed', $this->tournament_url( $tournament_id ) ) );
 		exit;
+	}
+
+	private function create_unsubscribe_token( $tournament_id, $player_id ) {
+		$payload = absint( $tournament_id ) . '|' . absint( $player_id );
+
+		return hash_hmac( 'sha256', 'tttc_unsubscribe|' . $payload, wp_salt( 'auth' ) );
+	}
+
+	private function is_unsubscribe_token_valid( $token, $tournament_id, $player_id ) {
+		if ( ! is_string( $token ) || ! preg_match( '/\A[a-f0-9]{64}\z/', $token ) ) {
+			return false;
+		}
+
+		return hash_equals( $this->create_unsubscribe_token( $tournament_id, $player_id ), $token );
 	}
 
 	private function render_signup_form( $tournament_id ) {
@@ -1936,7 +1941,7 @@ final class TTTC_Public {
 				array(
 					'tttc_unsubscribe'          => '1',
 					'tttc_unsubscribe_player'   => absint( $player_id ),
-					'tttc_unsubscribe_nonce'    => wp_create_nonce( 'tttc_unsubscribe_' . $tournament_id . '_' . absint( $player_id ) ),
+					'tttc_unsubscribe_token'    => $this->create_unsubscribe_token( $tournament_id, $player_id ),
 				),
 				$this->tournament_url( $tournament_id )
 			);
