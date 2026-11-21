@@ -613,10 +613,11 @@ final class TTTC_Admin {
 		$competition_format = TTTC_Plugin::get_tournament_competition_format( $post->ID );
 		$description = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_DESCRIPTION, true );
 		$show_phone = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_SHOW_PHONE, true );
-		$show_phone = '' === $show_phone ? '1' : $show_phone;
+		$show_phone = '' === $show_phone ? '0' : $show_phone;
 		$show_ttapp_question = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_SHOW_TTAPP_QUESTION, true );
 		if ( '' === $show_ttapp_question ) {
-			$show_ttapp_question = '1' === get_post_meta( $post->ID, TTTC_Plugin::LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION, true ) ? '0' : '1';
+			$legacy_hide_ttapp_question = get_post_meta( $post->ID, TTTC_Plugin::LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION, true );
+			$show_ttapp_question = '0' === $legacy_hide_ttapp_question ? '1' : '0';
 		}
 		$ask_joining = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true );
 		$tournament_leader_email = get_post_meta( $post->ID, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true );

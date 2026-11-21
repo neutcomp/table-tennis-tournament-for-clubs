@@ -1533,7 +1533,7 @@ final class TTTC_Public {
 	private function show_signup_phone( $tournament_id ) {
 		$show_phone = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_SHOW_PHONE, true );
 
-		return '' === $show_phone || '1' === $show_phone;
+		return '1' === $show_phone;
 	}
 
 	private function show_signup_ttapp_question( $tournament_id ) {
@@ -1542,7 +1542,9 @@ final class TTTC_Public {
 			return '1' === $show_ttapp_question;
 		}
 
-		return '1' !== get_post_meta( $tournament_id, TTTC_Plugin::LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION, true );
+		$legacy_hide_ttapp_question = get_post_meta( $tournament_id, TTTC_Plugin::LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION, true );
+
+		return '0' === $legacy_hide_ttapp_question;
 	}
 
 	private function is_signup_open( $tournament_id ) {
