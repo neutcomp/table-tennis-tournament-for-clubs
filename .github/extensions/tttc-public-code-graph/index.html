@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TTTC Public Code Graph</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0d1117; color: #e6edf3; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      padding:12px 16px; border-bottom:1px solid #30363d; background:#161b22; }
+    h1 { margin:0; font-size:15px; }
+    #path { color:#8b949e; font-size:12px; overflow-wrap:anywhere; }
+    button { border:1px solid #30363d; border-radius:6px; background:#21262d; color:#e6edf3;
+      min-height:32px; padding:6px 10px; cursor:pointer; }
+    button:hover { background:#30363d; }
+    button:focus-visible { outline:2px solid #58a6ff; outline-offset:2px; }
+    #graph { width:100%; height:calc(100vh - 57px); overflow:hidden; }
+    svg { width:100%; height:100%; }
+    .node rect { fill:#161b22; stroke:#58a6ff; stroke-width:1.5; }
+    .node.class rect { fill:#1f6feb; stroke:#79c0ff; }
+    .node.hook rect { fill:#2d1f3d; stroke:#d2a8ff; }
+    .node.private rect { fill:#21262d; stroke:#f0883e; }
+    .node text { fill:#e6edf3; font-size:12px; pointer-events:none; }
+    .edge { stroke:#6e7681; stroke-width:1.2; fill:none; marker-end:url(#arrow); }
+    .edge-label { fill:#8b949e; font-size:10px; }
+    #status { position:absolute; left:16px; bottom:12px; padding:6px 8px; border-radius:6px;
+      background:#161b22cc; color:#8b949e; font-size:12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>TTTC Public Code Graph</h1><div id="path"></div></div>
+    <button id="refresh" type="button">Refresh</button>
+  </header>
+  <main id="graph" aria-label="Interactive code graph"></main>
+  <div id="status" role="status" aria-live="polite">Loading graph...</div>
+  <script>
+    let graphData;
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) =>
+      ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
+
+    async function loadGraph() {
+      document.getElementById("status").textContent = "Loading graph...";
+      try {
+        const response = await fetch("/graph.json", { cache:"no-store" });
+        graphData = await response.json();
+        if (!response.ok) throw new Error(graphData.error || "Could not load graph");
+        renderGraph(graphData);
+        document.getElementById("path").textContent = graphData.displayPath;
+        document.getElementById("status").textContent =
+          `${graphData.nodes.length} nodes, ${graphData.edges.length} edges`;
+      } catch (error) {
+        document.getElementById("status").textContent = error.message;
+      }
+    }
+
+    function renderGraph(graph) {
+      const width = document.getElementById("graph").clientWidth;
+      const height = document.getElementById("graph").clientHeight;
+      const classNodes = graph.nodes.filter((node) => node.type === "class");
+      const methodNodes = graph.nodes.filter((node) => node.type === "method");
+      const hookNodes = graph.nodes.filter((node) => node.type === "hook");
+      const columns = Math.max(1, Math.ceil(Math.sqrt(methodNodes.length * width / height)));
+      const positions = new Map();
+
+      classNodes.forEach((node) => positions.set(node.id, { x: width / 2, y: 55 }));
+      methodNodes.forEach((node, index) => {
+        positions.set(node.id, {
+          x: 130 + (index % columns) * Math.max(150, (width - 260) / Math.max(1, columns - 1)),
+          y: 145 + Math.floor(index / columns) * 90,
+        });
+      });
+      hookNodes.forEach((node, index) => {
+        positions.set(node.id, { x: width - 140, y: 145 + index * 55 });
+      });
+
+      const nodeMarkup = graph.nodes.map((node) => {
+        const pos = positions.get(node.id);
+        if (!pos) return "";
+        const w = node.type === "class" ? 150 : node.type === "hook" ? 120 : 145;
+        const label = escapeHtml(node.label);
+        const css = ["node", node.type, node.visibility === "private" ? "private" : ""].join(" ");
+        return `<g class="${css}" transform="translate(${pos.x - w / 2},${pos.y - 18})" tabindex="0"
+          aria-label="${escapeHtml(node.label)}${node.line ? ", line " + node.line : ""}">
+          <rect width="${w}" height="36" rx="7"></rect>
+          <text x="${w / 2}" y="23" text-anchor="middle">${label}</text>
+        </g>`;
+      }).join("");
+
+      const edgeMarkup = graph.edges.map((edge) => {
+        const from = positions.get(edge.from);
+        const to = positions.get(edge.to);
+        if (!from || !to) return "";
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+        const sx = from.x + dx * 18 / length;
+        const sy = from.y + dy * 18 / length;
+        const tx = to.x - dx * 18 / length;
+        const ty = to.y - dy * 18 / length;
+        return `<path class="edge" d="M ${sx} ${sy} L ${tx} ${ty}">
+          <title>${escapeHtml(edge.label)}</title></path>
+          <text class="edge-label" x="${(sx + tx) / 2}" y="${(sy + ty) / 2 - 4}">
+            ${escapeHtml(edge.label)}</text>`;
+      }).join("");
+
+      document.getElementById("graph").innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img"
+        aria-label="Class method dependency graph">
+        <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4"
+          orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6e7681"></path></marker></defs>
+        ${edgeMarkup}${nodeMarkup}</svg>`;
+    }
+
+    document.getElementById("refresh").addEventListener("click", loadGraph);
+    window.addEventListener("resize", () => graphData && renderGraph(graphData));
+    loadGraph();
+  </script>
+</body>
+</html>
