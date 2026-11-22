@@ -256,6 +256,10 @@
   display: none;
 }
 
+.tttc-assignment-form tr.tttc-not-joining > * {
+  background-color: #f8d7da;
+}
+
 .tttc-scores-form {
   margin-top: 28px;
 }

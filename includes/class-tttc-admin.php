@@ -3089,6 +3089,21 @@ final class TTTC_Admin {
 		$tournament_type = in_array( $tournament_type, array( 'senior', 'youth', 'both' ), true ) ? $tournament_type : 'both';
 		$players         = get_posts( array( 'post_type' => TTTC_Plugin::PLAYER_POST_TYPE, 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC', 'meta_query' => array( array( 'key' => TTTC_Plugin::PLAYER_META_ACTIVE, 'value' => '1' ) ) ) );
 		$assigned      = $this->assigned_player_ids( $tournament_id );
+		$not_joining_responses = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_RESPONSES, true );
+		$not_joining_lookup = array();
+		if ( is_array( $not_joining_responses ) ) {
+			foreach ( $not_joining_responses as $response ) {
+				if ( ! is_array( $response ) || empty( $response['name'] ) || empty( $response['email'] ) || ! is_string( $response['name'] ) || ! is_string( $response['email'] ) ) {
+					continue;
+				}
+				$response_name  = strtolower( preg_replace( '/\s+/', ' ', trim( (string) $response['name'] ) ) );
+				$response_email = strtolower( sanitize_email( $response['email'] ) );
+				$lookup_key     = wp_json_encode( array( $response_email, $response_name ) );
+				if ( $response_email && false !== $lookup_key ) {
+					$not_joining_lookup[ $lookup_key ] = true;
+				}
+			}
+		}
 		?>
 <div class="wrap">
 	<h1><?php esc_html_e( 'Tournament Players', 'table-tennis-tournament-for-clubs' ); ?></h1>
@@ -3131,12 +3146,24 @@ final class TTTC_Admin {
 						$player_type = $player_type ? $player_type : 'senior';
 						$is_assigned = in_array( $player->ID, $assigned, true );
 						$type_mismatch = 'both' !== $tournament_type && $player_type !== $tournament_type;
+						$player_name = strtolower( preg_replace( '/\s+/', ' ', trim( $player->post_title ) ) );
+						$player_email = strtolower( sanitize_email( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_EMAIL, true ) ) );
+						$lookup_key = wp_json_encode( array( $player_email, $player_name ) );
+						$is_not_joining = $player_email && false !== $lookup_key && isset( $not_joining_lookup[ $lookup_key ] );
+						$row_classes = array();
+						if ( $type_mismatch ) {
+							$row_classes[] = 'tttc-row-hidden-by-type';
+						}
+						if ( $is_not_joining ) {
+							$row_classes[] = 'tttc-not-joining';
+						}
 						?>
 				<tr data-type="<?php echo esc_attr( $player_type ); ?>"
-					class="<?php echo $type_mismatch ? 'tttc-row-hidden-by-type' : ''; ?>">
+					class="<?php echo esc_attr( implode( ' ', $row_classes ) ); ?>">
 					<th class="check-column"><input type="checkbox" name="player_ids[]"
 							value="<?php echo esc_attr( $player->ID ); ?>" <?php checked( $is_assigned ); ?>></th>
-					<td><?php echo esc_html( $player->post_title ); ?></td>
+					<td><?php echo esc_html( $player->post_title ); ?><?php if ( $is_not_joining ) : ?><span
+							class="screen-reader-text"><?php esc_html_e( 'Reported as not joining', 'table-tennis-tournament-for-clubs' ); ?></span><?php endif; ?></td>
 					<td><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></td>
 					<td><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_EMAIL, true ) ); ?></td>
 				</tr>

@@ -414,6 +414,12 @@ msgstr "Het e-mailadres voor meldingen van dit toernooi is niet goed ingesteld. 
 msgid "Your response could not be sent. Please try again."
 msgstr "Je antwoord kon niet worden verzonden. Probeer het opnieuw."
 
+msgid "Your response was emailed, but could not be saved to the tournament player list. Please contact the organizer."
+msgstr "Je antwoord is gemaild, maar kon niet worden opgeslagen in de spelerslijst van het toernooi. Neem contact op met de organisator."
+
+msgid "Reported as not joining"
+msgstr "Heeft aangegeven niet mee te doen"
+
 msgid "Not joining %s"
 msgstr "Doet niet mee aan %s"
 

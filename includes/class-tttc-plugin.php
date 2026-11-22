@@ -39,6 +39,7 @@ final class TTTC_Plugin {
 	const LEGACY_TOURNAMENT_META_HIDE_TTAPP_QUESTION = '_tttc_hide_ttapp_question';
 	const TOURNAMENT_META_ASK_JOINING = '_tttc_ask_joining';
 	const TOURNAMENT_META_NOT_JOINING_EMAIL = '_tttc_not_joining_email';
+	const TOURNAMENT_META_NOT_JOINING_RESPONSES = '_tttc_not_joining_responses';
 	const TOURNAMENT_META_TIKKIE_ENABLED = '_tttc_tikkie_enabled';
 	const TOURNAMENT_META_TIKKIE_QR = '_tttc_tikkie_qr';
 	const TOURNAMENT_META_TIKKIE_AMOUNT = '_tttc_tikkie_amount';

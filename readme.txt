@@ -4,7 +4,7 @@ Tags: table tennis, tournament, players, clubs
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -116,6 +116,9 @@ Player phone numbers are stored with player records and available to administrat
 Tournament QR codes are generated in the visitor's browser using JavaScript included with the plugin. Viewing a tournament page does not request a QR-code image from an external service.
 
 == Changelog ==
+
+= 2.2.1 =
+* Save non-attendance responses and highlight matching players on the Tournament Players screen.
 
 = 2.2.0 =
 * Add personalized reminder emails for assigned tournament players.

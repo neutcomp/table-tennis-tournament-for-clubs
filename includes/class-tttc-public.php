@@ -1623,6 +1623,10 @@ final class TTTC_Public {
 					$this->signup_error = __( 'Your response could not be sent. Please try again.', 'table-tennis-tournament-for-clubs' );
 					return;
 				}
+				if ( ! $this->record_not_joining_response( $tournament_id, $this->signup_form['name'], $this->signup_form['email'] ) ) {
+					$this->signup_error = __( 'Your response was emailed, but could not be saved to the tournament player list. Please contact the organizer.', 'table-tennis-tournament-for-clubs' );
+					return;
+				}
 				wp_safe_redirect( add_query_arg( 'tttc_signup', 'not_joining', $this->tournament_url( $tournament_id ) ) );
 				exit;
 			}
@@ -1975,6 +1979,29 @@ final class TTTC_Public {
 		}
 
 		return wp_mail( $recipient, $subject, '<div>' . nl2br( esc_html( $body ) ) . '</div>', $headers );
+	}
+
+	private function record_not_joining_response( $tournament_id, $name, $email ) {
+		$responses = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_RESPONSES, true );
+		$responses = is_array( $responses ) ? $responses : array();
+		$name      = $this->normalize_name( $name );
+		$email     = strtolower( sanitize_email( $email ) );
+
+		foreach ( $responses as $response ) {
+			if ( ! is_array( $response ) || ! isset( $response['name'], $response['email'] ) || ! is_string( $response['name'] ) || ! is_string( $response['email'] ) ) {
+				continue;
+			}
+			if ( $name === $this->normalize_name( $response['name'] ) && $email === strtolower( sanitize_email( $response['email'] ) ) ) {
+				return true;
+			}
+		}
+
+		$responses[] = array(
+			'name'  => $name,
+			'email' => $email,
+		);
+
+		return false !== update_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_RESPONSES, $responses );
 	}
 
 	private function assigned_players( $tournament_id ) {
