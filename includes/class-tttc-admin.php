@@ -3216,6 +3216,10 @@ final class TTTC_Admin {
 		</p>
 		<div class="nav-tab-wrapper tttc-player-type-tabs" role="group"
 			aria-label="<?php esc_attr_e( 'Player type', 'table-tennis-tournament-for-clubs' ); ?>">
+			<?php if ( 'both' === $tournament_type ) : ?>
+				<button type="button" class="nav-tab tttc-player-type-tab nav-tab-active"
+					data-player-type="all" aria-pressed="true"><?php esc_html_e( 'All', 'table-tennis-tournament-for-clubs' ); ?></button>
+			<?php endif; ?>
 			<button type="button"
 				class="nav-tab tttc-player-type-tab <?php echo 'senior' === $tournament_type ? 'nav-tab-active' : ''; ?>"
 				data-player-type="senior"
@@ -3684,7 +3688,9 @@ final class TTTC_Admin {
 
 		if ( false !== strpos( $hook, 'tttc-' ) || 'tttc-settings' === $plugin_page || in_array( $screen_post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) {
 			wp_enqueue_style( 'tttc-admin', TTTC_URL . 'assets/admin.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.css' ) );
-			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery', 'jquery-ui-sortable' ), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.js' ), true );
+			if ( 'tttc-settings' !== $plugin_page ) {
+				wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery', 'jquery-ui-sortable' ), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.js' ), true );
+			}
 			if ( TTTC_Plugin::TOURNAMENT_POST_TYPE === $screen_post_type && in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 				wp_enqueue_media();
 			}

@@ -570,6 +570,9 @@ msgstr "Toernooistatussen"
 msgid "Player type"
 msgstr "Spelerstype"
 
+msgid "All"
+msgstr "Alle"
+
 msgid "Player is active and available for new tournament assignments"
 msgstr "Speler is actief en beschikbaar voor nieuwe toernooitoewijzingen"
 
