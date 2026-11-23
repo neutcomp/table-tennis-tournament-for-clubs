@@ -8,6 +8,36 @@
   color: #d63638;
 }
 
+.tttc-admin-breadcrumb {
+  margin: 12px 20px 0;
+}
+
+.tttc-admin-breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #646970;
+  font-size: 13px;
+}
+
+.tttc-admin-breadcrumb li:not(:first-child)::before {
+  content: "/";
+  margin-right: 8px;
+  color: #a7aaad;
+}
+
+.tttc-admin-breadcrumb a {
+  text-decoration: none;
+}
+
+.tttc-admin-breadcrumb a:hover,
+.tttc-admin-breadcrumb a:focus {
+  text-decoration: underline;
+}
+
 .tttc-info-trigger {
   background: none;
   border: none;

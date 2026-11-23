@@ -41,6 +41,7 @@ Player emails are stored for club administration and are not shown in public sho
 * TV mode (`?showtv=true`) for showing live scores full-screen on a TV, with automatic slide cycling and live refresh when scores are saved.
 * Public player pages at `/speler/{player-name}/{player-id}` with player details, played tournaments, and finalized top-three positions.
 * Public shortcodes for tournament and active player lists.
+* Admin breadcrumbs for navigating back to the dashboard, player and tournament lists, and tournament details.
 
 == Installation ==
 

@@ -131,6 +131,12 @@ msgstr "Tafeltennisclubs"
 msgid "Dashboard"
 msgstr "Dashboard"
 
+msgid "Settings"
+msgstr "Instellingen"
+
+msgid "Admin breadcrumb"
+msgstr "Beheernavigatie"
+
 msgid "Players"
 msgstr "Spelers"
 

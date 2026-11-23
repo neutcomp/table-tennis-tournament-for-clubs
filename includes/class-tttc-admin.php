@@ -18,6 +18,7 @@ final class TTTC_Admin {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
+		add_action( 'admin_notices', array( $this, 'render_admin_breadcrumb' ) );
 		add_filter( 'wp_insert_post_data', array( $this, 'validate_player_duplicate' ), 10, 2 );
 		add_action( 'save_post_' . TTTC_Plugin::PLAYER_POST_TYPE, array( $this, 'save_player' ) );
 		add_action( 'save_post_' . TTTC_Plugin::TOURNAMENT_POST_TYPE, array( $this, 'save_tournament' ) );
@@ -68,6 +69,100 @@ final class TTTC_Admin {
 		add_submenu_page( null, __( 'Placement Pools', 'table-tennis-tournament-for-clubs' ), __( 'Placement Pools', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-placement-pools', array( $this, 'placement_pools_page' ) );
 		add_submenu_page( null, __( 'Email Players', 'table-tennis-tournament-for-clubs' ), __( 'Email Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-reminder', array( $this, 'reminder_page' ) );
 		add_submenu_page( null, __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), 'edit_posts', 'tttc-merge-players', array( $this, 'merge_page' ) );
+	}
+
+	public function render_admin_breadcrumb() {
+		$screen = get_current_screen();
+		if ( ! $screen ) {
+			return;
+		}
+
+		$dashboard_url = admin_url( 'admin.php?page=tttc-dashboard' );
+		$breadcrumbs   = array();
+		$page           = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		$custom_pages   = array(
+			'tttc-assignments'     => array( 'label' => __( 'Tournament Players', 'table-tennis-tournament-for-clubs' ), 'section' => 'tournaments' ),
+			'tttc-order'           => array( 'label' => __( 'Order Players', 'table-tennis-tournament-for-clubs' ), 'section' => 'tournaments' ),
+			'tttc-scores'          => array( 'label' => __( 'Scores', 'table-tennis-tournament-for-clubs' ), 'section' => 'tournaments' ),
+			'tttc-placement-pools' => array( 'label' => __( 'Placement Pools', 'table-tennis-tournament-for-clubs' ), 'section' => 'tournaments' ),
+			'tttc-reminder'        => array( 'label' => __( 'Email Players', 'table-tennis-tournament-for-clubs' ), 'section' => 'tournaments' ),
+			'tttc-merge-players'   => array( 'label' => __( 'Merge Players', 'table-tennis-tournament-for-clubs' ), 'section' => 'players' ),
+		);
+
+		if ( 'tttc-dashboard' === $page ) {
+			$breadcrumbs[] = array( 'label' => __( 'Dashboard', 'table-tennis-tournament-for-clubs' ) );
+		} elseif ( 'tttc-settings' === $page ) {
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+			$breadcrumbs[] = array( 'label' => __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), 'url' => $dashboard_url );
+			$breadcrumbs[] = array( 'label' => __( 'Settings', 'table-tennis-tournament-for-clubs' ) );
+		} elseif ( isset( $custom_pages[ $page ] ) ) {
+			if ( ! current_user_can( 'edit_posts' ) ) {
+				return;
+			}
+			$custom_page = $custom_pages[ $page ];
+			$breadcrumbs[] = array( 'label' => __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), 'url' => $dashboard_url );
+			if ( 'tournaments' === $custom_page['section'] ) {
+				$breadcrumbs[] = array(
+					'label' => __( 'Tournaments', 'table-tennis-tournament-for-clubs' ),
+					'url'   => admin_url( 'edit.php?post_type=' . TTTC_Plugin::TOURNAMENT_POST_TYPE ),
+				);
+				$tournament_id = isset( $_GET['tournament_id'] ) ? absint( wp_unslash( $_GET['tournament_id'] ) ) : 0;
+				if ( TTTC_Plugin::TOURNAMENT_POST_TYPE === get_post_type( $tournament_id ) && current_user_can( 'edit_post', $tournament_id ) ) {
+					$breadcrumbs[] = array(
+						'label' => get_the_title( $tournament_id ),
+						'url'   => get_edit_post_link( $tournament_id ),
+					);
+				}
+			} else {
+				$breadcrumbs[] = array(
+					'label' => __( 'Players', 'table-tennis-tournament-for-clubs' ),
+					'url'   => admin_url( 'edit.php?post_type=' . TTTC_Plugin::PLAYER_POST_TYPE ),
+				);
+			}
+			$breadcrumbs[] = array( 'label' => $custom_page['label'] );
+		} elseif ( in_array( $screen->post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) {
+			if ( ! current_user_can( 'edit_posts' ) ) {
+				return;
+			}
+			$is_tournament = TTTC_Plugin::TOURNAMENT_POST_TYPE === $screen->post_type;
+			$section_label = $is_tournament
+				? __( 'Tournaments', 'table-tennis-tournament-for-clubs' )
+				: __( 'Players', 'table-tennis-tournament-for-clubs' );
+			$list_url      = admin_url( 'edit.php?post_type=' . $screen->post_type );
+			$breadcrumbs[] = array( 'label' => __( 'Dashboard', 'table-tennis-tournament-for-clubs' ), 'url' => $dashboard_url );
+
+			if ( 'edit' === $screen->base ) {
+				$breadcrumbs[] = array( 'label' => $section_label );
+			} else {
+				$breadcrumbs[] = array( 'label' => $section_label, 'url' => $list_url );
+				$post_id       = isset( $_GET['post'] ) ? absint( wp_unslash( $_GET['post'] ) ) : 0;
+				if ( $post_id && $screen->post_type === get_post_type( $post_id ) && current_user_can( 'edit_post', $post_id ) ) {
+					$breadcrumbs[] = array( 'label' => get_the_title( $post_id ) );
+				} else {
+					$add_label = $is_tournament
+						? __( 'Add Tournament', 'table-tennis-tournament-for-clubs' )
+						: __( 'Add Player', 'table-tennis-tournament-for-clubs' );
+					$breadcrumbs[] = array( 'label' => $add_label );
+				}
+			}
+		} else {
+			return;
+		}
+
+		echo '<nav class="tttc-admin-breadcrumb" aria-label="' . esc_attr__( 'Admin breadcrumb', 'table-tennis-tournament-for-clubs' ) . '"><ol>';
+		$last_index = count( $breadcrumbs ) - 1;
+		foreach ( $breadcrumbs as $index => $breadcrumb ) {
+			echo '<li>';
+			if ( isset( $breadcrumb['url'] ) && $index !== $last_index ) {
+				echo '<a href="' . esc_url( $breadcrumb['url'] ) . '">' . esc_html( $breadcrumb['label'] ) . '</a>';
+			} else {
+				echo '<span' . ( $index === $last_index ? ' aria-current="page"' : '' ) . '>' . esc_html( $breadcrumb['label'] ) . '</span>';
+			}
+			echo '</li>';
+		}
+		echo '</ol></nav>';
 	}
 
 	public function register_settings() {
@@ -3582,11 +3677,12 @@ final class TTTC_Admin {
 	public function enqueue_assets( $hook ) {
 		$screen           = get_current_screen();
 		$screen_post_type = $screen ? $screen->post_type : '';
+		$plugin_page      = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 		if ( ! $screen_post_type && isset( $_GET['post_type'] ) ) {
 			$screen_post_type = sanitize_key( wp_unslash( $_GET['post_type'] ) );
 		}
 
-		if ( false !== strpos( $hook, 'tttc-' ) || in_array( $screen_post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) {
+		if ( false !== strpos( $hook, 'tttc-' ) || 'tttc-settings' === $plugin_page || in_array( $screen_post_type, array( TTTC_Plugin::PLAYER_POST_TYPE, TTTC_Plugin::TOURNAMENT_POST_TYPE ), true ) ) {
 			wp_enqueue_style( 'tttc-admin', TTTC_URL . 'assets/admin.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.css' ) );
 			wp_enqueue_script( 'tttc-admin', TTTC_URL . 'assets/admin.js', array( 'jquery', 'jquery-ui-sortable' ), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/admin.js' ), true );
 			if ( TTTC_Plugin::TOURNAMENT_POST_TYPE === $screen_post_type && in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
