@@ -1623,7 +1623,7 @@ final class TTTC_Public {
 					$this->signup_error = __( 'Your response could not be sent. Please try again.', 'table-tennis-tournament-for-clubs' );
 					return;
 				}
-				if ( ! $this->record_not_joining_response( $tournament_id, $this->signup_form['name'], $this->signup_form['email'] ) ) {
+				if ( ! $this->record_not_joining_response( $tournament_id, $this->signup_form['name'], $this->signup_form['email'], $this->signup_form['reason'] ) ) {
 					$this->signup_error = __( 'Your response was emailed, but could not be saved to the tournament player list. Please contact the organizer.', 'table-tennis-tournament-for-clubs' );
 					return;
 				}
@@ -1981,24 +1981,32 @@ final class TTTC_Public {
 		return wp_mail( $recipient, $subject, '<div>' . nl2br( esc_html( $body ) ) . '</div>', $headers );
 	}
 
-	private function record_not_joining_response( $tournament_id, $name, $email ) {
+	private function record_not_joining_response( $tournament_id, $name, $email, $reason ) {
 		$responses = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_RESPONSES, true );
 		$responses = is_array( $responses ) ? $responses : array();
 		$name      = $this->normalize_name( $name );
 		$email     = strtolower( sanitize_email( $email ) );
+		$reason    = sanitize_textarea_field( $reason );
 
-		foreach ( $responses as $response ) {
+		foreach ( $responses as $index => $response ) {
 			if ( ! is_array( $response ) || ! isset( $response['name'], $response['email'] ) || ! is_string( $response['name'] ) || ! is_string( $response['email'] ) ) {
 				continue;
 			}
 			if ( $name === $this->normalize_name( $response['name'] ) && $email === strtolower( sanitize_email( $response['email'] ) ) ) {
-				return true;
+				$existing_reason = isset( $response['reason'] ) && is_string( $response['reason'] ) ? $response['reason'] : '';
+				if ( $existing_reason === $reason ) {
+					return true;
+				}
+
+				$responses[ $index ]['reason'] = $reason;
+				return false !== update_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_RESPONSES, $responses );
 			}
 		}
 
 		$responses[] = array(
 			'name'  => $name,
 			'email' => $email,
+			'reason' => $reason,
 		);
 
 		return false !== update_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_RESPONSES, $responses );

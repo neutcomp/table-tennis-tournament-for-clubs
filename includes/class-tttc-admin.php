@@ -3195,7 +3195,7 @@ final class TTTC_Admin {
 				$response_email = strtolower( sanitize_email( $response['email'] ) );
 				$lookup_key     = wp_json_encode( array( $response_email, $response_name ) );
 				if ( $response_email && false !== $lookup_key ) {
-					$not_joining_lookup[ $lookup_key ] = true;
+					$not_joining_lookup[ $lookup_key ] = isset( $response['reason'] ) && is_string( $response['reason'] ) ? $response['reason'] : '';
 				}
 			}
 		}
@@ -3249,6 +3249,7 @@ final class TTTC_Admin {
 						$player_email = strtolower( sanitize_email( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_EMAIL, true ) ) );
 						$lookup_key = wp_json_encode( array( $player_email, $player_name ) );
 						$is_not_joining = $player_email && false !== $lookup_key && isset( $not_joining_lookup[ $lookup_key ] );
+						$not_joining_reason = $is_not_joining ? trim( $not_joining_lookup[ $lookup_key ] ) : '';
 						$row_classes = array();
 						if ( $type_mismatch ) {
 							$row_classes[] = 'tttc-row-hidden-by-type';
@@ -3258,7 +3259,8 @@ final class TTTC_Admin {
 						}
 						?>
 				<tr data-type="<?php echo esc_attr( $player_type ); ?>"
-					class="<?php echo esc_attr( implode( ' ', $row_classes ) ); ?>">
+					class="<?php echo esc_attr( implode( ' ', $row_classes ) ); ?>"<?php if ( '' !== $not_joining_reason ) : ?>
+					title="<?php echo esc_attr( $not_joining_reason ); ?>"<?php endif; ?>>
 					<th class="check-column"><input type="checkbox" name="player_ids[]"
 							value="<?php echo esc_attr( $player->ID ); ?>" <?php checked( $is_assigned ); ?>></th>
 					<td><?php echo esc_html( $player->post_title ); ?><?php if ( $is_not_joining ) : ?><span
