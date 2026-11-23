@@ -83,6 +83,38 @@ final class TTTC_Public {
 		return in_array( strtolower( sanitize_text_field( $show_tv ) ), array( 'true', '1' ), true );
 	}
 
+	private function is_user_initiated_navigation() {
+		foreach ( array( 'HTTP_SEC_PURPOSE', 'HTTP_PURPOSE' ) as $header ) {
+			if ( ! isset( $_SERVER[ $header ] ) ) {
+				continue;
+			}
+
+			$purpose = strtolower( (string) wp_unslash( $_SERVER[ $header ] ) );
+			if ( false !== strpos( $purpose, 'prefetch' ) || false !== strpos( $purpose, 'prerender' ) ) {
+				return false;
+			}
+		}
+
+		if ( isset( $_SERVER['HTTP_SEC_FETCH_USER'] ) ) {
+			return '?1' === trim( (string) wp_unslash( $_SERVER['HTTP_SEC_FETCH_USER'] ) );
+		}
+
+		if (
+			isset( $_SERVER['HTTP_SEC_FETCH_MODE'], $_SERVER['HTTP_SEC_FETCH_DEST'], $_SERVER['HTTP_SEC_FETCH_SITE'], $_SERVER['HTTP_REFERER'], $_SERVER['REQUEST_URI'] )
+			&& 'navigate' === strtolower( (string) wp_unslash( $_SERVER['HTTP_SEC_FETCH_MODE'] ) )
+			&& 'document' === strtolower( (string) wp_unslash( $_SERVER['HTTP_SEC_FETCH_DEST'] ) )
+			&& 'same-origin' === strtolower( (string) wp_unslash( $_SERVER['HTTP_SEC_FETCH_SITE'] ) )
+		) {
+			$referer_path = wp_parse_url( wp_unslash( $_SERVER['HTTP_REFERER'] ), PHP_URL_PATH );
+			$request_path = wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH );
+			if ( is_string( $referer_path ) && is_string( $request_path ) && $referer_path === $request_path ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public function enqueue_assets() {
 		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
 	}
@@ -415,7 +447,7 @@ final class TTTC_Public {
 			return;
 		}
 
-		if ( ! is_user_logged_in() ) {
+		if ( ! is_user_logged_in() && $this->is_user_initiated_navigation() ) {
 			$view_count = absint( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_VISITS, true ) );
 			update_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_VISITS, $view_count + 1 );
 		}
