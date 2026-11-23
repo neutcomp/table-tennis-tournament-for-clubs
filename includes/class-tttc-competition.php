@@ -180,7 +180,7 @@ final class TTTC_Competition {
 					return $point_ratio;
 				}
 				// Still fully tied: ITTF resolves this by drawing lots, so fall back to a stable, deterministic order.
-				$title_difference = strcasecmp( $players_by_id[ $a ]->post_title, $players_by_id[ $b ]->post_title );
+				$title_difference = strcasecmp( TTTC_Plugin::get_player_name( $players_by_id[ $a ] ), TTTC_Plugin::get_player_name( $players_by_id[ $b ] ) );
 				return 0 !== $title_difference ? $title_difference : ( $a - $b );
 			}
 		);

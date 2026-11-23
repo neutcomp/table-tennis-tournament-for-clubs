@@ -498,7 +498,7 @@ final class TTTC_Admin {
 				return $rating_difference;
 			}
 
-			$title_difference = strcasecmp( $first->post_title, $second->post_title );
+			$title_difference = strcasecmp( TTTC_Plugin::get_player_name( $first ), TTTC_Plugin::get_player_name( $second ) );
 			return 0 !== $title_difference ? $title_difference : $first->ID - $second->ID;
 		} );
 		$top_players = array_slice( $top_players, 0, 3 );
@@ -556,7 +556,7 @@ final class TTTC_Admin {
 				return $win_difference;
 			}
 
-			$title_difference = strcasecmp( $first['player']->post_title, $second['player']->post_title );
+			$title_difference = strcasecmp( TTTC_Plugin::get_player_name( $first['player'] ), TTTC_Plugin::get_player_name( $second['player'] ) );
 			return 0 !== $title_difference ? $title_difference : $first['player']->ID - $second['player']->ID;
 		} );
 		$top_winners = array_slice( $top_winners, 0, 3 );
@@ -604,7 +604,7 @@ final class TTTC_Admin {
 								$player_url = TTTC_Public::instance() ? TTTC_Public::instance()->player_url( $player->ID ) : '';
 								?>
 				<li><span><?php if ( $player_url ) : ?><a
-							href="<?php echo esc_url( $player_url ); ?>"><?php echo esc_html( $player->post_title ); ?></a><?php else : ?><?php echo esc_html( $player->post_title ); ?><?php endif; ?></span><strong><?php echo esc_html( absint( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ) ); ?></strong>
+							href="<?php echo esc_url( $player_url ); ?>"><?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?></a><?php else : ?><?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?><?php endif; ?></span><strong><?php echo esc_html( absint( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ) ); ?></strong>
 				</li>
 				<?php endforeach; ?>
 			</ol>
@@ -618,7 +618,7 @@ final class TTTC_Admin {
 								$player_url = TTTC_Public::instance() ? TTTC_Public::instance()->player_url( $winner['player']->ID ) : '';
 								?>
 				<li><span><?php if ( $player_url ) : ?><a
-							href="<?php echo esc_url( $player_url ); ?>"><?php echo esc_html( $winner['player']->post_title ); ?></a><?php else : ?><?php echo esc_html( $winner['player']->post_title ); ?><?php endif; ?></span><strong><?php echo esc_html( $winner['wins'] ); ?></strong>
+							href="<?php echo esc_url( $player_url ); ?>"><?php echo esc_html( TTTC_Plugin::get_player_name( $winner['player'] ) ); ?></a><?php else : ?><?php echo esc_html( TTTC_Plugin::get_player_name( $winner['player'] ) ); ?><?php endif; ?></span><strong><?php echo esc_html( $winner['wins'] ); ?></strong>
 				</li>
 				<?php endforeach; ?>
 			</ol>
@@ -689,10 +689,15 @@ final class TTTC_Admin {
 		$active = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_ACTIVE, true );
 		$gender = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_GENDER, true );
 		$type   = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_TYPE, true );
+		$lastname = get_post_meta( $post->ID, TTTC_Plugin::PLAYER_META_LASTNAME, true );
 		$gender = $gender ? $gender : 'male';
 		$type   = $type ? $type : 'senior';
 		$active = '' === $active ? '1' : $active;
 		?>
+<p><label
+		for="tttc-lastname"><strong><?php esc_html_e( 'Lastname', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input
+		class="regular-text" type="text" id="tttc-lastname" name="tttc_lastname"
+		value="<?php echo esc_attr( $lastname ); ?>" required></p>
 <p><label
 		for="tttc-rating"><strong><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></strong></label><br><input
 		class="small-text" type="number" min="0" step="1" id="tttc-rating" name="tttc_rating"
@@ -931,7 +936,9 @@ final class TTTC_Admin {
 		}
 
 		$name  = preg_replace( '/\s+/', ' ', trim( $data['post_title'] ) );
+		$name  = trim( $name . ' ' . ( isset( $_POST['tttc_lastname'] ) ? preg_replace( '/\s+/', ' ', trim( sanitize_text_field( wp_unslash( $_POST['tttc_lastname'] ) ) ) ) : '' ) );
 		$email = strtolower( sanitize_email( wp_unslash( $_POST['tttc_email'] ) ) );
+		$lastname = isset( $_POST['tttc_lastname'] ) ? preg_replace( '/\s+/', ' ', trim( sanitize_text_field( wp_unslash( $_POST['tttc_lastname'] ) ) ) ) : '';
 
 		if ( '' === $name || '' === $email ) {
 			return $data;
@@ -954,7 +961,7 @@ final class TTTC_Admin {
 		) );
 
 		foreach ( $existing_players as $player ) {
-			$existing_name = preg_replace( '/\s+/', ' ', trim( $player->post_title ) );
+			$existing_name = TTTC_Plugin::get_player_name( $player );
 			if ( 0 === strcasecmp( $existing_name, $name ) ) {
 				wp_die(
 					esc_html__( 'A player with this name and email already exists.', 'table-tennis-tournament-for-clubs' ),
@@ -974,11 +981,19 @@ final class TTTC_Admin {
 		if ( ! isset( $_POST['tttc_player_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tttc_player_nonce'] ) ), 'tttc_save_player' ) ) {
 			return;
 		}
+		if ( ! isset( $_POST['tttc_lastname'] ) || '' === preg_replace( '/\s+/', ' ', trim( sanitize_text_field( wp_unslash( $_POST['tttc_lastname'] ) ) ) ) ) {
+			wp_die(
+				esc_html__( 'Please enter a lastname.', 'table-tennis-tournament-for-clubs' ),
+				esc_html__( 'Lastname required', 'table-tennis-tournament-for-clubs' ),
+				array( 'back_link' => true )
+			);
+		}
 		$rating = isset( $_POST['tttc_rating'] ) ? max( 0, absint( $_POST['tttc_rating'] ) ) : 0;
 		$email  = isset( $_POST['tttc_email'] ) ? sanitize_email( wp_unslash( $_POST['tttc_email'] ) ) : '';
 		$phone  = isset( $_POST['tttc_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_phone'] ) ) : '';
 		$gender = isset( $_POST['tttc_gender'] ) ? sanitize_key( wp_unslash( $_POST['tttc_gender'] ) ) : 'male';
 		$type   = isset( $_POST['tttc_type'] ) ? sanitize_key( wp_unslash( $_POST['tttc_type'] ) ) : 'senior';
+		$lastname = isset( $_POST['tttc_lastname'] ) ? sanitize_text_field( wp_unslash( $_POST['tttc_lastname'] ) ) : '';
 		$gender = in_array( $gender, array( 'male', 'female' ), true ) ? $gender : 'male';
 		$type   = in_array( $type, array( 'senior', 'youth' ), true ) ? $type : 'senior';
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_RATING, $rating );
@@ -986,6 +1001,7 @@ final class TTTC_Admin {
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_PHONE, $phone );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_GENDER, $gender );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_TYPE, $type );
+		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_LASTNAME, preg_replace( '/\s+/', ' ', trim( $lastname ) ) );
 		update_post_meta( $post_id, TTTC_Plugin::PLAYER_META_ACTIVE, isset( $_POST['tttc_active'] ) ? '1' : '0' );
 	}
 
@@ -1134,10 +1150,11 @@ final class TTTC_Admin {
 	}
 
 	public function player_columns( $columns ) {
-		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_gender' => __( 'Gender', 'table-tennis-tournament-for-clubs' ), 'tttc_type' => __( 'Type', 'table-tennis-tournament-for-clubs' ), 'tttc_rating' => __( 'Rating', 'table-tennis-tournament-for-clubs' ), 'tttc_email' => __( 'Email', 'table-tennis-tournament-for-clubs' ), 'tttc_active' => __( 'Active', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
+		return array( 'cb' => $columns['cb'], 'title' => __( 'Name', 'table-tennis-tournament-for-clubs' ), 'tttc_lastname' => __( 'Lastname', 'table-tennis-tournament-for-clubs' ), 'tttc_gender' => __( 'Gender', 'table-tennis-tournament-for-clubs' ), 'tttc_type' => __( 'Type', 'table-tennis-tournament-for-clubs' ), 'tttc_rating' => __( 'Rating', 'table-tennis-tournament-for-clubs' ), 'tttc_email' => __( 'Email', 'table-tennis-tournament-for-clubs' ), 'tttc_active' => __( 'Active', 'table-tennis-tournament-for-clubs' ), 'tttc_url' => __( 'Url', 'table-tennis-tournament-for-clubs' ), 'date' => $columns['date'] );
 	}
 
 	public function player_sortable_columns( $columns ) {
+		$columns['tttc_lastname'] = 'tttc_lastname';
 		$columns['tttc_gender'] = 'tttc_gender';
 		$columns['tttc_type']   = 'tttc_type';
 		$columns['tttc_rating'] = 'tttc_rating';
@@ -1148,7 +1165,9 @@ final class TTTC_Admin {
 	}
 
 	public function player_column( $column, $post_id ) {
-		if ( 'tttc_rating' === $column ) {
+		if ( 'tttc_lastname' === $column ) {
+			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_LASTNAME, true ) );
+		} elseif ( 'tttc_rating' === $column ) {
 			echo esc_html( get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_RATING, true ) );
 		} elseif ( 'tttc_gender' === $column ) {
 			$gender = get_post_meta( $post_id, TTTC_Plugin::PLAYER_META_GENDER, true );
@@ -1216,6 +1235,7 @@ final class TTTC_Admin {
 		}
 
 		$sortable_meta_keys = array(
+			'tttc_lastname' => array( 'key' => TTTC_Plugin::PLAYER_META_LASTNAME, 'orderby' => 'meta_value' ),
 			'tttc_gender' => array( 'key' => TTTC_Plugin::PLAYER_META_GENDER, 'orderby' => 'meta_value' ),
 			'tttc_type'   => array( 'key' => TTTC_Plugin::PLAYER_META_TYPE, 'orderby' => 'meta_value' ),
 			'tttc_rating' => array( 'key' => TTTC_Plugin::PLAYER_META_RATING, 'orderby' => 'meta_value_num' ),
@@ -1665,7 +1685,7 @@ final class TTTC_Admin {
 						<?php foreach ( $group_schedule['players'] as $player_index => $player ) : ?>
 						<tr>
 							<td><?php echo esc_html( $player_index + 1 ); ?></td>
-							<td><?php echo esc_html( $player->post_title ); ?></td>
+							<td><?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?></td>
 							<?php foreach ( $group_schedule['rounds'] as $round_number => $round ) :
 								$matrix_entry = $group_matrix[ (int) $player->ID ][ $round_number ];
 								if ( null === $matrix_entry ) :
@@ -1851,9 +1871,9 @@ final class TTTC_Admin {
 									<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>">
 										<?php echo esc_html( $match_number + 1 ); ?></td>
 									<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>">
-										<?php echo esc_html( $player_numbers[ (int) $display_match[0]->ID ] . '. ' . $display_match[0]->post_title ); ?></td>
+										<?php echo esc_html( $player_numbers[ (int) $display_match[0]->ID ] . '. ' . TTTC_Plugin::get_player_name( $display_match[0] ) ); ?></td>
 									<td data-label="<?php esc_attr_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?>">
-										<?php echo esc_html( $player_numbers[ (int) $display_match[1]->ID ] . '. ' . $display_match[1]->post_title ); ?></td>
+										<?php echo esc_html( $player_numbers[ (int) $display_match[1]->ID ] . '. ' . TTTC_Plugin::get_player_name( $display_match[1] ) ); ?></td>
 									<?php for ( $game = 0; $game < $games; $game++ ) :
 										// translators: %d is the game number.
 										$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game + 1 );
@@ -1900,10 +1920,10 @@ final class TTTC_Admin {
 							<td data-label="<?php esc_attr_e( 'Match', 'table-tennis-tournament-for-clubs' ); ?>">
 								<?php echo esc_html( $match_number + 1 ); ?></td>
 							<td data-label="<?php esc_attr_e( 'Player 1', 'table-tennis-tournament-for-clubs' ); ?>">
-								<?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?>
+								<?php echo esc_html( $available ? TTTC_Plugin::get_player_name( $match['players'][0] ) : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?>
 							</td>
 							<td data-label="<?php esc_attr_e( 'Player 2', 'table-tennis-tournament-for-clubs' ); ?>">
-								<?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?>
+								<?php echo esc_html( $available ? TTTC_Plugin::get_player_name( $match['players'][1] ) : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?>
 							</td><?php for ( $game = 0; $game < $stage_games; $game++ ) :
 								// translators: %d is the game number.
 								$game_label = sprintf( __( 'Game %d', 'table-tennis-tournament-for-clubs' ), $game + 1 );
@@ -2575,14 +2595,14 @@ final class TTTC_Admin {
 		<?php if ( 'placement' === $phase && $all_complete && ! $has_placement_stages ) : ?>
 			<?php foreach ( $competition['groups'] as $index => $group ) : ?>
 				<h2><?php echo esc_html( $schedule[ array_keys( $schedule )[ $index ] ]['label'] ); ?> — <?php esc_html_e( 'Final places', 'table-tennis-tournament-for-clubs' ); ?></h2>
-				<ol><?php foreach ( array_slice( $group['standings'], 0, 3 ) as $standing ) : ?><li><?php echo esc_html( $standing['player']->post_title ); ?></li><?php endforeach; ?></ol>
+				<ol><?php foreach ( array_slice( $group['standings'], 0, 3 ) as $standing ) : ?><li><?php echo esc_html( TTTC_Plugin::get_player_name( $standing['player'] ) ); ?></li><?php endforeach; ?></ol>
 			<?php endforeach; ?>
 		<?php endif; ?>
 		<?php if ( 'placement' === $phase && $has_placement_stages ) : ?>
 			<?php foreach ( $pool_competitions as $pool => $pool_result ) : ?>
 				<?php if ( ! empty( $pool_result['competition']['places'] ) ) : ?>
 					<h2><?php echo esc_html( sprintf( __( 'Pool %s final places', 'table-tennis-tournament-for-clubs' ), $pool ) ); ?></h2>
-					<ol><?php foreach ( array_slice( $pool_result['competition']['places'], 0, 3 ) as $place ) : ?><li><?php echo esc_html( $place['player']->post_title ); ?></li><?php endforeach; ?></ol>
+					<ol><?php foreach ( array_slice( $pool_result['competition']['places'], 0, 3 ) as $place ) : ?><li><?php echo esc_html( TTTC_Plugin::get_player_name( $place['player'] ) ); ?></li><?php endforeach; ?></ol>
 				<?php endif; ?>
 			<?php endforeach; ?>
 		<?php endif; ?>
@@ -2623,7 +2643,7 @@ final class TTTC_Admin {
 							$score_key = $match['score_key'];
 							$match_scores = isset( $all_scores[ $score_key ] ) ? $all_scores[ $score_key ] : array();
 							?>
-							<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $available ? $match['players'][0]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? $match['players'][1]->post_title : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td>
+							<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $available ? TTTC_Plugin::get_player_name( $match['players'][0] ) : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td><td><?php echo esc_html( $available ? TTTC_Plugin::get_player_name( $match['players'][1] ) : __( 'Waiting for previous matches', 'table-tennis-tournament-for-clubs' ) ); ?></td>
 								<?php for ( $game = 0; $game < $stage_games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
 									<td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][0]" value="<?php echo esc_attr( $game_score[0] ); ?>" <?php disabled( ! $available ); ?>><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][1]" value="<?php echo esc_attr( $game_score[1] ); ?>" <?php disabled( ! $available ); ?>></span></td>
 								<?php endfor; ?>
@@ -2670,7 +2690,7 @@ final class TTTC_Admin {
 									$first_score_side = (int) $display_match[0]->ID === (int) $match[0]->ID ? 0 : 1;
 									$second_score_side = 1 - $first_score_side;
 									?>
-									<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $display_match[0]->ID ] . '. ' . $display_match[0]->post_title ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $display_match[1]->ID ] . '. ' . $display_match[1]->post_title ); ?></td>
+									<tr><td><?php echo esc_html( $match_index + 1 ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $display_match[0]->ID ] . '. ' . TTTC_Plugin::get_player_name( $display_match[0] ) ); ?></td><td><?php echo esc_html( $player_numbers[ (int) $display_match[1]->ID ] . '. ' . TTTC_Plugin::get_player_name( $display_match[1] ) ); ?></td>
 										<?php for ( $game = 0; $game < $games; $game++ ) : $game_score = isset( $match_scores[ $game ] ) ? $match_scores[ $game ] : array( '', '' ); ?>
 											<td><span class="tttc-score-pair"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][<?php echo esc_attr( $first_score_side ); ?>]" value="<?php echo esc_attr( isset( $game_score[ $first_score_side ] ) ? $game_score[ $first_score_side ] : '' ); ?>"><input class="small-text" type="number" min="0" inputmode="numeric" name="scores[<?php echo esc_attr( $score_key ); ?>][<?php echo esc_attr( $game ); ?>][<?php echo esc_attr( $second_score_side ); ?>]" value="<?php echo esc_attr( isset( $game_score[ $second_score_side ] ) ? $game_score[ $second_score_side ] : '' ); ?>"></span></td>
 										<?php endfor; ?>
@@ -2774,7 +2794,7 @@ final class TTTC_Admin {
 					<ul class="tttc-placement-pool-assignments">
 						<?php foreach ( $pool_players[ $pool ] as $assignment ) : ?>
 							<li>
-								<strong><?php echo esc_html( $assignment['player']->post_title ); ?></strong>
+								<strong><?php echo esc_html( TTTC_Plugin::get_player_name( $assignment['player'] ) ); ?></strong>
 								<span><?php echo esc_html( sprintf( __( 'Group %1$d, place %2$d', 'table-tennis-tournament-for-clubs' ), $assignment['group_index'] + 1, $assignment['rank'] + 1 ) ); ?></span>
 							</li>
 						<?php endforeach; ?>
@@ -2799,7 +2819,7 @@ final class TTTC_Admin {
 								$player_id = (int) $assignment['player']->ID;
 								?>
 								<li class="tttc-placement-player">
-									<strong><?php echo esc_html( $assignment['player']->post_title ); ?></strong>
+									<strong><?php echo esc_html( TTTC_Plugin::get_player_name( $assignment['player'] ) ); ?></strong>
 									<span class="tttc-placement-player-place"><?php echo esc_html( sprintf( __( 'Group %1$d, place %2$d', 'table-tennis-tournament-for-clubs' ), $assignment['group_index'] + 1, $assignment['rank'] + 1 ) ); ?></span>
 									<label>
 										<span class="screen-reader-text"><?php esc_html_e( 'Placement pool', 'table-tennis-tournament-for-clubs' ); ?></span>
@@ -3294,7 +3314,7 @@ final class TTTC_Admin {
 					title="<?php echo esc_attr( $not_joining_reason ); ?>"<?php endif; ?>>
 					<th class="check-column"><input type="checkbox" name="player_ids[]"
 							value="<?php echo esc_attr( $player->ID ); ?>" <?php checked( $is_assigned ); ?>></th>
-					<td><?php echo esc_html( $player->post_title ); ?><?php if ( $is_not_joining ) : ?><span
+					<td><?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?><?php if ( $is_not_joining ) : ?><span
 							class="screen-reader-text"><?php esc_html_e( 'Reported as not joining', 'table-tennis-tournament-for-clubs' ); ?></span><?php endif; ?></td>
 					<td><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></td>
 					<td><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_EMAIL, true ) ); ?></td>
@@ -3348,7 +3368,7 @@ final class TTTC_Admin {
 </p>
 <ol class="tttc-seed-list tttc-seed-list--locked">
 	<?php foreach ( $seed_players as $player ) : ?>
-	<li><?php echo esc_html( $player->post_title ); ?> <span
+	<li><?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?> <span
 			class="tttc-seed-rating"><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></span>
 	</li>
 	<?php endforeach; ?>
@@ -3365,7 +3385,7 @@ final class TTTC_Admin {
 	<ol class="tttc-seed-list" data-tournament-id="<?php echo esc_attr( $tournament_id ); ?>">
 		<?php foreach ( $seed_players as $player ) : ?>
 		<li data-player-id="<?php echo esc_attr( $player->ID ); ?>"><span class="tttc-seed-handle"
-				aria-hidden="true">&#9776;</span> <?php echo esc_html( $player->post_title ); ?> <span
+				aria-hidden="true">&#9776;</span> <?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?> <span
 				class="tttc-seed-rating"><?php echo esc_html( get_post_meta( $player->ID, TTTC_Plugin::PLAYER_META_RATING, true ) ); ?></span>
 		</li>
 		<?php endforeach; ?>

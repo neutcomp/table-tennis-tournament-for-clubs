@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class TTTC_Plugin {
-	const DB_VERSION = '1.5.0';
+	const DB_VERSION = '1.6.0';
 	const PLAYER_POST_TYPE = 'tttc_player';
 	const TOURNAMENT_POST_TYPE = 'tttc_tournament';
 	const PLAYER_META_RATING = '_tttc_rating';
@@ -19,6 +19,7 @@ final class TTTC_Plugin {
 	const PLAYER_META_ACTIVE = '_tttc_active';
 	const PLAYER_META_GENDER = '_tttc_gender';
 	const PLAYER_META_TYPE = '_tttc_type';
+	const PLAYER_META_LASTNAME = '_tttc_lastname';
 	const TOURNAMENT_META_DATE = '_tttc_date';
 	const TOURNAMENT_META_VISITS = '_tttc_visits';
 	const TOURNAMENT_META_TIME = '_tttc_time';
@@ -92,6 +93,34 @@ final class TTTC_Plugin {
 
 	public static function get_tournament_url_base() {
 		return self::sanitize_tournament_url_base( get_option( self::OPTION_TOURNAMENT_URL_BASE, self::DEFAULT_TOURNAMENT_URL_BASE ) );
+	}
+
+	public static function split_player_name( $full_name ) {
+		$full_name = preg_replace( '/\s+/', ' ', trim( (string) $full_name ) );
+		if ( '' === $full_name ) {
+			return array( 'firstname' => '', 'lastname' => '' );
+		}
+
+		$parts = preg_split( '/\s+/', $full_name, 2 );
+		return array(
+			'firstname' => $parts[0],
+			'lastname'  => isset( $parts[1] ) ? $parts[1] : '',
+		);
+	}
+
+	public static function get_player_name( $player ) {
+		$player_id = is_object( $player ) ? absint( $player->ID ) : absint( $player );
+		if ( ! $player_id ) {
+			return '';
+		}
+
+		$firstname = preg_replace( '/\s+/', ' ', trim( get_the_title( $player_id ) ) );
+		$lastname  = preg_replace( '/\s+/', ' ', trim( (string) get_post_meta( $player_id, self::PLAYER_META_LASTNAME, true ) ) );
+		$name      = trim( $firstname . ' ' . $lastname );
+		if ( '' === $name && is_object( $player ) && isset( $player->post_title ) ) {
+			$name = preg_replace( '/\s+/', ' ', trim( $player->post_title ) );
+		}
+		return $name;
 	}
 
 	public static function get_tournament_game_formats( $tournament_id ) {
@@ -264,6 +293,7 @@ final class TTTC_Plugin {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 		dbDelta( $scores_sql );
+		self::backfill_player_names();
 		$wpdb->query(
 			$wpdb->prepare(
 				'UPDATE %i AS assignments
@@ -278,6 +308,34 @@ final class TTTC_Plugin {
 		);
 		self::backfill_seed_order();
 		update_option( 'tttc_db_version', self::DB_VERSION );
+	}
+
+	private static function backfill_player_names() {
+		$players = get_posts(
+			array(
+				'post_type'   => self::PLAYER_POST_TYPE,
+				'post_status' => 'any',
+				'numberposts' => -1,
+			)
+		);
+
+		foreach ( $players as $player ) {
+			if ( '' !== (string) get_post_meta( $player->ID, self::PLAYER_META_LASTNAME, true ) ) {
+				continue;
+			}
+
+			$parts = self::split_player_name( $player->post_title );
+			update_post_meta( $player->ID, self::PLAYER_META_LASTNAME, $parts['lastname'] );
+			$firstname = $parts['firstname'];
+			if ( '' !== $firstname ) {
+				wp_update_post(
+					array(
+						'ID'         => $player->ID,
+						'post_title' => $firstname,
+					)
+				);
+			}
+		}
 	}
 
 	/**
