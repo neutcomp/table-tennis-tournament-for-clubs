@@ -612,6 +612,10 @@ ul.tttc-breadcrumbs__list > li::after {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.tttc-public-player-list__not-joining {
+  background-color: #f8d7da;
+}
+
 .tttc-public-player-list strong {
   color: #2271b1;
   text-align: right;

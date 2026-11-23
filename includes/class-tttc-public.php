@@ -457,6 +457,10 @@ final class TTTC_Public {
 			exit;
 		}
 
+		if ( is_user_logged_in() && '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true ) ) {
+			nocache_headers();
+		}
+
 		$this->handle_signup( $tournament_id );
 
 		wp_enqueue_style( 'tttc-public', TTTC_URL . 'assets/public.css', array(), TTTC_VERSION . '.' . filemtime( TTTC_PATH . 'assets/public.css' ) );
@@ -953,6 +957,22 @@ final class TTTC_Public {
 		$placement_format = 'placement_pools' === TTTC_Plugin::get_tournament_competition_format( $tournament_id ) && count( $players ) >= 9;
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
 		$show_player_ratings = $this->show_signup_ttapp_question( $tournament_id );
+		$not_joining_responses = array();
+		if ( '1' === get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_ASK_JOINING, true ) && is_user_logged_in() ) {
+			$responses = get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_RESPONSES, true );
+			if ( is_array( $responses ) ) {
+				foreach ( $responses as $response ) {
+					if ( ! is_array( $response ) || ! isset( $response['name'] ) || ! is_string( $response['name'] ) || '' === trim( $response['name'] ) ) {
+						continue;
+					}
+
+					$not_joining_responses[] = array(
+						'name'   => $response['name'],
+						'reason' => isset( $response['reason'] ) && is_string( $response['reason'] ) ? $response['reason'] : '',
+					);
+				}
+			}
+		}
 		$player_positions = array();
 		foreach ( $players as $position => $player ) {
 			$player_positions[ $player->ID ] = $position;
@@ -1028,25 +1048,31 @@ final class TTTC_Public {
 		<?php endif; ?>
 		<?php if ( ! $is_active ) : ?>
 		<details class="tttc-public-tournament__players">
-			<summary><span><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?> (<?php echo esc_html( count( $players ) ); ?>)</span> <span
+			<summary><span><?php esc_html_e( 'Players', 'table-tennis-tournament-for-clubs' ); ?> (<?php echo esc_html( count( $players ) + count( $not_joining_responses ) ); ?>)</span> <span
 					class="tttc-players-expand-label"><?php esc_html_e( 'expand', 'table-tennis-tournament-for-clubs' ); ?></span><span
 					class="tttc-players-collapse-label"><?php esc_html_e( 'collapse', 'table-tennis-tournament-for-clubs' ); ?></span>
 			</summary>
-			<?php if ( empty( $players ) ) : ?>
+			<?php if ( empty( $players ) && empty( $not_joining_responses ) ) : ?>
 			<p><?php esc_html_e( 'Players will be announced soon.', 'table-tennis-tournament-for-clubs' ); ?></p>
 			<?php else : ?>
-			<?php if ( $show_player_ratings ) : ?>
+			<?php if ( $show_player_ratings && ! empty( $players ) ) : ?>
 			<div class="tttc-public-player-list-header" aria-hidden="true">
 				<span><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?></span><span><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></span>
 			</div>
 			<?php endif; ?>
-			<ol class="tttc-public-player-list<?php echo $show_player_ratings ? '' : ' tttc-public-player-list--no-rating'; ?>">
+			<ol class="tttc-public-player-list<?php echo $show_player_ratings && ! empty( $players ) ? '' : ' tttc-public-player-list--no-rating'; ?>">
 				<?php foreach ( $players as $player ) : ?>
 				<li>
 					<span><a href="<?php echo esc_url( $this->player_url( $player->ID, $tournament_id ) ); ?>"><?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?></a></span>
 					<?php if ( $show_player_ratings ) : ?>
 						<strong><?php echo esc_html( isset( $player_ratings[ $player->ID ] ) ? $player_ratings[ $player->ID ] : 0 ); ?></strong>
 					<?php endif; ?>
+				</li>
+				<?php endforeach; ?>
+				<?php foreach ( $not_joining_responses as $response ) : ?>
+				<li class="tttc-public-player-list__not-joining"<?php if ( '' !== trim( $response['reason'] ) ) : ?>
+					title="<?php echo esc_attr( $response['reason'] ); ?>"<?php endif; ?>>
+					<span><?php echo esc_html( $response['name'] ); ?></span>
 				</li>
 				<?php endforeach; ?>
 			</ol>
