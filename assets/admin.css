@@ -204,6 +204,10 @@
   background: #fff;
 }
 
+.tttc-dashboard-section--visitors {
+  grid-column: 1 / -1;
+}
+
 .tttc-dashboard-section h2 {
   margin: 0 0 12px;
 }

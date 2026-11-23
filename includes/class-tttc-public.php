@@ -415,6 +415,11 @@ final class TTTC_Public {
 			return;
 		}
 
+		if ( ! is_user_logged_in() ) {
+			$view_count = absint( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_VISITS, true ) );
+			update_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_VISITS, $view_count + 1 );
+		}
+
 		if ( $this->is_tv_mode() ) {
 			$this->render_tv_page( $tournament_id );
 			exit;

@@ -543,6 +543,9 @@ msgstr "Gepubliceerde toernooien"
 msgid "Top 3 players by rating"
 msgstr "Top 3 spelers op rating"
 
+msgid "Visitors"
+msgstr "Bezoekers"
+
 msgid "No active published players found."
 msgstr "Geen actieve gepubliceerde spelers gevonden."
 

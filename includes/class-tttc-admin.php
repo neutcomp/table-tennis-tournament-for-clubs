@@ -504,6 +504,17 @@ final class TTTC_Admin {
 		$top_players = array_slice( $top_players, 0, 3 );
 
 		$tournaments        = get_posts( array( 'post_type' => TTTC_Plugin::TOURNAMENT_POST_TYPE, 'post_status' => 'publish', 'numberposts' => -1 ) );
+		$recent_tournaments = get_posts(
+			array(
+				'post_type'      => TTTC_Plugin::TOURNAMENT_POST_TYPE,
+				'post_status'    => 'publish',
+				'numberposts'    => 10,
+				'meta_key'       => TTTC_Plugin::TOURNAMENT_META_DATE,
+				'orderby'        => 'meta_value',
+				'meta_type'      => 'DATE',
+				'order'          => 'DESC',
+			)
+		);
 		$tournament_types    = array( 'senior' => 0, 'youth' => 0, 'both' => 0 );
 		$tournament_statuses = array_fill_keys( array_keys( TTTC_Plugin::statuses() ), 0 );
 		$participant_total   = 0;
@@ -639,6 +650,26 @@ final class TTTC_Admin {
 				</div>
 				<?php endforeach; ?>
 			</div>
+		</section>
+	</div>
+	<div class="tttc-dashboard-grid">
+		<section class="tttc-dashboard-section tttc-dashboard-section--visitors">
+			<h2><?php esc_html_e( 'Visitors', 'table-tennis-tournament-for-clubs' ); ?></h2>
+			<?php if ( empty( $recent_tournaments ) ) : ?>
+			<p><?php esc_html_e( 'No published tournaments found.', 'table-tennis-tournament-for-clubs' ); ?></p>
+			<?php else : ?>
+			<ol class="tttc-top-players">
+				<?php foreach ( $recent_tournaments as $tournament ) :
+					$tournament_url = TTTC_Public::instance() ? TTTC_Public::instance()->tournament_url( $tournament->ID ) : '';
+					$visitor_count  = absint( get_post_meta( $tournament->ID, TTTC_Plugin::TOURNAMENT_META_VISITS, true ) );
+					?>
+				<li>
+					<span><?php if ( $tournament_url ) : ?><a href="<?php echo esc_url( $tournament_url ); ?>"><?php echo esc_html( $tournament->post_title ); ?></a><?php else : ?><?php echo esc_html( $tournament->post_title ); ?><?php endif; ?></span>
+					<strong><?php echo esc_html( number_format_i18n( $visitor_count ) ); ?></strong>
+				</li>
+				<?php endforeach; ?>
+			</ol>
+			<?php endif; ?>
 		</section>
 	</div>
 </div>
