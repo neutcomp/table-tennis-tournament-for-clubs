@@ -608,6 +608,10 @@ ul.tttc-breadcrumbs__list > li::after {
   padding: 8px 8px 8px 0;
 }
 
+.tttc-public-player-list--no-rating li {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .tttc-public-player-list strong {
   color: #2271b1;
   text-align: right;

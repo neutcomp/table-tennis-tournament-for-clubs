@@ -952,6 +952,7 @@ final class TTTC_Public {
 		$players     = $this->assigned_players( $tournament_id );
 		$placement_format = 'placement_pools' === TTTC_Plugin::get_tournament_competition_format( $tournament_id ) && count( $players ) >= 9;
 		$player_ratings = $this->assigned_player_ratings( $tournament_id );
+		$show_player_ratings = $this->show_signup_ttapp_question( $tournament_id );
 		$player_positions = array();
 		foreach ( $players as $position => $player ) {
 			$player_positions[ $player->ID ] = $position;
@@ -1034,13 +1035,18 @@ final class TTTC_Public {
 			<?php if ( empty( $players ) ) : ?>
 			<p><?php esc_html_e( 'Players will be announced soon.', 'table-tennis-tournament-for-clubs' ); ?></p>
 			<?php else : ?>
+			<?php if ( $show_player_ratings ) : ?>
 			<div class="tttc-public-player-list-header" aria-hidden="true">
 				<span><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?></span><span><?php esc_html_e( 'Rating', 'table-tennis-tournament-for-clubs' ); ?></span>
 			</div>
-			<ol class="tttc-public-player-list">
+			<?php endif; ?>
+			<ol class="tttc-public-player-list<?php echo $show_player_ratings ? '' : ' tttc-public-player-list--no-rating'; ?>">
 				<?php foreach ( $players as $player ) : ?>
-				<li><span><a
-							href="<?php echo esc_url( $this->player_url( $player->ID, $tournament_id ) ); ?>"><?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?></a></span><strong><?php echo esc_html( isset( $player_ratings[ $player->ID ] ) ? $player_ratings[ $player->ID ] : 0 ); ?></strong>
+				<li>
+					<span><a href="<?php echo esc_url( $this->player_url( $player->ID, $tournament_id ) ); ?>"><?php echo esc_html( TTTC_Plugin::get_player_name( $player ) ); ?></a></span>
+					<?php if ( $show_player_ratings ) : ?>
+						<strong><?php echo esc_html( isset( $player_ratings[ $player->ID ] ) ? $player_ratings[ $player->ID ] : 0 ); ?></strong>
+					<?php endif; ?>
 				</li>
 				<?php endforeach; ?>
 			</ol>
