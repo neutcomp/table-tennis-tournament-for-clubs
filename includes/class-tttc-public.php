@@ -1689,16 +1689,17 @@ final class TTTC_Public {
 					$this->signup_error = __( 'Please enter a valid email address.', 'table-tennis-tournament-for-clubs' );
 					return;
 				}
+				$full_name = $this->normalize_name( $this->signup_form['name'] . ' ' . $this->signup_form['lastname'] );
 				$recipient = sanitize_email( get_post_meta( $tournament_id, TTTC_Plugin::TOURNAMENT_META_NOT_JOINING_EMAIL, true ) );
 				if ( ! $recipient || ! is_email( $recipient ) ) {
 					$this->signup_error = __( 'The tournament notification email is not configured correctly. Please contact the organizer.', 'table-tennis-tournament-for-clubs' );
 					return;
 				}
-				if ( ! $this->send_not_joining_email( $tournament_id, $recipient, $this->signup_form['name'], $this->signup_form['email'], $this->signup_form['reason'] ) ) {
+				if ( ! $this->send_not_joining_email( $tournament_id, $recipient, $full_name, $this->signup_form['email'], $this->signup_form['reason'] ) ) {
 					$this->signup_error = __( 'Your response could not be sent. Please try again.', 'table-tennis-tournament-for-clubs' );
 					return;
 				}
-				if ( ! $this->record_not_joining_response( $tournament_id, $this->signup_form['name'], $this->signup_form['email'], $this->signup_form['reason'] ) ) {
+				if ( ! $this->record_not_joining_response( $tournament_id, $full_name, $this->signup_form['email'], $this->signup_form['reason'] ) ) {
 					$this->signup_error = __( 'Your response was emailed, but could not be saved to the tournament player list. Please contact the organizer.', 'table-tennis-tournament-for-clubs' );
 					return;
 				}
@@ -1928,6 +1929,7 @@ final class TTTC_Public {
 		<div class="tttc-public-signup-form__fields" data-tttc-not-joining-fields <?php echo 'no' !== $form['joining'] ? 'hidden' : ''; ?>>
 			<div class="tttc-public-signup-form__grid">
 				<p><label for="tttc-not-joining-name"><?php esc_html_e( 'Name', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="text" id="tttc-not-joining-name" name="tttc_signup_name" value="<?php echo esc_attr( $form['name'] ); ?>" required></p>
+				<p><label for="tttc-not-joining-lastname"><?php esc_html_e( 'Lastname', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="text" id="tttc-not-joining-lastname" name="tttc_signup_lastname" value="<?php echo esc_attr( isset( $form['lastname'] ) ? $form['lastname'] : '' ); ?>" required></p>
 				<p><label for="tttc-not-joining-email"><?php esc_html_e( 'Email', 'table-tennis-tournament-for-clubs' ); ?> <span aria-hidden="true">*</span></label><input type="email" id="tttc-not-joining-email" name="tttc_signup_email" value="<?php echo esc_attr( $form['email'] ); ?>" required></p>
 				<p><label for="tttc-not-joining-reason"><?php esc_html_e( 'Reason you are not joining?', 'table-tennis-tournament-for-clubs' ); ?></label><textarea id="tttc-not-joining-reason" name="tttc_signup_reason" rows="3"><?php echo esc_textarea( $form['reason'] ); ?></textarea></p>
 			</div>
